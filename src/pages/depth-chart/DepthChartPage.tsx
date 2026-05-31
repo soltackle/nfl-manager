@@ -344,14 +344,43 @@ export function DepthChartPage() {
 
           {/* THE PITCH */}
           <div 
-            className="relative w-full h-[400px] sm:h-[500px] lg:h-[600px] bg-[#00152b] rounded-xl overflow-hidden border-2 border-[#005c99] shadow-[inset_0_0_80px_rgba(0,0,0,0.8)] bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: `url('/pitch_bg.png')` }}
+            className="relative w-full h-[400px] sm:h-[500px] lg:h-[600px] bg-[#2E7D32] rounded-xl overflow-hidden border-4 border-white/80 shadow-[inset_0_0_80px_rgba(0,0,0,0.8)]"
           >
-            {/* Field Decoration Overlay (Optional darkness) */}
-            <div className="absolute inset-0 bg-black/20 pointer-events-none"></div>
-            
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 opacity-5 pointer-events-none">
-              <Shield className="w-full h-full text-white" />
+            {/* Hash Marks (Top and Bottom dashed lines) */}
+            <div className="absolute top-1/4 left-[8.33%] right-[8.33%] border-t-2 border-dashed border-white/30"></div>
+            <div className="absolute bottom-1/4 left-[8.33%] right-[8.33%] border-t-2 border-dashed border-white/30"></div>
+
+            {/* Yard Lines & Zones */}
+            <div className="absolute inset-0 flex">
+              {Array.from({ length: 12 }).map((_, i) => {
+                const isEndzoneLeft = i === 0
+                const isEndzoneRight = i === 11
+                
+                return (
+                  <div 
+                    key={i} 
+                    className={`flex-1 h-full relative flex flex-col justify-between py-8
+                      ${isEndzoneLeft ? 'bg-blue-900/60 border-r-4 border-white' : ''}
+                      ${isEndzoneRight ? 'bg-red-900/60 border-l-4 border-white' : ''}
+                      ${!isEndzoneLeft && !isEndzoneRight && i < 10 ? (i === 5 ? 'border-r-4 border-white' : 'border-r-2 border-white/50') : ''}
+                    `}
+                  >
+                     {isEndzoneLeft && <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white/40 font-black text-2xl sm:text-4xl -rotate-90 tracking-[0.3em] whitespace-nowrap">HOME</span>}
+                     {isEndzoneRight && <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white/40 font-black text-2xl sm:text-4xl rotate-90 tracking-[0.3em] whitespace-nowrap">AWAY</span>}
+                     
+                     {!isEndzoneLeft && !isEndzoneRight && i < 10 && (
+                       <>
+                         <span className="text-white/40 font-display font-black text-xs sm:text-lg lg:text-2xl -rotate-90 text-center absolute top-2 sm:top-4 -right-2 sm:-right-3 lg:-right-4 z-0">
+                           {i <= 5 ? i * 10 : (10 - i) * 10}
+                         </span>
+                         <span className="text-white/40 font-display font-black text-xs sm:text-lg lg:text-2xl rotate-90 text-center absolute bottom-2 sm:bottom-4 -right-2 sm:-right-3 lg:-right-4 z-0">
+                           {i <= 5 ? i * 10 : (10 - i) * 10}
+                         </span>
+                       </>
+                     )}
+                  </div>
+                )
+              })}
             </div>
 
             {/* Pitch Slots Map */}
