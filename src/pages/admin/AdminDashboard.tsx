@@ -63,6 +63,26 @@ export function AdminDashboard() {
     }
   }
 
+  const handleDeleteLeague = async () => {
+    if (!league) return alert('Aktif bir ligde değilsiniz!')
+    if (!confirm('DİKKAT: Bu ligi ve içindeki tüm verileri (takımlar, maçlar, oyuncular) kalıcı olarak silmek istediğinize emin misiniz?')) return
+
+    try {
+      const { data, error } = await supabase.rpc('admin_delete_league', {
+        p_league_id: league.id
+      })
+      if (error) throw error
+      if (data && data.success) {
+        alert('Lig başarıyla ve kalıcı olarak silindi!')
+        window.location.href = '/dashboard' // Redirect to clear local state
+      } else {
+        alert('Hata: ' + (data?.error || 'Bilinmeyen hata'))
+      }
+    } catch (err: any) {
+      alert('Silme Hatası: ' + err.message)
+    }
+  }
+
   const handleSimulateMatch = async () => {
     if (!league) return alert("Aktif bir ligde değilsiniz!")
     const weekInput = prompt("Hangi haftayı simüle etmek istiyorsunuz? (Sayı girin)", "1")
@@ -128,6 +148,13 @@ export function AdminDashboard() {
               onClick={handleSimulateDraft}
             >
               ⏩ DRAFTI HIZLI GEÇ (SİMÜLE ET VE SEZONU BAŞLAT)
+            </Button>
+
+            <Button 
+              className="w-full justify-start border border-red-500 bg-red-500/10 hover:bg-red-500 hover:text-white text-red-400 mt-4"
+              onClick={handleDeleteLeague}
+            >
+              🗑️ LİGİ TAMAMEN SİL (Kalıcı İşlem)
             </Button>
           </CardContent>
         </Card>
