@@ -5,6 +5,8 @@ import { supabase } from '@/lib/supabase'
 import { Trophy, Activity, CloudLightning, Play } from 'lucide-react'
 import { Skeleton } from '@/components/ui/Skeleton'
 
+const TOUCHDOWN_SOUND = new Audio('/sounds/Touchdown.mp3')
+
 export function MatchResultPage() {
   const { id } = useParams()
   
@@ -62,6 +64,12 @@ export function MatchResultPage() {
           const isAway = text.includes('Deplasman')
           
           if (text.includes('TOUCHDOWN')) {
+            try {
+              TOUCHDOWN_SOUND.currentTime = 0
+              TOUCHDOWN_SOUND.play().catch(e => console.log('Audio error:', e))
+            } catch (e) {
+              console.log('Audio catch:', e)
+            }
             if (isHome) tempHomeScore += 7
             if (isAway) tempAwayScore += 7
           } else if (text.includes('FIELD GOAL')) {
