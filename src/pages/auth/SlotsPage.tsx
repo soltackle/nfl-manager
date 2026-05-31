@@ -11,11 +11,10 @@ export function SlotsPage() {
 
   useEffect(() => {
     // If we land here, we explicitly clear the active franchise
-    // so the layout knows we are in the lobby
-    if (activeFranchiseId) {
-      setActiveFranchise(null)
-    }
-  }, [activeFranchiseId, setActiveFranchise])
+    // We only want to do this ONCE on mount, not when activeFranchiseId changes during navigation!
+    setActiveFranchise(null)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleSelectFranchise = async (id: string) => {
     await setActiveFranchise(id)
