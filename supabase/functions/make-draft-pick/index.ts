@@ -71,7 +71,6 @@ serve(async (req) => {
     let { data: available } = await supabaseAdmin
       .from('players')
       .select('id, position, overall')
-      .eq('league_id', franchise.league_id)
       .is('franchise_id', null)
       .order('overall', { ascending: false })
 
@@ -185,7 +184,6 @@ serve(async (req) => {
             const names = ['Role', 'Backup', 'Reserve', 'Bench', 'Squad', 'Practice', 'Depth', 'Sub', 'Rookie', 'Veteran', 'Free Agent', 'Prospect', 'Walk-on', 'Camp']
             allRolePlayers.push({
               franchise_id: lf.id,
-              league_id: franchise.league_id,
               name: `${names[i]} ${pos}${Math.floor(Math.random() * 99)}`,
               position: pos,
               overall: 45 + Math.floor(Math.random() * 15),

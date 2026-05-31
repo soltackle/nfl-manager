@@ -1,1 +1,0 @@
-ALTER TABLE players ADD COLUMN league_id UUID REFERENCES leagues(id) ON DELETE CASCADE;
