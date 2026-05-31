@@ -2,22 +2,24 @@
 
 @theme {
   --font-sans: 'Inter', sans-serif;
-  --font-display: 'Outfit', sans-serif;
+  --font-display: 'Oswald', sans-serif;
   
-  --color-primary: #0A1128;
-  --color-primary-light: #162447;
-  --color-accent: #E85D04;
-  --color-accent-hover: #F48C06;
-  --color-surface: rgba(22, 36, 71, 0.7);
-  --color-muted: #4A5568;
-  --color-text-bright: #F8F9FA;
-  --color-text-dim: #A0AEC0;
+  --color-primary: #00254c;
+  --color-primary-light: #004b93;
+  --color-accent: #ff9c00;
+  --color-accent-hover: #ffb732;
+  --color-surface: rgba(0, 37, 76, 0.85);
+  --color-muted: #1e3a5f;
+  --color-text-bright: #ffffff;
+  --color-text-dim: #9cb1ce;
 }
 
 @layer base {
   body {
     background-color: var(--color-primary);
-    background-image: radial-gradient(circle at top right, #162447, #0A1128);
+    background-image: url('/stadium_bg.png');
+    background-size: cover;
+    background-position: center;
     background-attachment: fixed;
     color: var(--color-text-bright);
     font-family: var(--font-sans);
@@ -26,14 +28,23 @@
   
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
-    letter-spacing: -0.02em;
+    text-transform: uppercase;
   }
 }
 
 @layer utilities {
   .glass-panel {
-    @apply bg-surface backdrop-blur-md border border-white/10 shadow-xl;
+    @apply bg-surface backdrop-blur-sm border border-white/10 shadow-xl;
   }
+  
+  .osm-button {
+    @apply bg-gradient-to-b from-accent to-[#e68a00] border-b-4 border-[#b36b00] rounded text-white font-bold uppercase shadow text-center hover:brightness-110 active:border-b-0 active:translate-y-1 transition-all;
+  }
+  
+  .osm-button-blue {
+    @apply bg-gradient-to-b from-[#00a2ff] to-[#007acc] border-b-4 border-[#005c99] rounded text-white font-bold uppercase shadow text-center hover:brightness-110 active:border-b-0 active:translate-y-1 transition-all;
+  }
+}
   
   .text-gradient {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-accent to-accent-hover;

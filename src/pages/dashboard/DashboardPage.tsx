@@ -1,141 +1,160 @@
 import { useAuthStore } from '@/store/authStore'
 import { useFranchiseStore } from '@/store/franchiseStore'
 import { useMatch } from '@/hooks/useMatch'
-import { useStandings } from '@/hooks/useStandings'
-import { Card, CardContent } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Skeleton } from '@/components/ui/Skeleton'
-import { Trophy, TrendingUp, Users, ArrowRight, Activity, Calendar } from 'lucide-react'
+import { Shield, CloudRain, Info, ChevronRight } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 export function DashboardPage() {
   const { user } = useAuthStore()
-  const { franchise, league } = useFranchiseStore()
+  const { franchise } = useFranchiseStore()
   const { match, isLoading: isMatchLoading } = useMatch()
-  const { standings, isLoading: isStandingsLoading } = useStandings(league?.id)
   const navigate = useNavigate()
 
-  const myStanding = standings?.find(s => s.user_id === user?.id)
-  const rank = standings?.findIndex(s => s.user_id === user?.id) ?? -1
-
   return (
-    <div className="space-y-6">
-      {/* Hero Header */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-accent to-accent-hover p-6 shadow-xl shadow-accent/20">
-        <div className="absolute -right-4 -top-12 opacity-10">
-          <Trophy className="h-48 w-48" />
-        </div>
-        <div className="relative z-10">
-          <span className="mb-2 inline-block rounded-full bg-white/20 px-3 py-1 text-xs font-semibold tracking-wider text-white backdrop-blur-sm">
-            SEZON 1 • {league?.name || 'Global Lig'}
-          </span>
-          <h1 className="mb-1 text-3xl font-bold text-white md:text-4xl">
-            Hoş Geldin, <br /> {franchise?.team_name || user?.username}
-          </h1>
-          <p className="max-w-[80%] text-sm font-medium text-white/80">
-            Takımını kur, taktiklerini ayarla ve şampiyonluğa yürü.
-          </p>
-        </div>
-      </section>
-
-      {/* Quick Stats Grid */}
-      <section className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <Card className="bg-primary-light border-none">
-          <CardContent className="p-4 flex flex-col items-center justify-center text-center">
-            <Trophy className="h-6 w-6 text-yellow-400 mb-2" />
-            <div className="text-xs text-text-dim font-medium uppercase tracking-wider mb-1">Lig Sırası</div>
-            <div className="text-2xl font-bold text-white">{rank !== -1 ? `${rank + 1}.` : '-'}</div>
-          </CardContent>
-        </Card>
+    <div className="space-y-4 pt-4">
+      
+      {/* 1. OSM Style Match Banner */}
+      <div className="relative w-full rounded-xl bg-gradient-to-b from-[#004b93]/90 to-[#001f40]/90 border border-[#005c99] shadow-2xl overflow-hidden p-6">
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20"></div>
         
-        <Card className="bg-primary-light border-none">
-          <CardContent className="p-4 flex flex-col items-center justify-center text-center">
-            <TrendingUp className="h-6 w-6 text-green-400 mb-2" />
-            <div className="text-xs text-text-dim font-medium uppercase tracking-wider mb-1">Puan</div>
-            <div className="text-2xl font-bold text-white">{myStanding?.points || 0}</div>
-          </CardContent>
-        </Card>
+        {/* Header */}
+        <div className="relative z-10 flex flex-col items-center mb-6">
+          <div className="bg-[#00254c] border-2 border-[#005c99] rounded px-4 py-1 mb-2 shadow-lg">
+            <span className="text-white font-display font-bold uppercase tracking-widest text-sm">MAÇ GÜNÜ 6</span>
+          </div>
+          <span className="text-white font-bold text-sm tracking-wide">Sıradaki maç</span>
+          <span className="text-white font-display font-bold text-3xl drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">06s 35d 31s</span>
+        </div>
 
-        <Card className="bg-primary-light border-none col-span-2">
-          <CardContent className="p-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="bg-accent/20 p-2 rounded-lg">
-                <Users className="h-6 w-6 text-accent" />
-              </div>
-              <div className="text-left">
-                <div className="text-xs text-text-dim font-medium uppercase tracking-wider mb-0.5">Mevcut Kadro</div>
-                <div className="text-lg font-bold text-white">45 / 53</div>
+        {/* VS Section */}
+        <div className="relative z-10 flex items-center justify-between max-w-2xl mx-auto px-4">
+          
+          {/* Home Team */}
+          <div className="flex flex-col items-center w-1/3">
+            <div className="relative">
+              <Shield className="h-28 w-28 text-purple-600 drop-shadow-[0_0_15px_rgba(147,51,234,0.6)]" fill="currentColor" />
+              <div className="absolute -bottom-2 -right-2 bg-[#00152b] rounded-full p-1 border border-gray-600">
+                <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=Eyupspor`} className="w-8 h-8 rounded-full" />
               </div>
             </div>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/roster')}>
-              Yönet <ArrowRight className="ml-1 h-4 w-4" />
-            </Button>
-          </CardContent>
-        </Card>
-      </section>
+            <div className="text-white font-display font-bold text-lg mt-4 uppercase tracking-wide">EYÜPSPOR</div>
+            <div className="flex gap-1 mt-2">
+              <span className="w-4 h-4 rounded-full bg-red-600 text-[10px] flex items-center justify-center font-bold text-white shadow">M</span>
+              <span className="w-4 h-4 rounded-full bg-red-600 text-[10px] flex items-center justify-center font-bold text-white shadow">M</span>
+              <span className="w-4 h-4 rounded-full bg-gray-500 text-[10px] flex items-center justify-center font-bold text-white shadow">B</span>
+              <span className="w-4 h-4 rounded-full bg-red-600 text-[10px] flex items-center justify-center font-bold text-white shadow">M</span>
+            </div>
+          </div>
 
-      {/* Next Match Panel */}
-      <section>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-bold flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-accent" />
-            Sıradaki Karşılaşma
-          </h2>
+          {/* VS */}
+          <div className="flex flex-col items-center justify-center">
+            <div className="text-6xl font-display font-black text-[#00152b] drop-shadow-[0_2px_4px_rgba(255,255,255,0.2)]" style={{ WebkitTextStroke: '2px #00a2ff' }}>VS</div>
+            <div className="flex items-center gap-2 mt-8 bg-[#00152b]/50 px-3 py-1 rounded-full border border-white/10">
+              <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=referee`} className="w-6 h-6 rounded-full" />
+              <CloudRain className="h-5 w-5 text-blue-300" />
+            </div>
+            <div className="text-center mt-2">
+              <div className="text-white/60 text-xs uppercase tracking-wider font-bold">Hakem</div>
+              <div className="text-white text-sm font-bold">Cihan Aydın</div>
+            </div>
+          </div>
+
+          {/* Away Team */}
+          <div className="flex flex-col items-center w-1/3">
+            <div className="relative">
+              <div className="absolute -top-4 -left-4 bg-[#00152b] rounded-full w-8 h-8 flex items-center justify-center border border-[#005c99] text-white font-bold text-xs shadow-lg">74</div>
+              <Shield className="h-28 w-28 text-accent drop-shadow-[0_0_15px_rgba(255,156,0,0.6)]" fill="currentColor" />
+              <div className="absolute -bottom-2 -right-2 bg-[#00152b] rounded-full p-1 border border-gray-600">
+                <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username}`} className="w-8 h-8 rounded-full" />
+              </div>
+            </div>
+            <div className="text-white font-display font-bold text-lg mt-4 uppercase tracking-wide text-center">İSTANBUL BAŞAKŞEHİR</div>
+            <div className="text-[#00a2ff] text-xs font-bold">🇹🇷 {user?.username}</div>
+            <div className="flex gap-1 mt-2">
+              <span className="w-4 h-4 rounded-full bg-green-500 text-[10px] flex items-center justify-center font-bold text-white shadow">G</span>
+              <span className="w-4 h-4 rounded-full bg-green-500 text-[10px] flex items-center justify-center font-bold text-white shadow">G</span>
+              <span className="w-4 h-4 rounded-full bg-gray-500 text-[10px] flex items-center justify-center font-bold text-white shadow">B</span>
+              <span className="w-4 h-4 rounded-full bg-gray-500 text-[10px] flex items-center justify-center font-bold text-white shadow">B</span>
+            </div>
+          </div>
+
         </div>
+      </div>
+
+      {/* 2. OSM Quick Actions Layout */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         
-        {isMatchLoading ? (
-          <Skeleton className="h-32 w-full rounded-2xl bg-white/5" />
-        ) : match ? (
-          <Card className="relative overflow-hidden border-accent/20 bg-gradient-to-r from-primary-light to-surface">
-            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
-            <CardContent className="relative p-6">
-              <div className="flex items-center justify-between">
-                
-                {/* Home Team */}
-                <div className="flex flex-col items-center w-1/3">
-                  <div className="h-14 w-14 rounded-full bg-surface shadow-inner flex items-center justify-center border-2 border-white/10 mb-2">
-                    <Shield className="h-7 w-7 text-text-dim" />
-                  </div>
-                  <div className="text-sm font-bold text-center leading-tight">
-                    {match.home_franchise_id === franchise?.id ? 'SENİN TAKIMIN' : `Takım ${match.home_franchise_id.slice(0,4)}`}
-                  </div>
-                </div>
+        {/* Antrenman */}
+        <div className="bg-gradient-to-br from-[#003366] to-[#001f40] border border-[#004b93] rounded-xl p-4 flex items-center justify-between cursor-pointer hover:brightness-110 transition shadow-lg" onClick={() => navigate('/training')}>
+          <div className="flex items-center gap-4">
+            <img src="https://api.dicebear.com/7.x/shapes/svg?seed=cone&backgroundColor=00a2ff" className="w-12 h-12 rounded" />
+            <div>
+              <div className="text-accent text-xs font-bold uppercase tracking-wider mb-1">ANTRENMAN</div>
+              <div className="text-white font-display font-bold text-lg uppercase">ANTRENÖR MÜSAİT</div>
+            </div>
+          </div>
+          <ChevronRight className="text-white/50 w-6 h-6" />
+        </div>
 
-                {/* VS */}
-                <div className="flex flex-col items-center justify-center px-4">
-                  <div className="text-2xl font-black italic text-accent drop-shadow-[0_0_8px_rgba(232,93,4,0.5)]">VS</div>
-                  <div className="text-[10px] text-text-dim mt-1 uppercase tracking-widest font-semibold bg-white/5 px-2 py-0.5 rounded-full">Bu Gece</div>
+        {/* Maç Hazırlığı */}
+        <div className="bg-gradient-to-br from-[#003366] to-[#001f40] border border-[#004b93] rounded-xl p-4 flex items-center justify-between cursor-pointer hover:brightness-110 transition shadow-lg" onClick={() => navigate('/roster')}>
+          <div className="flex items-center gap-4">
+            <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=sad_player`} className="w-12 h-12 bg-white/10 rounded" />
+            <div className="flex-1 w-full">
+              <div className="text-accent text-xs font-bold uppercase tracking-wider mb-1">MAÇ HAZIRLIĞI</div>
+              <div className="flex items-center gap-3">
+                <div className="h-3 w-24 bg-red-900 rounded-full overflow-hidden border border-red-500">
+                  <div className="h-full bg-red-500 w-1/4"></div>
                 </div>
-
-                {/* Away Team */}
-                <div className="flex flex-col items-center w-1/3">
-                  <div className="h-14 w-14 rounded-full bg-surface shadow-inner flex items-center justify-center border-2 border-white/10 mb-2">
-                    <Shield className="h-7 w-7 text-text-dim" />
-                  </div>
-                  <div className="text-sm font-bold text-center leading-tight">
-                    {match.away_franchise_id === franchise?.id ? 'SENİN TAKIMIN' : `Takım ${match.away_franchise_id.slice(0,4)}`}
-                  </div>
-                </div>
-
+                <span className="text-white font-bold text-sm uppercase">KRİTİK</span>
               </div>
-              
-              <div className="mt-6 flex gap-2">
-                <Button className="w-full" onClick={() => navigate('/tactics')}>Taktik Belirle</Button>
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card className="border-dashed border-white/20 bg-white/5">
-            <CardContent className="flex flex-col items-center justify-center p-8 text-center">
-              <Activity className="h-8 w-8 text-text-dim mb-3 opacity-50" />
-              <p className="text-text-dim font-medium">Şu an planlanmış bir maçınız bulunmuyor.</p>
-              <p className="text-xs text-text-dim/70 mt-1">Sistem yakında fikstürü güncelleyecektir.</p>
-            </CardContent>
-          </Card>
-        )}
-      </section>
-      
-      <br/><br/>
+            </div>
+          </div>
+          <Info className="text-green-400 w-5 h-5 absolute top-2 right-2" />
+        </div>
+
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        
+        {/* Promo / Shop Ad */}
+        <div className="bg-gradient-to-r from-purple-600 to-indigo-800 rounded-xl p-4 flex flex-col justify-between cursor-pointer shadow-lg border border-purple-400/50">
+          <div className="flex justify-between items-start">
+            <div className="bg-white text-purple-800 font-black text-xl px-2 py-1 rounded shadow-lg italic">85+</div>
+            <div className="bg-green-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-white">!</div>
+          </div>
+          <div className="mt-4">
+            <div className="bg-black/30 text-white text-xs text-center font-bold py-1 rounded">0/3 GÖREV</div>
+          </div>
+        </div>
+
+        {/* Dostluk Maçları */}
+        <div className="bg-gradient-to-br from-[#003366] to-[#001f40] border border-[#004b93] rounded-xl p-4 flex items-center gap-4 cursor-pointer hover:brightness-110 transition shadow-lg md:col-span-1">
+          <div className="flex justify-center w-12">
+            <div className="w-0 h-0 border-l-[15px] border-l-transparent border-r-[15px] border-r-transparent border-t-[20px] border-t-yellow-400 drop-shadow-[0_0_5px_rgba(250,204,21,0.8)]"></div>
+          </div>
+          <div>
+            <div className="text-accent font-display font-bold text-lg uppercase tracking-wider">DOSTLUK MAÇLARI</div>
+            <div className="text-white text-xs font-bold uppercase mt-1">LİGİNDEKİ DİĞER KULÜPLERE KARŞI DOSTLUK MAÇI OYNA</div>
+          </div>
+        </div>
+
+        {/* Transfer Listesi */}
+        <div className="bg-gradient-to-br from-[#003366] to-[#001f40] border border-[#004b93] rounded-xl p-4 flex items-center justify-between cursor-pointer hover:brightness-110 transition shadow-lg md:col-span-1" onClick={() => navigate('/market')}>
+           <div className="flex items-center gap-4">
+            <div className="bg-white rounded p-2 relative">
+              <div className="w-6 h-6 border-2 border-gray-300"></div>
+              <div className="absolute -top-1 -right-1 bg-red-500 w-4 h-4 rounded-full text-white flex items-center justify-center text-[10px] font-bold">1</div>
+            </div>
+            <div>
+              <div className="text-[#00a2ff] font-display font-bold text-lg uppercase tracking-wider">TRANSFER LİSTESİ</div>
+              <div className="text-white text-xs font-bold uppercase mt-1">ÖZEL TEKLİF VAR</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
     </div>
   )
 }
