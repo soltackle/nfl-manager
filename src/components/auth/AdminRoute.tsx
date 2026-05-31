@@ -14,7 +14,7 @@ export function AdminRoute() {
   }
 
   if (!user || profile?.role !== 'admin') {
-    return <Navigate to="/dashboard" replace />
+    return <Navigate to="/slots" replace />
   }
 
   return <Outlet />

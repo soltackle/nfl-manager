@@ -28,15 +28,42 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 // Guard for pages that require an active franchise
 function FranchiseRoute({ children }: { children: React.ReactNode }) {
-  const { activeFranchiseId } = useFranchiseStore()
+  const { activeFranchiseId, franchise } = useFranchiseStore()
   if (!activeFranchiseId) return <Navigate to="/slots" replace />
+  
+  // Franchise ID set but data not loaded yet → show loading
+  if (!franchise) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#001021] text-white">
+        <div className="text-center">
+          <div className="w-10 h-10 border-4 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white/60 font-bold uppercase text-sm">Yükleniyor...</p>
+        </div>
+      </div>
+    )
+  }
+  
   return <>{children}</>
 }
 
 // Guard for game pages (Dashboard, Roster etc) to ensure league has started
 function GameRoute({ children }: { children: React.ReactNode }) {
   const { activeFranchiseId, franchise, league } = useFranchiseStore()
-  if (!activeFranchiseId || !franchise || !league) return <Navigate to="/slots" replace />
+  
+  // No franchise selected at all → go to slots
+  if (!activeFranchiseId) return <Navigate to="/slots" replace />
+  
+  // Franchise ID is set but data not loaded yet → show loading (don't redirect!)
+  if (!franchise || !league) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#001021] text-white">
+        <div className="text-center">
+          <div className="w-10 h-10 border-4 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white/60 font-bold uppercase text-sm">Lig Yükleniyor...</p>
+        </div>
+      </div>
+    )
+  }
   
   if (franchise.team_name.endsWith(' Team')) {
     return <Navigate to="/setup" replace />
