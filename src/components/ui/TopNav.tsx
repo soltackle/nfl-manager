@@ -47,7 +47,7 @@ export function TopNav() {
             <span className="font-bold text-sm text-white">{franchise?.club_fund ? `${(franchise.club_fund / 1000000).toFixed(1)}M` : '0M'}</span>
           </div>
 
-          <div className="flex items-center gap-2 cursor-pointer hover:bg-white/5 p-1 rounded-lg transition-colors ml-2">
+          <div className="flex items-center gap-2 cursor-pointer hover:bg-white/5 p-1 rounded-lg transition-colors ml-2 group">
             <div className="text-right hidden sm:block">
               <div className="font-bold text-sm leading-tight">{profile?.username || user?.user_metadata?.username || 'Menajer'}</div>
               <div className="flex items-center justify-end gap-1 mt-0.5">
@@ -59,7 +59,18 @@ export function TopNav() {
                 <div className="text-[10px] text-gray-400 font-bold bg-[#00152b] inline-block px-1.5 rounded">LVL {profile?.manager_xp ? Math.floor(profile.manager_xp / 100) + 1 : 1}</div>
               </div>
             </div>
-            <UserCircle className="h-8 w-8 text-white" />
+            
+            <div className="relative">
+              <UserCircle className="h-8 w-8 text-white" />
+              <div className="absolute right-0 top-full mt-2 w-48 bg-[#00152b] border border-[#004b93] rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 overflow-hidden">
+                <NavLink to="/slots" className="block px-4 py-3 text-sm text-white font-bold hover:bg-[#003366] transition-colors border-b border-[#004b93]">
+                  🔄 Kariyer Değiştir
+                </NavLink>
+                <div className="px-4 py-3 text-sm text-red-400 font-bold hover:bg-red-500/20 transition-colors cursor-pointer" onClick={() => useAuthStore.getState().signOut()}>
+                  Çıkış Yap
+                </div>
+              </div>
+            </div>
           </div>
 
         </div>
