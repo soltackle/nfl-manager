@@ -3,13 +3,53 @@ import { useDepthChart } from '@/hooks/useDepthChart'
 import { useRoster } from '@/hooks/useRoster'
 import { useFranchiseStore } from '@/store/franchiseStore'
 import { supabase } from '@/lib/supabase'
-import { Shield, Save, X, GripVertical, AlertTriangle } from 'lucide-react'
+import { Shield, Save, X, GripVertical, AlertTriangle, Plus } from 'lucide-react'
 import { Skeleton } from '@/components/ui/Skeleton'
 
-const OFF_SLOTS = ['QB1', 'QB2', 'RB1', 'RB2', 'WR1', 'WR2', 'WR3', 'WR4', 'TE1', 'TE2', 'OL1', 'OL2']
-const DEF_SLOTS = ['DE1', 'DE2', 'LB1', 'LB2', 'LB3', 'CB1', 'CB2', 'S1']
-const ST_SLOTS = ['K1', 'P1']
-const PS_SLOTS = ['PS1', 'PS2', 'PS3']
+const PITCH_SLOTS: Record<string, string[]> = {
+  'OFF': ['QB1', 'RB1', 'WR1', 'WR2', 'WR3', 'TE1', 'OL1', 'OL2'],
+  'DEF': ['DE1', 'DE2', 'LB1', 'LB2', 'LB3', 'CB1', 'CB2', 'S1'],
+  'ST': ['K1', 'P1'],
+  'PS': ['PS1', 'PS2', 'PS3']
+}
+
+const BENCH_SLOTS: Record<string, string[]> = {
+  'OFF': ['QB2', 'RB2', 'WR4', 'TE2'],
+  'DEF': [],
+  'ST': [],
+  'PS': []
+}
+
+const slotCoordinates: Record<string, { top: string, left: string }> = {
+  // OFFENSE (Attacking right. Left side is our backfield)
+  'OFF_QB1': { top: '50%', left: '25%' },
+  'OFF_RB1': { top: '50%', left: '12%' },
+  'OFF_OL1': { top: '35%', left: '38%' },
+  'OFF_OL2': { top: '65%', left: '38%' },
+  'OFF_TE1': { top: '20%', left: '42%' },
+  'OFF_WR1': { top: '10%', left: '55%' },
+  'OFF_WR2': { top: '90%', left: '55%' },
+  'OFF_WR3': { top: '25%', left: '50%' },
+  
+  // DEFENSE (Defending left. Right side is their backfield)
+  'DEF_DE1': { top: '35%', left: '62%' },
+  'DEF_DE2': { top: '65%', left: '62%' },
+  'DEF_LB1': { top: '20%', left: '45%' },
+  'DEF_LB2': { top: '50%', left: '48%' },
+  'DEF_LB3': { top: '80%', left: '45%' },
+  'DEF_CB1': { top: '15%', left: '75%' },
+  'DEF_CB2': { top: '85%', left: '75%' },
+  'DEF_S1': { top: '50%', left: '25%' },
+  
+  // ST
+  'ST_K1': { top: '40%', left: '50%' },
+  'ST_P1': { top: '60%', left: '50%' },
+  
+  // PS
+  'PS_PS1': { top: '30%', left: '50%' },
+  'PS_PS2': { top: '50%', left: '50%' },
+  'PS_PS3': { top: '70%', left: '50%' }
+}
 
 const getBasePosition = (slotName: string) => {
   return slotName.replace(/\d+$/, '') // "QB1" -> "QB"
@@ -24,16 +64,11 @@ export function DepthChartPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [captain, setCaptain] = useState<string | null>(null)
   
-  // localDc mapping: "OFF_QB1" -> "player-uuid"
   const [localDc, setLocalDc] = useState<Record<string, string | null>>({})
 
-  // Initialize from DB
   useEffect(() => {
     if (depthChart && depthChart.length > 0) {
       const initial: Record<string, string | null> = {}
-      // We stored things with key unit_pos_index in the old version, but now it's unit_slot.
-      // Wait, DB has: unit, position.
-      // Let's adapt old data to new slots or just reset if incompatible, but let's try mapping:
       const counts: Record<string, number> = {}
       depthChart.forEach(dc => {
         const key = `${dc.unit}_${dc.position}`
@@ -67,10 +102,10 @@ export function DepthChartPage() {
       })
     }
 
-    fillSlots(OFF_SLOTS, 'OFF')
-    fillSlots(DEF_SLOTS, 'DEF')
-    fillSlots(ST_SLOTS, 'ST')
-    fillSlots(PS_SLOTS, 'PS')
+    ['OFF', 'DEF', 'ST', 'PS'].forEach(unit => {
+      fillSlots(PITCH_SLOTS[unit], unit)
+      fillSlots(BENCH_SLOTS[unit], unit)
+    })
 
     setLocalDc(newDc)
   }
@@ -111,13 +146,11 @@ export function DepthChartPage() {
   const getPlayerDetails = (id: string) => {
     const hash = id.split('-')[0] || '000'
     const num = parseInt(hash, 16) || 0
-    const form = 60 + (num % 40) // 60% to 99%
-    const isRising = form > 85
-    const isInjured = form < 65
-    return { form, isRising, isInjured }
+    const form = 60 + (num % 40)
+    return { form, isRising: form > 85, isInjured: form < 65 }
   }
 
-  // Drag and Drop Handlers
+  // Drag and Drop
   const handleDragStart = (e: React.DragEvent, playerId: string) => {
     e.dataTransfer.setData('playerId', playerId)
   }
@@ -128,19 +161,12 @@ export function DepthChartPage() {
     if (!draggedPlayerId) return
 
     const newDc = { ...localDc }
-    
-    // Check if player is already somewhere, clear it
-    let existingSlotKey = Object.keys(newDc).find(k => newDc[k] === draggedPlayerId)
-    
-    // Check if target slot is occupied
+    const existingSlotKey = Object.keys(newDc).find(k => newDc[k] === draggedPlayerId)
     const occupantId = newDc[targetSlotKey]
 
-    // Swap logic
     if (occupantId) {
       if (existingSlotKey) {
-        newDc[existingSlotKey] = occupantId // Swap
-      } else {
-        // Player was from the unassigned list, so occupant goes back to unassigned (gets removed from DC)
+        newDc[existingSlotKey] = occupantId
       }
     } else {
       if (existingSlotKey) {
@@ -152,106 +178,219 @@ export function DepthChartPage() {
     setLocalDc(newDc)
   }
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault() // Required to allow drop
-  }
+  const handleDragOver = (e: React.DragEvent) => { e.preventDefault() }
 
-  const removePlayerFromSlot = (slotKey: string) => {
+  const removePlayer = (slotKey: string) => {
     const newDc = { ...localDc }
     newDc[slotKey] = null
     setLocalDc(newDc)
   }
 
-  if (isDcLoading || isRosterLoading || !roster) return (
-    <div className="space-y-4 pt-4">
-      <Skeleton className="h-12 w-full bg-white/5" />
-      <Skeleton className="h-[400px] w-full bg-white/5" />
-    </div>
-  )
-
-  // Calculate out-of-position penalties
   const getPenalty = (realPos: string, slotPos: string) => {
-    if (slotPos === 'PS') return 0 // PS allows any position
-    if (realPos === slotPos) return 0
+    if (slotPos === 'PS' || realPos === slotPos) return 0
     if ((realPos === 'WR' && slotPos === 'TE') || (realPos === 'TE' && slotPos === 'WR')) return 15
     if (realPos === 'RB' && slotPos === 'WR') return 20
     if ((realPos === 'DE' || realPos === 'DT') && slotPos === 'LB') return 10
     if (realPos === 'LB' && (slotPos === 'DE' || slotPos === 'DT')) return 10
-    return 50 // Invalid match
+    return 50
   }
 
-  const activeSlots = 
-    activeTab === 'OFF' ? OFF_SLOTS :
-    activeTab === 'DEF' ? DEF_SLOTS :
-    activeTab === 'ST' ? ST_SLOTS : PS_SLOTS
+  if (isDcLoading || isRosterLoading || !roster) return (
+    <div className="space-y-4 pt-4 max-w-6xl mx-auto">
+      <Skeleton className="h-12 w-full bg-white/5" />
+      <Skeleton className="h-[600px] w-full bg-white/5" />
+    </div>
+  )
 
-  // Filter available players for the left list based on the active tab's allowed positions
   const allowedPositionsForTab = 
     activeTab === 'OFF' ? ['QB', 'RB', 'WR', 'TE', 'OL'] :
     activeTab === 'DEF' ? ['DE', 'DT', 'LB', 'CB', 'S'] :
-    activeTab === 'ST' ? ['K', 'P'] : [] // PS allows all
+    activeTab === 'ST' ? ['K', 'P'] : []
 
   const unassignedPlayers = roster.filter(p => {
     const isAssigned = Object.values(localDc).includes(p.id)
     if (isAssigned) return false
-    if (activeTab === 'PS') return true // PS can take anyone
+    if (activeTab === 'PS') return true
     return allowedPositionsForTab.includes(p.position)
   }).sort((a, b) => b.overall - a.overall)
 
-  return (
-    <div className="space-y-4 pt-4 max-w-6xl mx-auto pb-20">
+  const renderSlot = (slotName: string, isPitch: boolean) => {
+    const slotKey = `${activeTab}_${slotName}`
+    const playerId = localDc[slotKey]
+    const player = roster?.find(r => r.id === playerId)
+    const coords = slotCoordinates[slotKey] || { top: '50%', left: '50%' }
+    const basePos = getBasePosition(slotName)
+
+    let penalty = 0
+    let battleIndicator = false
+    let isInjured = false
+
+    if (player) {
+      penalty = getPenalty(player.position, basePos)
+      const details = getPlayerDetails(player.id)
+      isInjured = details.isInjured
       
+      const bestBackup = unassignedPlayers.find(p => p.position === player.position)
+      if (bestBackup && (player.overall - bestBackup.overall < 5) && player.overall >= bestBackup.overall) {
+        battleIndicator = true
+      }
+    }
+
+    return (
+      <div
+        key={slotKey}
+        onDragOver={handleDragOver}
+        onDrop={(e) => handleDrop(e, slotKey)}
+        draggable={!!player}
+        onDragStart={player ? (e) => handleDragStart(e, player.id) : undefined}
+        className={`
+          ${isPitch ? 'absolute -translate-x-1/2 -translate-y-1/2' : 'relative flex-shrink-0'}
+          w-[72px] sm:w-[84px] transition-transform hover:scale-105 z-10
+        `}
+        style={isPitch ? { top: coords.top, left: coords.left } : {}}
+      >
+        {player ? (
+          <div className="bg-gradient-to-b from-[#003b73] to-[#00152b] rounded-lg border-2 border-accent shadow-xl text-center overflow-hidden cursor-grab active:cursor-grabbing group">
+             {/* Position Header */}
+             <div className="bg-accent text-[#001021] text-[10px] font-black w-full text-center tracking-widest uppercase">
+               {slotName}
+             </div>
+             
+             {/* Player Info */}
+             <div className="py-1.5 px-1 relative">
+               <div className="text-[9px] sm:text-[10px] font-bold text-white/90 truncate leading-tight">
+                 {player.name.split(' ').slice(1).join(' ') || player.name}
+               </div>
+               <div className={`text-xl sm:text-2xl font-display font-black leading-none mt-1 ${penalty > 0 ? 'text-red-400' : 'text-white'}`}>
+                 {penalty > 0 ? player.overall - Math.floor(player.overall * penalty / 100) : player.overall}
+               </div>
+               
+               {/* Badges/Icons absolute overlay */}
+               {captain === player.id && <div className="absolute bottom-1 right-1 w-4 h-4 bg-yellow-400 rounded-full text-[#001021] text-[9px] font-black flex items-center justify-center">C</div>}
+               {isInjured && <div className="absolute top-1 right-1 w-3 h-3 bg-red-500 rounded-full flex items-center justify-center"><X className="w-2 h-2 text-white"/></div>}
+             </div>
+             
+             {/* Battle / Penalty Indicator Strip */}
+             {(penalty > 0 || battleIndicator) && (
+               <div className={`text-[8px] font-bold py-0.5 text-center ${penalty > 0 ? 'bg-red-500 text-white' : 'bg-orange-500 text-white'}`}>
+                 {penalty > 0 ? `-${penalty}% OVR` : '⚔️ SAVAŞ'}
+               </div>
+             )}
+
+             {/* Remove Button (Hover) */}
+             <button 
+               onClick={(e) => { e.stopPropagation(); removePlayer(slotKey); }} 
+               className="hidden group-hover:flex absolute -top-2 -right-2 bg-red-500 rounded-full w-5 h-5 items-center justify-center text-white shadow-lg"
+             >
+               <X className="w-3 h-3" />
+             </button>
+          </div>
+        ) : (
+          <div className="bg-[#001021]/60 rounded-lg border-2 border-dashed border-white/20 h-[80px] sm:h-[90px] flex flex-col items-center justify-center text-center hover:border-accent/50 hover:bg-[#00152b]/80 transition-colors">
+             <div className="text-white/40 text-[11px] font-black uppercase tracking-wider">{slotName}</div>
+             <Plus className="w-5 h-5 text-white/20 mt-1" />
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  return (
+    <div className="pt-4 max-w-7xl mx-auto pb-20 px-4">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 bg-[#00152b]/80 p-4 rounded-xl border border-[#005c99]/30 gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 bg-[#00152b]/80 p-4 rounded-xl border border-[#005c99]/30">
         <div className="flex items-center gap-3">
           <Shield className="h-8 w-8 text-accent" />
           <div>
-            <h1 className="text-xl font-display font-bold text-white tracking-wider">İLK 11 VE KADRO (DEPTH CHART)</h1>
-            <p className="text-white/60 text-xs font-bold uppercase">Sürükle bırak ile sahaya çıkacak kadroyu belirleyin</p>
+            <h1 className="text-xl font-display font-bold text-white tracking-wider">İLK 11 VE YEDEKLER</h1>
+            <p className="text-white/60 text-xs font-bold uppercase">Sürükle-bırak ile sahaya oyuncu yerleştirin</p>
           </div>
         </div>
-        <button 
-          onClick={handleAutoFill}
-          className="px-4 py-2 bg-[#00254c] border border-accent text-accent font-bold text-xs rounded hover:bg-accent hover:text-[#00152b] transition-colors"
-        >
-          EN İYİLERİ SEÇ (OTO DOLDUR)
-        </button>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex gap-2 bg-[#00152b] p-1 rounded-lg border border-white/5 overflow-x-auto hide-scrollbar">
-        {[
-          { id: 'OFF', label: `HÜCUM (${OFF_SLOTS.length})` },
-          { id: 'DEF', label: `SAVUNMA (${DEF_SLOTS.length})` },
-          { id: 'ST', label: `ÖZEL (${ST_SLOTS.length})` },
-          { id: 'PS', label: `PRACTICE SQUAD (${PS_SLOTS.length})` }
-        ].map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
-            className={`flex-1 min-w-[120px] text-[10px] sm:text-xs font-bold uppercase py-2 px-2 sm:px-4 rounded transition-all ${
-              activeTab === tab.id 
-                ? 'bg-accent text-[#00152b] shadow-[0_0_10px_rgba(255,156,0,0.5)]' 
-                : 'text-white/50 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            {tab.label}
+        <div className="flex gap-2 mt-4 sm:mt-0">
+          <button onClick={handleAutoFill} className="px-4 py-2 bg-[#00254c] border border-accent text-accent font-bold text-xs rounded hover:bg-accent hover:text-[#00152b] transition-colors">
+            OTO DOLDUR
           </button>
-        ))}
+          <button onClick={handleSave} disabled={isSaving} className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white font-bold text-xs rounded transition-colors flex items-center gap-2">
+            <Save className="w-4 h-4" /> {isSaving ? 'KAYDEDİLİYOR...' : 'KAYDET'}
+          </button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-4">
+      {/* Main Layout Grid */}
+      <div className="flex flex-col lg:flex-row gap-6">
         
-        {/* Left Column: Unassigned Players */}
-        <div className="lg:col-span-5 bg-[#00152b]/50 rounded-xl border border-white/10 p-4 h-[600px] overflow-y-auto hide-scrollbar">
-          <h2 className="text-xs font-bold text-white/50 uppercase mb-4 sticky top-0 bg-[#00152b] py-2">Boştaki Oyuncular (Sürükle)</h2>
-          <div className="space-y-2">
+        {/* Center: Pitch & Bench */}
+        <div className="flex-1 flex flex-col gap-4">
+          
+          {/* Tabs */}
+          <div className="flex gap-2 bg-[#00152b] p-1 rounded-lg border border-white/5 overflow-x-auto hide-scrollbar">
+            {[
+              { id: 'OFF', label: `HÜCUM` },
+              { id: 'DEF', label: `SAVUNMA` },
+              { id: 'ST', label: `ÖZEL` },
+              { id: 'PS', label: `PS` }
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`flex-1 min-w-[80px] text-xs font-bold uppercase py-2.5 px-2 rounded transition-all ${
+                  activeTab === tab.id ? 'bg-accent text-[#00152b] shadow-[0_0_10px_rgba(255,156,0,0.5)]' : 'text-white/50 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* THE PITCH */}
+          <div 
+            className="relative w-full h-[400px] sm:h-[500px] lg:h-[600px] bg-[#00152b] rounded-xl overflow-hidden border-2 border-[#005c99] shadow-[inset_0_0_80px_rgba(0,0,0,0.8)]"
+            style={{
+              backgroundImage: `
+                linear-gradient(to right, rgba(255,255,255,0.08) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px)
+              `,
+              backgroundSize: '10% 20%'
+            }}
+          >
+            {/* Field Decoration */}
+            <div className="absolute inset-0 flex flex-col justify-between py-[10%] opacity-20 pointer-events-none">
+              <div className="w-full border-t border-dashed border-white/50"></div>
+              <div className="w-full border-t-2 border-solid border-white/30"></div>
+              <div className="w-full border-t border-dashed border-white/50"></div>
+            </div>
+            
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 opacity-5 pointer-events-none">
+              <Shield className="w-full h-full text-white" />
+            </div>
+
+            {/* Pitch Slots Map */}
+            {PITCH_SLOTS[activeTab].map(slot => renderSlot(slot, true))}
+          </div>
+
+          {/* BENCH (YEDEKLER) */}
+          {BENCH_SLOTS[activeTab].length > 0 && (
+            <div className="bg-[#00152b]/80 p-4 rounded-xl border border-white/10">
+              <h3 className="text-[10px] sm:text-xs font-bold text-white/50 uppercase mb-3 tracking-widest">Yedek Kulübesi (Bench)</h3>
+              <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-2">
+                {BENCH_SLOTS[activeTab].map(slot => renderSlot(slot, false))}
+              </div>
+            </div>
+          )}
+
+        </div>
+
+        {/* Right Sidebar: Unassigned Players */}
+        <div className="w-full lg:w-80 bg-[#00152b]/80 p-4 rounded-xl border border-white/10 h-[600px] lg:h-auto flex flex-col">
+          <h3 className="text-[10px] sm:text-xs font-bold text-white/50 uppercase mb-3 tracking-widest">Kadro Dışı (Sürükle)</h3>
+          
+          <div className="flex-1 overflow-y-auto space-y-2 hide-scrollbar pr-1">
             {unassignedPlayers.length === 0 ? (
-              <div className="text-center py-8 text-white/30 text-sm font-bold border border-dashed border-white/5 rounded-lg">
-                Tüm oyuncular yerleştirildi veya uygun pozisyon yok.
+              <div className="text-center py-12 text-white/30 text-xs font-bold border border-dashed border-white/5 rounded-lg">
+                Tüm oyuncular yerleştirildi.
               </div>
             ) : unassignedPlayers.map(player => {
-              const { form, isRising, isInjured } = getPlayerDetails(player.id)
+              const { form, isInjured } = getPlayerDetails(player.id)
               return (
                 <div 
                   key={player.id} 
@@ -259,116 +398,36 @@ export function DepthChartPage() {
                   onDragStart={(e) => handleDragStart(e, player.id)}
                   className="flex items-center gap-3 bg-[#001021] p-2 rounded-lg border border-white/5 hover:border-accent/50 cursor-grab active:cursor-grabbing transition-colors group"
                 >
-                  <GripVertical className="w-4 h-4 text-white/20 group-hover:text-accent" />
-                  <div className="w-8 h-8 rounded bg-[#00254c] text-white flex items-center justify-center font-display font-bold text-xs border border-[#005c99]">
-                    {player.position}
+                  <GripVertical className="w-4 h-4 text-white/20 group-hover:text-accent flex-shrink-0" />
+                  
+                  <div className="w-10 h-10 rounded bg-[#00254c] text-white flex flex-col items-center justify-center font-bold border border-[#005c99] flex-shrink-0">
+                    <span className="text-[8px] text-white/50 leading-none">{player.position}</span>
+                    <span className="text-sm font-display leading-tight">{player.overall}</span>
                   </div>
-                  <div className="flex-1">
-                    <div className="text-white text-sm font-bold">{player.overall >= 85 ? '⭐' : ''} {player.name}</div>
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="text-white text-xs sm:text-sm font-bold truncate">
+                      {player.overall >= 85 ? '⭐' : ''} {player.name}
+                    </div>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[10px] text-white/50">OVR: {player.overall}</span>
-                      <span className="text-[10px] bg-white/10 px-1 rounded text-accent">🔥 {form}</span>
-                      {isInjured && <span className="text-[10px] text-red-400">🔒 Kilitli</span>}
+                      <span className="text-[9px] sm:text-[10px] bg-white/10 px-1 rounded text-accent whitespace-nowrap">🔥 Form: {form}</span>
+                      {isInjured && <span className="text-[9px] sm:text-[10px] text-red-400 whitespace-nowrap">🔒 Sakat</span>}
                     </div>
                   </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-
-        {/* Right Column: Depth Chart Slots */}
-        <div className="lg:col-span-7 bg-[#00152b]/50 rounded-xl border border-white/10 p-4 h-[600px] overflow-y-auto hide-scrollbar">
-          <h2 className="text-xs font-bold text-white/50 uppercase mb-4 sticky top-0 bg-[#00152b] py-2">İlk 11 ve Yedek Yuvaları (Bırak)</h2>
-          <div className="space-y-3">
-            {activeSlots.map(slotName => {
-              const slotKey = `${activeTab}_${slotName}`
-              const playerId = localDc[slotKey]
-              const player = roster?.find(r => r.id === playerId)
-              const basePos = getBasePosition(slotName)
-
-              let battleIndicator = false
-              let penalty = 0
-              let details = null
-
-              if (player) {
-                details = getPlayerDetails(player.id)
-                penalty = getPenalty(player.position, basePos)
-
-                // Positional battle logic (if backup OVR is within 5 of starter)
-                // For simplicity, just check if ANY unassigned player in same pos is within 5 OVR
-                const bestBackup = unassignedPlayers.find(p => p.position === player.position)
-                if (bestBackup && (player.overall - bestBackup.overall < 5) && player.overall >= bestBackup.overall) {
-                  battleIndicator = true
-                }
-              }
-
-              return (
-                <div 
-                  key={slotKey}
-                  onDragOver={handleDragOver}
-                  onDrop={(e) => handleDrop(e, slotKey)}
-                  className={`relative flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg border-2 border-dashed transition-all ${
-                    player ? 'bg-gradient-to-r from-[#00254c] to-[#00152b] border-[#004b93]/50 border-solid' : 'bg-transparent border-white/10 hover:border-accent/50 hover:bg-white/5'
-                  }`}
-                >
-                  {/* Slot Label Overlay */}
-                  <div className="absolute -top-2.5 -left-2.5 w-8 h-8 rounded-full bg-accent text-[#001021] flex items-center justify-center font-black text-xs border-2 border-[#001021] shadow-lg z-10">
-                    {slotName}
+                  
+                  {/* Kaptan/Sürpriz Mini Butonlar */}
+                  <div className="flex flex-col gap-1 flex-shrink-0">
+                    {activeTab !== 'PS' && (
+                      <button onClick={() => setCaptain(player.id)} className={`text-[8px] sm:text-[9px] font-bold px-1.5 py-0.5 rounded ${captain === player.id ? 'bg-yellow-400 text-black' : 'bg-white/10 text-white/50 hover:bg-white/20'}`}>
+                        {captain === player.id ? 'KAPTAN' : 'KAPTAN YAP'}
+                      </button>
+                    )}
+                    {activeTab === 'PS' && (
+                      <button onClick={() => alert('Sürpriz seçildi!')} className="text-[8px] sm:text-[9px] font-bold px-1.5 py-0.5 rounded bg-accent/20 text-accent hover:bg-accent hover:text-black">
+                        SÜRPRİZ
+                      </button>
+                    )}
                   </div>
-
-                  {player ? (
-                    <>
-                      <div className="flex items-center gap-4 ml-6 w-full">
-                        <div className="w-10 h-10 rounded flex items-center justify-center font-display font-bold text-sm bg-[#001021] text-white border border-[#005c99]">
-                          {player.position}
-                        </div>
-                        <div className="flex-1">
-                          <div className="text-white font-bold text-sm flex items-center gap-2 flex-wrap">
-                            <span className={penalty > 0 ? 'text-red-400' : ''}>{player.overall >= 85 ? '⭐ ' : ''}{player.name}</span>
-                            {details && (
-                              <>
-                                <span className="text-[10px] bg-white/10 px-1 rounded text-accent">Form: {details.form}</span>
-                                {details.isRising && <span className="text-[10px] bg-green-500/20 text-green-400 px-1 rounded">↑</span>}
-                                {details.isInjured && <span className="text-[10px] bg-red-500/20 text-red-400 px-1 rounded">🔒</span>}
-                                {battleIndicator && (
-                                  <button onClick={() => alert(`${player.name} yerini kaybedebilir! Onaylıyor musunuz? (Demo)`)} className="text-[10px] bg-orange-500/20 text-orange-400 px-1 rounded border border-orange-500/30 hover:bg-orange-500 hover:text-white">
-                                    ⚔️ Savaş!
-                                  </button>
-                                )}
-                                {captain === player.id && <span className="text-[10px] bg-yellow-400 text-[#001021] px-1 rounded font-black">©️ KAPTAN</span>}
-                                {penalty > 0 && <span className="text-[10px] bg-red-500 text-white px-1 rounded flex items-center gap-1"><AlertTriangle className="w-3 h-3"/> -{penalty}% OVR Cezası</span>}
-                              </>
-                            )}
-                          </div>
-                          <div className="text-white/50 text-xs font-bold mt-0.5 flex items-center gap-2">
-                            <span>OVR: <strong className={penalty > 0 ? 'text-red-400 line-through' : 'text-white'}>{player.overall}</strong> {penalty > 0 && <span className="text-red-400">{player.overall - Math.floor(player.overall * penalty / 100)}</span>}</span>
-                            <span>| DEĞER: ${(player.value / 1000000).toFixed(1)}M</span>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-2 mt-2 sm:mt-0 ml-6 sm:ml-0">
-                        {captain !== player.id && activeTab !== 'PS' && (
-                          <button onClick={() => setCaptain(player.id)} className="text-[10px] uppercase font-bold text-white/40 hover:text-yellow-400 px-2 py-1 bg-white/5 hover:bg-white/10 rounded transition-colors whitespace-nowrap">
-                            Kaptan Yap
-                          </button>
-                        )}
-                        {activeTab === 'PS' && (
-                          <button onClick={() => alert('Sürpriz oyuncu olarak işaretlendi! Sakatlık anında +20 adrenalin alacak.')} className="text-[10px] uppercase font-bold text-accent hover:text-white px-2 py-1 bg-accent/10 hover:bg-accent/30 rounded transition-colors border border-accent/20 whitespace-nowrap">
-                            Sürpriz İlan Et
-                          </button>
-                        )}
-                        <button onClick={() => removePlayerFromSlot(slotKey)} className="p-2 text-red-400 hover:bg-red-500/20 rounded">
-                          <X className="w-5 h-5" />
-                        </button>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="flex items-center justify-center w-full h-12 text-white/20 text-xs font-bold uppercase tracking-wider ml-6">
-                      Oyuncuyu Buraya Sürükleyin
-                    </div>
-                  )}
                 </div>
               )
             })}
@@ -376,15 +435,6 @@ export function DepthChartPage() {
         </div>
 
       </div>
-
-      <button 
-        onClick={handleSave} 
-        disabled={isSaving}
-        className="w-full osm-button bg-green-600 hover:bg-green-500 mt-8 py-4 text-lg flex items-center justify-center gap-2"
-      >
-        <Save className="w-6 h-6" />
-        {isSaving ? 'KAYDEDİLİYOR...' : 'KADROYU ONAYLA'}
-      </button>
     </div>
   )
 }
