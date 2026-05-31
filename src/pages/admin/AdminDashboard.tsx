@@ -45,7 +45,7 @@ export function AdminDashboard() {
       // First create a draft session
       const { data: franchises } = await supabase
         .from('franchises')
-        .select('id')
+        .select('id, user_id')
         .eq('league_id', league.id)
         .order('created_at')
       
@@ -60,15 +60,21 @@ export function AdminDashboard() {
         .eq('league_id', league.id)
         .maybeSingle()
 
+      let sessionId = existingSession?.id
+
       if (!existingSession) {
-        const { error: dsErr } = await supabase
+        const { data: newSession, error: dsErr } = await supabase
           .from('draft_sessions')
           .insert({
             league_id: league.id,
             current_round: 1,
             current_pick_franchise_id: franchises[0].id
           })
+          .select()
+          .single()
+          
         if (dsErr) throw dsErr
+        sessionId = newSession.id
       }
 
       // Generate draft pool (free agent players) if not exists
@@ -97,6 +103,24 @@ export function AdminDashboard() {
       // Set league to draft
       const { error } = await supabase.from('leagues').update({ status: 'draft' }).eq('id', league.id)
       if (error) throw error
+
+      // KICKSTART BOT CHAIN REACTION IF FIRST PICK IS A BOT
+      // Although admin is usually franchises[0], just in case:
+      if (!existingSession && sessionId) {
+        const { data: firstOwner } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', franchises[0].user_id)
+          .single()
+          
+        if (firstOwner?.role === 'bot') {
+          // Fire and forget the kickstart
+          supabase.functions.invoke('make-draft-pick', {
+            body: { franchise_id: franchises[0].id, session_id: sessionId, player_id: null }
+          }).catch(console.error)
+        }
+      }
+
       alert('Draft başlatıldı! Şimdi /draft sayfasına gidin.')
     } catch (err: any) {
       alert('Hata: ' + err.message)
