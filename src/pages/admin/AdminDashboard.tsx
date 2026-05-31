@@ -77,22 +77,27 @@ export function AdminDashboard() {
         sessionId = newSession.id
       }
 
-      // Generate draft pool (free agent players) if not exists
+      // Check if global draft pool is getting low
       const { data: poolPlayers } = await supabase
         .from('players')
         .select('id')
         .is('franchise_id', null)
-        .limit(1)
+        .limit(100)
 
-      if (!poolPlayers || poolPlayers.length === 0) {
-        // Create a draft pool of ~100 free agents
+      if (!poolPlayers || poolPlayers.length < 100) {
+        // Create a massive draft pool of realistic American football players
         const positions = ['QB', 'RB', 'WR', 'TE', 'OL', 'DE', 'LB', 'CB', 'S', 'K']
+        const firstNames = ['Tom', 'Patrick', 'Aaron', 'Lamar', 'Josh', 'Joe', 'Justin', 'Jalen', 'Trevor', 'Matthew', 'Russell', 'Kyler', 'Dak', 'Jared', 'Kirk', 'Tua', 'Brock', 'Caleb', 'Jayden', 'Drake', 'Tyreek', 'Justin', 'JaMarr', 'CeeDee', 'A.J.', 'Davante', 'Stefon', 'Cooper', 'Deebo', 'Christian', 'Derrick', 'Saquon', 'Jonathan', 'Breece', 'Bijan', 'Jahmyr', 'Travis', 'George', 'Mark', 'Sam', 'T.J.', 'Myles', 'Micah', 'Nick', 'Maxx', 'Chris', 'Aaron', 'Fred', 'Roquan', 'Sauce', 'Patrick', 'Jalen', 'Minkah', 'Derwin', 'Justin']
+        const lastNames = ['Brady', 'Mahomes', 'Rodgers', 'Jackson', 'Allen', 'Burrow', 'Herbert', 'Hurts', 'Lawrence', 'Stafford', 'Wilson', 'Murray', 'Prescott', 'Goff', 'Cousins', 'Tagovailoa', 'Purdy', 'Williams', 'Daniels', 'Maye', 'Hill', 'Jefferson', 'Chase', 'Lamb', 'Brown', 'Adams', 'Diggs', 'Kupp', 'Samuel', 'McCaffrey', 'Henry', 'Barkley', 'Taylor', 'Hall', 'Robinson', 'Gibbs', 'Kelce', 'Kittle', 'Andrews', 'LaPorta', 'Watt', 'Garrett', 'Parsons', 'Bosa', 'Crosby', 'Jones', 'Donald', 'Warner', 'Smith', 'Gardner', 'Surtain', 'Ramsey', 'Fitzpatrick', 'James', 'Simmons']
+        
         const poolInsert = []
-        for (let i = 0; i < 100; i++) {
+        for (let i = 0; i < 200; i++) {
+          const fn = firstNames[Math.floor(Math.random() * firstNames.length)]
+          const ln = lastNames[Math.floor(Math.random() * lastNames.length)]
           poolInsert.push({
-            name: `FA Player ${i + 1}`,
+            name: `${fn} ${ln}`,
             position: positions[i % positions.length],
-            overall: 55 + Math.floor(Math.random() * 35),
+            overall: 55 + Math.floor(Math.random() * 40),
             value: 50000 + Math.floor(Math.random() * 500000),
             franchise_id: null
           })
