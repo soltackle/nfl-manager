@@ -57,10 +57,52 @@ export function LeagueLobbyPage() {
     setLoading(false)
   }
 
+  const [timeLeft, setTimeLeft] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (members.length === 8 && league?.match_time_utc) {
+      // Calculate once immediately
+      const updateTimer = () => {
+        const now = new Date()
+        const [hours, minutes] = league.match_time_utc.split(':').map(Number)
+        
+        const target = new Date()
+        target.setUTCHours(hours, minutes, 0, 0)
+        
+        if (target.getTime() <= now.getTime()) {
+          // If it's past the time today, target is tomorrow
+          target.setUTCDate(target.getUTCDate() + 1)
+        }
+        
+        const diff = target.getTime() - now.getTime()
+        if (diff <= 0) {
+          setTimeLeft(0)
+        } else {
+          setTimeLeft(diff)
+        }
+      }
+      
+      updateTimer()
+      const interval = setInterval(updateTimer, 1000)
+      return () => clearInterval(interval)
+    } else {
+      setTimeLeft(null)
+    }
+  }, [members.length, league?.match_time_utc])
+
   if (!league || !franchise) return null
 
-  // Draft countdown logic (dummy for now, admin controls it)
-  const isDraftCountdown = false 
+  const isDraftCountdown = members.length === 8
+
+  const formatTime = (ms: number | null) => {
+    if (ms === null) return "00:00"
+    const totalSeconds = Math.floor(ms / 1000)
+    const h = Math.floor(totalSeconds / 3600)
+    const m = Math.floor((totalSeconds % 3600) / 60)
+    const s = totalSeconds % 60
+    if (h > 0) return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+  }
 
   return (
     <div className="min-h-screen bg-[#001021] text-white flex items-center justify-center p-6 relative overflow-hidden">
@@ -79,10 +121,10 @@ export function LeagueLobbyPage() {
         {isDraftCountdown ? (
           <div className="bg-red-500/10 border border-red-500/50 rounded-xl p-6 mb-8 text-center">
             <h2 className="text-xl font-display font-black text-red-500 uppercase tracking-widest mb-2 flex justify-center items-center gap-2">
-              <Clock className="w-6 h-6 animate-pulse" /> DRAFT BAŞLIYOR!
+              <Clock className="w-6 h-6 animate-pulse" /> DRAFT BEKLENİYOR
             </h2>
-            <p className="text-white/70 text-sm font-bold uppercase mb-4">Lütfen sayfadan ayrılmayın, 1 saat içinde draft başlayacaktır.</p>
-            <div className="text-5xl font-mono font-black text-white">59:59</div>
+            <p className="text-white/70 text-sm font-bold uppercase mb-4">Lütfen sayfadan ayrılmayın, belirtilen maç saatinde draft başlayacaktır.</p>
+            <div className="text-5xl font-mono font-black text-white">{formatTime(timeLeft)}</div>
           </div>
         ) : (
           <div className="bg-[#001021] border border-white/5 rounded-xl p-6 mb-8 text-center">
