@@ -15,8 +15,8 @@ export function useDraft() {
       return
     }
 
-    const fetchInitialData = async () => {
-      setIsLoading(true)
+    const fetchInitialData = async (quiet = false) => {
+      if (!quiet) setIsLoading(true)
       try {
         // Get session
         const { data: session } = await supabase
@@ -49,7 +49,7 @@ export function useDraft() {
       } catch (err) {
         console.error('Draft fetch error:', err)
       } finally {
-        setIsLoading(false)
+        if (!quiet) setIsLoading(false)
       }
     }
 
@@ -58,8 +58,8 @@ export function useDraft() {
     // Realtime subscriptions
     const channel = supabase.channel(`draft_room_${franchise.league_id}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'draft_picks' }, () => {
-        // Refresh picks
-        fetchInitialData()
+        // Refresh picks quietly
+        fetchInitialData(true)
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'draft_sessions' }, (payload) => {
         setDraftSession(payload.new)

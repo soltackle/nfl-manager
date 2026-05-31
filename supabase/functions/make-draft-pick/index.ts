@@ -52,43 +52,62 @@ serve(async (req) => {
     let currentRound = session.current_round
     let isHumanRequest = true
 
+    // PRE-FETCH DATA ONCE TO AVOID TIMEOUTS
+    const { data: leagueFranchises } = await supabaseAdmin
+      .from('franchises')
+      .select('id, user_id')
+      .eq('league_id', franchise.league_id)
+      .order('created_at', { ascending: true })
+
+    if (!leagueFranchises) throw new Error('No franchises found')
+
+    const { data: usersData } = await supabaseAdmin
+      .from('users')
+      .select('id, role')
+      .in('id', leagueFranchises.map(f => f.user_id))
+    
+    const userRoleMap = new Map(usersData?.map(u => [u.id, u.role]))
+
+    let { data: available } = await supabaseAdmin
+      .from('players')
+      .select('id, position, overall')
+      .is('franchise_id', null)
+      .order('overall', { ascending: false })
+
+    if (!available) available = []
+
+    // Fetch existing picks to determine pick number accurately
+    const { count: pickCount } = await supabaseAdmin
+      .from('draft_picks')
+      .select('*', { count: 'exact', head: true })
+      .eq('session_id', session_id)
+      
+    let pickNum = (pickCount || 0) + 1
+
     while (true) {
       // 1. Verify franchise
-      const { data: franchiseObj, error: fErr } = await supabaseAdmin
-        .from('franchises')
-        .select('id, league_id, user_id')
-        .eq('id', currentFranchiseId)
-        .single()
-      if (!franchiseObj || fErr) throw new Error('Franchise not found')
+      const franchiseObj = leagueFranchises.find(f => f.id === currentFranchiseId)
+      if (!franchiseObj) throw new Error('Franchise not found')
 
-      const { data: ownerObj } = await supabaseAdmin
-        .from('users')
-        .select('role')
-        .eq('id', franchiseObj.user_id)
-        .single()
+      const ownerRole = userRoleMap.get(franchiseObj.user_id)
 
-      if (isHumanRequest && franchiseObj.user_id !== user.id && ownerObj?.role !== 'bot') {
+      if (isHumanRequest && franchiseObj.user_id !== user.id && ownerRole !== 'bot') {
         throw new Error('Unauthorized franchise')
       }
 
-      // 2. Bot Algorithm: If currentPlayerId is null, find the best pick
+      // 2. Bot Algorithm
       if (!currentPlayerId) {
+        if (available.length === 0) throw new Error('No players available')
+
+        // Fetch roster to determine needs
         const { data: roster } = await supabaseAdmin
           .from('players')
           .select('position, overall')
           .eq('franchise_id', currentFranchiseId)
 
-        const { data: available } = await supabaseAdmin
-          .from('players')
-          .select('id, position, overall')
-          .is('franchise_id', null)
-          .order('overall', { ascending: false })
-
-        if (!available || available.length === 0) throw new Error('No players available')
-
-        const positions = ['QB', 'RB', 'WR', 'TE', 'OL', 'DE', 'LB', 'CB', 'S', 'K']
         const rosterCount: Record<string, number> = {}
         const maxOverall: Record<string, number> = {}
+        const positions = ['QB', 'RB', 'WR', 'TE', 'OL', 'DE', 'LB', 'CB', 'S', 'K']
         
         positions.forEach(p => { rosterCount[p] = 0; maxOverall[p] = 0; })
         if (roster) {
@@ -104,32 +123,22 @@ serve(async (req) => {
         else if (rosterCount['K'] === 0) needPos = 'K'
 
         if (needPos) {
-          const bestNeed = available.find(p => p.position === needPos)
-          if (bestNeed) currentPlayerId = bestNeed.id
+          const bestNeedIndex = available.findIndex(p => p.position === needPos)
+          if (bestNeedIndex !== -1) {
+            currentPlayerId = available[bestNeedIndex].id
+            available.splice(bestNeedIndex, 1) // Remove from pool
+          }
         }
 
         if (!currentPlayerId) {
           currentPlayerId = available[0].id
+          available.splice(0, 1)
         }
+      } else {
+        // Human picked, remove from local pool so subsequent bots don't pick them
+        const pickedIndex = available.findIndex(p => p.id === currentPlayerId)
+        if (pickedIndex !== -1) available.splice(pickedIndex, 1)
       }
-
-      // Verify player is available
-      const { data: player } = await supabaseAdmin
-        .from('players')
-        .select('id')
-        .eq('id', currentPlayerId)
-        .is('franchise_id', null)
-        .single()
-
-      if (!player) throw new Error('Player not available: ' + currentPlayerId)
-
-      // 3. Determine current pick number
-      const { count } = await supabaseAdmin
-        .from('draft_picks')
-        .select('*', { count: 'exact', head: true })
-        .eq('session_id', session_id)
-      
-      const pickNum = (count || 0) + 1
 
       // 4. Insert pick & assign
       await supabaseAdmin.from('draft_picks').insert({
@@ -141,42 +150,39 @@ serve(async (req) => {
       })
       await supabaseAdmin.from('players').update({ franchise_id: currentFranchiseId }).eq('id', currentPlayerId)
 
-      // 5. Calculate next turn
-      const { data: leagueFranchises } = await supabaseAdmin
-        .from('franchises')
-        .select('id, user_id')
-        .eq('league_id', franchiseObj.league_id)
-        .order('created_at', { ascending: true })
+      // Increment local pick number
+      pickNum++
 
+      // 5. Calculate next turn
       let nextIndex = 0
-      const currentIndex = leagueFranchises!.findIndex(f => f.id === currentFranchiseId)
+      const currentIndex = leagueFranchises.findIndex(f => f.id === currentFranchiseId)
       const isEvenRound = currentRound % 2 === 0
       
       if (!isEvenRound) {
-        nextIndex = currentIndex < leagueFranchises!.length - 1 ? currentIndex + 1 : currentIndex
+        nextIndex = currentIndex < leagueFranchises.length - 1 ? currentIndex + 1 : currentIndex
       } else {
         nextIndex = currentIndex > 0 ? currentIndex - 1 : currentIndex
       }
 
       let nextRound = currentRound
-      if ((!isEvenRound && currentIndex === leagueFranchises!.length - 1) || (isEvenRound && currentIndex === 0)) {
+      if ((!isEvenRound && currentIndex === leagueFranchises.length - 1) || (isEvenRound && currentIndex === 0)) {
         nextRound++
       }
 
-      const nextFranchiseObj = leagueFranchises![nextIndex]
+      const nextFranchiseObj = leagueFranchises[nextIndex]
 
       if (nextRound > 8) {
         // Draft is over!
         await supabaseAdmin.from('draft_sessions').delete().eq('id', session_id)
         
-        // Generate Role Players
+        // Generate Role Players in batch if possible, or loop
         const rolePositions = ['QB', 'RB', 'WR', 'TE', 'OL', 'DE', 'LB', 'CB', 'S', 'K', 'OL', 'DE', 'LB', 'CB']
-        for (const lf of leagueFranchises!) {
-          const playersToInsert = []
+        const allRolePlayers = []
+        for (const lf of leagueFranchises) {
           for (let i = 0; i < 14; i++) {
             const pos = rolePositions[i % rolePositions.length]
             const names = ['Role', 'Backup', 'Reserve', 'Bench', 'Squad', 'Practice', 'Depth', 'Sub', 'Rookie', 'Veteran', 'Free Agent', 'Prospect', 'Walk-on', 'Camp']
-            playersToInsert.push({
+            allRolePlayers.push({
               franchise_id: lf.id,
               name: `${names[i]} ${pos}${Math.floor(Math.random() * 99)}`,
               position: pos,
@@ -184,12 +190,12 @@ serve(async (req) => {
               value: 10000 + Math.floor(Math.random() * 40000)
             })
           }
-          await supabaseAdmin.from('players').insert(playersToInsert)
         }
+        await supabaseAdmin.from('players').insert(allRolePlayers) // HUGE optimization
 
         // Generate fixtures and activate
-        await supabaseAdmin.rpc('generate_fixtures', { p_league_id: franchiseObj.league_id })
-        await supabaseAdmin.from('leagues').update({ status: 'active' }).eq('id', franchiseObj.league_id)
+        await supabaseAdmin.rpc('generate_fixtures', { p_league_id: franchise.league_id })
+        await supabaseAdmin.from('leagues').update({ status: 'active' }).eq('id', franchise.league_id)
         break // exit loop
 
       } else {
@@ -200,8 +206,8 @@ serve(async (req) => {
         }).eq('id', session_id)
 
         // Check if next franchise is a bot
-        const { data: nextOwner } = await supabaseAdmin.from('users').select('role').eq('id', nextFranchiseObj.user_id).single()
-        if (nextOwner?.role === 'bot') {
+        const nextOwnerRole = userRoleMap.get(nextFranchiseObj.user_id)
+        if (nextOwnerRole === 'bot') {
           // Loop and pick for bot automatically!
           currentFranchiseId = nextFranchiseObj.id
           currentPlayerId = null // trigger auto-pick
