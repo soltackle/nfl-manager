@@ -140,14 +140,14 @@ export function DepthChartPage() {
     }
   }
 
+  const [captain, setCaptain] = useState<string | null>(null)
+
   if (isDcLoading || isRosterLoading) return (
     <div className="space-y-4 pt-4">
       <Skeleton className="h-12 w-full bg-white/5" />
       <Skeleton className="h-[400px] w-full bg-white/5" />
     </div>
   )
-
-  const [captain, setCaptain] = useState<string | null>(null)
 
   const getPlayerDetails = (id: string) => {
     const hash = id.split('-')[0] || '000'
