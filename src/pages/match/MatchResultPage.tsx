@@ -86,7 +86,7 @@ export function MatchResultPage() {
           setCurrentHomeScore(data.match.home_score)
           setCurrentAwayScore(data.match.away_score)
         }
-      }, 1500)
+      }, 800) // 0.8 seconds per log for faster down-by-down pace
 
       return () => clearInterval(interval)
     }
