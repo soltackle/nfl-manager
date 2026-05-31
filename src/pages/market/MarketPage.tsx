@@ -1,36 +1,39 @@
 import { useState } from 'react'
 import { useMarket } from '@/hooks/useMarket'
-import { useAuthStore } from '@/store/authStore'
 import { useFranchiseStore } from '@/store/franchiseStore'
-import { Card, CardContent } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Badge } from '@/components/ui/Badge'
+import { supabase } from '@/lib/supabase'
+import { ShoppingCart, DollarSign, ArrowRight } from 'lucide-react'
 import { Skeleton } from '@/components/ui/Skeleton'
-import { apiFetch } from '@/lib/api'
 
 export function MarketPage() {
   const { freeAgents, isLoading, mutate } = useMarket()
   const { franchise, setFranchise } = useFranchiseStore()
   const [buyingId, setBuyingId] = useState<string | null>(null)
 
-  if (isLoading) return <Skeleton className="h-[400px] w-full" />
+  if (isLoading) return (
+    <div className="space-y-4 pt-4">
+      <Skeleton className="h-12 w-full bg-white/5" />
+      <Skeleton className="h-[400px] w-full bg-white/5" />
+    </div>
+  )
 
   const handleBuy = async (playerId: string, cost: number) => {
-    if (!franchise || franchise.club_fund < cost) return alert('Yetersiz bütçe')
+    if (!franchise || franchise.club_fund < cost) return alert('Yetersiz bütçe!')
     setBuyingId(playerId)
     try {
-      const res = await apiFetch<{success: boolean, error?: string}>(
-        (('https://rqlurvmugjyvwwqhtirn.supabase.co') || 'https://rqlurvmugjyvwwqhtirn.supabase.co') + '/functions/v1/market-buy',
-        {
-          method: 'POST',
-          body: JSON.stringify({ player_id: playerId })
-        }
-      )
-      if (res.success) {
+      const { data, error } = await supabase.rpc('buy_free_agent', {
+        p_franchise_id: franchise.id,
+        p_player_id: playerId
+      })
+      
+      if (error) throw error
+      
+      if (data && data.success) {
         setFranchise({ ...franchise, club_fund: franchise.club_fund - cost })
         mutate()
+        alert('Oyuncu başarıyla transfer edildi!')
       } else {
-        alert('Hata: ' + res.error)
+        alert('Hata: ' + (data?.error || 'Bilinmeyen hata'))
       }
     } catch (e: any) {
       alert('Hata: ' + e.message)
@@ -40,34 +43,76 @@ export function MarketPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Serbest Oyuncular (FA Market)</h1>
-      <p className="text-sm text-gray-400">Bütçe: ${franchise?.club_fund.toLocaleString()}</p>
+    <div className="space-y-4 pt-4 max-w-4xl mx-auto pb-20">
       
-      <div className="grid gap-3">
-        {freeAgents.map(player => (
-          <Card key={player.id}>
-            <CardContent className="flex items-center justify-between p-4">
-              <div>
-                <div className="font-semibold">{player.name}</div>
-                <div className="text-accent font-bold">${player.value.toLocaleString()}</div>
-              </div>
-              <div className="flex items-center gap-4">
-                <Badge variant={player.position as any}>{player.position}</Badge>
-                <div className="text-xl font-bold">{player.overall}</div>
-                <Button 
-                  size="sm" 
-                  onClick={() => handleBuy(player.id, player.value)}
-                  disabled={buyingId === player.id || (franchise?.club_fund || 0) < player.value}
-                >
-                  {buyingId === player.id ? '...' : 'Al'}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-        {freeAgents.length === 0 && <p className="text-gray-400">Pazarda şu an oyuncu yok.</p>}
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6 bg-[#00152b]/80 p-4 rounded-xl border border-[#005c99]/30">
+        <div className="flex items-center gap-3">
+          <ShoppingCart className="h-8 w-8 text-accent" />
+          <div>
+            <h1 className="text-xl font-display font-bold text-white tracking-wider">TRANSFER PİYASASI</h1>
+            <p className="text-white/60 text-xs font-bold uppercase">Serbest Oyuncular (FA)</p>
+          </div>
+        </div>
+        <div className="text-right">
+          <p className="text-white/60 text-xs font-bold uppercase">KULÜP BÜTÇESİ</p>
+          <p className="text-green-400 font-display font-bold text-lg flex items-center gap-1 justify-end">
+            <DollarSign className="w-4 h-4" />
+            {franchise?.club_fund.toLocaleString()}
+          </p>
+        </div>
       </div>
+
+      {/* Roster List */}
+      <div className="grid gap-3 mt-4">
+        {freeAgents.map(player => (
+          <div 
+            key={player.id} 
+            className="flex flex-col sm:flex-row items-center justify-between bg-gradient-to-r from-[#00254c] to-[#00152b] p-4 rounded-xl border border-[#004b93]/50 hover:border-accent/50 transition-colors gap-4"
+          >
+            <div className="flex items-center gap-4 w-full sm:w-auto">
+              <div className="flex flex-col items-center justify-center w-14 h-14 rounded-full bg-[#001021] border-2 border-accent/50 shadow-[0_0_10px_rgba(255,156,0,0.2)]">
+                <span className="text-white font-display font-bold text-xl leading-none">{player.overall}</span>
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 rounded bg-white/10 text-white text-[10px] font-bold border border-white/20">
+                    {player.position}
+                  </span>
+                  <span className="text-white font-bold text-lg">{player.name}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto mt-2 sm:mt-0">
+              <div className="text-left sm:text-right">
+                <div className="text-white/50 text-[10px] font-bold uppercase">Bonservis Bedeli</div>
+                <div className="text-green-400 font-bold text-lg">
+                  ${(player.value / 1000000).toFixed(1)}M
+                </div>
+              </div>
+              
+              <button 
+                onClick={() => handleBuy(player.id, player.value)}
+                disabled={buyingId === player.id || (franchise?.club_fund || 0) < player.value}
+                className="flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-500 disabled:bg-gray-700 disabled:text-gray-400 text-white font-bold text-sm rounded-lg transition-all"
+              >
+                {buyingId === player.id ? 'İŞLENİYOR...' : 'SATIN AL'}
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        ))}
+        
+        {freeAgents.length === 0 && (
+          <div className="text-center py-16 text-white/50 font-bold border border-dashed border-white/10 rounded-xl">
+            <ShoppingCart className="w-12 h-12 mx-auto mb-4 opacity-50" />
+            <p>Piyasada serbest oyuncu bulunmuyor.</p>
+            <p className="text-sm font-normal mt-2">Admin panelinden pazar yenilemesi bekleyin.</p>
+          </div>
+        )}
+      </div>
+
     </div>
   )
 }

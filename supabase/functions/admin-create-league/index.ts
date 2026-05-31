@@ -86,6 +86,25 @@ serve(async (req) => {
     // Generate roster for Admin
     await generateRoster(adminFranchise.id)
 
+    // Generate 50 Free Agents
+    const generateFreeAgents = async () => {
+      const positions = ['QB', 'RB', 'WR', 'TE', 'OL', 'DE', 'LB', 'CB', 'S', 'K']
+      const playersToInsert = []
+      for (let i = 0; i < 50; i++) {
+        const pos = positions[Math.floor(Math.random() * positions.length)]
+        const overall = Math.floor(Math.random() * 20) + 70 // 70-89 OVR (Good players for market)
+        playersToInsert.push({
+          franchise_id: null,
+          name: `FA ${pos} ${Math.floor(Math.random() * 1000)}`,
+          position: pos,
+          overall: overall,
+          value: overall * 150000 // Free agents cost more
+        })
+      }
+      await supabaseAdmin.from('players').insert(playersToInsert)
+    }
+    await generateFreeAgents()
+
     // 3. Create Bots if Test Modu
     if (mode === 'test') {
       const botNames = ['Bot Alpha', 'Bot Bravo', 'Bot Charlie', 'Bot Delta', 'Bot Echo', 'Bot Foxtrot', 'Bot Golf']
