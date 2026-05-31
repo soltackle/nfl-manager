@@ -117,9 +117,15 @@ export function LeagueLobbyPage() {
         {league.owner_user_id === user?.id && members.length < 8 && (
           <div className="mt-8 pt-6 border-t border-white/10 text-center">
             <p className="text-xs text-accent font-bold uppercase mb-3 flex justify-center items-center gap-2">
-              <ShieldAlert className="w-4 h-4" /> Komisyoner Paneli (Admin Menüsüne Gidiniz)
+              <ShieldAlert className="w-4 h-4" /> Komisyoner Paneli
             </p>
-            <p className="text-[10px] text-white/50">Ligi hemen başlatmak ve boş slotları botlarla doldurmak için lütfen Admin Panelini kullanın.</p>
+            <p className="text-[10px] text-white/50 mb-4">Ligi hemen başlatmak ve boş slotları botlarla doldurmak için lütfen Admin Panelini kullanın.</p>
+            <button 
+              onClick={() => navigate('/admin')}
+              className="bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-6 rounded-lg text-sm transition"
+            >
+              ADMİN PANELİNE GİT
+            </button>
           </div>
         )}
       </div>
