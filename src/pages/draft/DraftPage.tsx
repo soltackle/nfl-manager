@@ -11,6 +11,40 @@ export function DraftPage() {
   const [isPicking, setIsPicking] = useState(false)
   const [timeLeft, setTimeLeft] = useState(10)
 
+  const isMyTurn = draftSession?.current_pick_franchise_id === franchise?.id
+  const filteredPlayers = availablePlayers.filter(p => filter === 'TÜMÜ' || p.position === filter)
+
+  const handlePick = async (playerId: string | null) => {
+    if (!isMyTurn || isPicking) return
+    setIsPicking(true)
+    try {
+      await makePick(playerId)
+    } catch (err: any) {
+      if (playerId) alert('Seçim hatası: ' + err.message)
+      else console.error('Auto-pick hatası: ' + err.message)
+    } finally {
+      setIsPicking(false)
+    }
+  }
+
+  const handleAddTime = async () => {
+    if (!isMyTurn) return
+    if (franchise.club_fund < 15) {
+      return alert('Yeterli AmFutCoin yok!')
+    }
+    
+    // Optimistic UI update
+    setTimeLeft(prev => prev + 10)
+    
+    try {
+      // In a real app we'd call an Edge Function or RPC to deduct funds and sync time.
+      // For this implementation, we deduct locally via RPC for simplicity.
+      await supabase.rpc('deduct_club_fund', { p_franchise_id: franchise.id, p_amount: 15 })
+    } catch (e) {
+      console.error("Time add error", e)
+    }
+  }
+
   // Timer logic
   useEffect(() => {
     if (!draftSession || draftSession.current_pick_franchise_id !== franchise?.id) {
@@ -67,40 +101,6 @@ export function DraftPage() {
         <p className="text-white/50 mt-2">Bu lig için henüz draft odası oluşturulmamış veya draft tamamlanmış.</p>
       </div>
     )
-  }
-
-  const isMyTurn = draftSession?.current_pick_franchise_id === franchise?.id
-  const filteredPlayers = availablePlayers.filter(p => filter === 'TÜMÜ' || p.position === filter)
-
-  const handlePick = async (playerId: string | null) => {
-    if (!isMyTurn || isPicking) return
-    setIsPicking(true)
-    try {
-      await makePick(playerId)
-    } catch (err: any) {
-      if (playerId) alert('Seçim hatası: ' + err.message)
-      else console.error('Auto-pick hatası: ' + err.message)
-    } finally {
-      setIsPicking(false)
-    }
-  }
-
-  const handleAddTime = async () => {
-    if (!isMyTurn) return
-    if (franchise.club_fund < 15) {
-      return alert('Yeterli AmFutCoin yok!')
-    }
-    
-    // Optimistic UI update
-    setTimeLeft(prev => prev + 10)
-    
-    try {
-      // In a real app we'd call an Edge Function or RPC to deduct funds and sync time.
-      // For this implementation, we deduct locally via RPC for simplicity.
-      await supabase.rpc('deduct_club_fund', { p_franchise_id: franchise.id, p_amount: 15 })
-    } catch (e) {
-      console.error("Time add error", e)
-    }
   }
 
   return (
