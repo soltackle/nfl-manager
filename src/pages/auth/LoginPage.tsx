@@ -5,15 +5,23 @@ import { Card, CardContent } from '@/components/ui/Card'
 import { useNavigate } from 'react-router-dom'
 
 export function LoginPage() {
+  const [isLogin, setIsLogin] = useState(true)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const { signIn } = useAuthStore()
+  const { signIn, signUp } = useAuthStore()
   const navigate = useNavigate()
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      await signIn(email, password)
+      if (isLogin) {
+        await signIn(email, password)
+      } else {
+        await signUp(email, password)
+        alert('Kayıt başarılı! Şimdi giriş yapabilirsiniz.')
+        setIsLogin(true)
+        return
+      }
       navigate('/dashboard')
     } catch (err: any) {
       alert('Hata: ' + err.message)
@@ -26,9 +34,9 @@ export function LoginPage() {
         <CardContent className="space-y-6 p-6">
           <div className="text-center">
             <h1 className="text-2xl font-bold">NFL Manager</h1>
-            <p className="text-sm text-gray-400">Giriş Yap</p>
+            <p className="text-sm text-gray-400">{isLogin ? 'Giriş Yap' : 'Kayıt Ol'}</p>
           </div>
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <input
               type="email"
               placeholder="E-posta"
@@ -45,8 +53,16 @@ export function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
-            <Button type="submit" className="w-full">Giriş</Button>
+            <Button type="submit" className="w-full">{isLogin ? 'Giriş' : 'Kayıt Ol'}</Button>
           </form>
+          <div className="text-center">
+            <button 
+              onClick={() => setIsLogin(!isLogin)} 
+              className="text-sm text-accent hover:underline"
+            >
+              {isLogin ? 'Hesabın yok mu? Kayıt ol.' : 'Zaten hesabın var mı? Giriş yap.'}
+            </button>
+          </div>
         </CardContent>
       </Card>
     </div>
