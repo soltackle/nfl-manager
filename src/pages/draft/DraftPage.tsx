@@ -10,9 +10,11 @@ export function DraftPage() {
   const [filter, setFilter] = useState('TÜMÜ')
   const [isPicking, setIsPicking] = useState(false)
   const [timeLeft, setTimeLeft] = useState(10)
+  const [rightTab, setRightTab] = useState<'HISTORY' | 'MY_TEAM'>('HISTORY')
 
   const isMyTurn = draftSession?.current_pick_franchise_id === franchise?.id
   const filteredPlayers = availablePlayers.filter(p => filter === 'TÜMÜ' || p.position === filter)
+  const myPicks = picks.filter(p => p.franchise_id === franchise?.id)
 
   const handlePick = async (playerId: string | null) => {
     if (!isMyTurn || isPicking) return
@@ -199,33 +201,76 @@ export function DraftPage() {
         </div>
 
         {/* Right Column: Draft History */}
-        <div className="bg-[#00152b] border border-[#005c99] rounded-xl p-6 flex flex-col h-[600px]">
-          <h2 className="text-xl font-display font-bold text-white uppercase tracking-wider mb-6 flex items-center gap-2">
-            <UserCheck className="w-5 h-5 text-accent" /> Son Seçimler
-          </h2>
+        <div className="bg-[#00152b] border border-[#005c99] rounded-xl p-4 flex flex-col h-[600px]">
           
-          <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3 pr-2">
-            {picks.length === 0 ? (
-              <div className="text-center text-white/30 font-bold uppercase py-10">
-                Henüz seçim yapılmadı
-              </div>
-            ) : (
-              picks.map((pick, i) => (
-                <div key={pick.id} className="bg-[#001021] border border-white/5 p-3 rounded-lg relative overflow-hidden">
-                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent"></div>
-                  <div className="flex justify-between items-start mb-2">
-                    <span className="text-[10px] font-bold uppercase text-white/50 bg-white/5 px-2 py-0.5 rounded">Pick {picks.length - i}</span>
-                    <span className="text-xs font-bold text-accent">{pick.franchises?.team_name}</span>
-                  </div>
-                  <div className="flex justify-between items-end">
-                    <div>
-                      <div className="font-bold text-white">{pick.players?.name}</div>
-                      <div className="text-xs text-white/50">{pick.players?.position}</div>
-                    </div>
-                    <div className="font-display font-bold text-lg text-white/80">{pick.players?.overall}</div>
-                  </div>
+          {/* Tabs for Right Column */}
+          <div className="flex items-center gap-2 mb-4 border-b border-white/10 pb-2">
+            <button 
+              onClick={() => setRightTab('HISTORY')}
+              className={`flex-1 py-2 text-xs font-bold uppercase rounded transition-colors ${rightTab === 'HISTORY' ? 'bg-accent text-[#001021]' : 'text-white/50 hover:bg-white/5'}`}
+            >
+              Canlı Akış
+            </button>
+            <button 
+              onClick={() => setRightTab('MY_TEAM')}
+              className={`flex-1 py-2 text-xs font-bold uppercase rounded transition-colors ${rightTab === 'MY_TEAM' ? 'bg-green-500 text-black' : 'text-white/50 hover:bg-white/5'}`}
+            >
+              Benim Kadrom ({myPicks.length})
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-2">
+            {rightTab === 'HISTORY' && (
+              picks.length === 0 ? (
+                <div className="text-center text-white/30 font-bold uppercase py-10 flex flex-col items-center">
+                  <UserCheck className="w-10 h-10 mb-2 opacity-20" />
+                  Henüz seçim yapılmadı
                 </div>
-              ))
+              ) : (
+                picks.map((pick, i) => {
+                  const isMine = pick.franchise_id === franchise?.id;
+                  return (
+                    <div key={pick.id} className={`p-3 rounded-lg relative overflow-hidden border transition-all ${isMine ? 'bg-green-500/10 border-green-500/30' : 'bg-[#001021] border-white/5'}`}>
+                      <div className={`absolute left-0 top-0 bottom-0 w-1 ${isMine ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.8)]' : 'bg-accent'}`}></div>
+                      <div className="flex justify-between items-start mb-2">
+                        <span className="text-[10px] font-bold uppercase text-white/50 bg-white/5 px-2 py-0.5 rounded">Pick {picks.length - i}</span>
+                        <span className={`text-xs font-bold ${isMine ? 'text-green-400' : 'text-accent'}`}>{pick.franchises?.team_name} {isMine && '(SEN)'}</span>
+                      </div>
+                      <div className="flex justify-between items-end">
+                        <div>
+                          <div className={`font-bold ${isMine ? 'text-green-50' : 'text-white'}`}>{pick.players?.name}</div>
+                          <div className="text-xs text-white/50">{pick.players?.position}</div>
+                        </div>
+                        <div className={`font-display font-bold text-lg ${isMine ? 'text-green-400' : 'text-white/80'}`}>{pick.players?.overall}</div>
+                      </div>
+                    </div>
+                  )
+                })
+              )
+            )}
+
+            {rightTab === 'MY_TEAM' && (
+              myPicks.length === 0 ? (
+                <div className="text-center text-white/30 font-bold uppercase py-10 flex flex-col items-center">
+                  <Trophy className="w-10 h-10 mb-2 opacity-20" />
+                  Henüz oyuncu seçmediniz
+                </div>
+              ) : (
+                myPicks.map((pick) => (
+                  <div key={pick.id} className="bg-[#002010] border border-green-500/20 p-3 rounded-lg flex items-center justify-between hover:bg-green-500/10 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded bg-green-500/20 text-green-400 flex items-center justify-center font-black font-display text-xs border border-green-500/30">
+                        {pick.players?.position}
+                      </div>
+                      <div>
+                        <div className="font-bold text-white text-sm">{pick.players?.name}</div>
+                        <div className="text-[10px] text-green-400/70 uppercase font-bold mt-0.5">Round {pick.round}</div>
+                      </div>
+                    </div>
+                    <div className="font-display font-black text-xl text-green-400">{pick.players?.overall}</div>
+                  </div>
+                ))
+              )
             )}
           </div>
           
