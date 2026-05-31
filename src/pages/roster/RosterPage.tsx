@@ -3,6 +3,8 @@ import { useRoster } from '@/hooks/useRoster'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { Shield, ChevronRight } from 'lucide-react'
+import { useFranchiseStore } from '@/store/franchiseStore'
+import { supabase } from '@/lib/supabase'
 
 const OFFENSE_POS = ['QB', 'RB', 'WR', 'TE', 'OL']
 const DEFENSE_POS = ['DE', 'LB', 'CB', 'S']
