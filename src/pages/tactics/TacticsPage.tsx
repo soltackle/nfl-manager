@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useTactics } from '@/hooks/useTactics'
 import { useFranchiseStore } from '@/store/franchiseStore'
 import { supabase } from '@/lib/supabase'
-import { Shield, Zap, ChevronRight, Activity, Crosshair, ShieldAlert, FastForward, Navigation, Search } from 'lucide-react'
+import { Shield, Zap, Activity, Crosshair, ShieldAlert, FastForward, Navigation, Search, Flag, Target, BrainCircuit, Clock } from 'lucide-react'
 import { Skeleton } from '@/components/ui/Skeleton'
 
 export function TacticsPage() {
@@ -14,7 +14,18 @@ export function TacticsPage() {
     pass_ratio: 50,
     aggression: 50,
     tempo: 50,
-    defense_line: 50
+    defense_line: 50,
+    off_focus: 'short_pass',
+    def_focus: 'balanced',
+    x_rotation: 'ironman',
+    x_aggressiveness: 'disciplined',
+    x_qb_freedom: 'strict',
+    signature_play: 'none',
+    signature_condition: 'late_behind',
+    challenge_td: true,
+    challenge_4th: true,
+    q_scripting_4th: 'hold_lead',
+    targeted_mismatch: ''
   })
 
   const [fourthDowns, setFourthDowns] = useState({
@@ -27,11 +38,7 @@ export function TacticsPage() {
 
   useEffect(() => {
     if (tactics?.slider_ayarlari) {
-      setSliders(tactics.slider_ayarlari as any)
-    }
-    if (tactics?.paketler && Array.isArray(tactics.paketler)) {
-      // Find fourth downs in paketler JSON or we can just save it inside slider_ayarlari for ease.
-      // Let's assume it was saved in slider_ayarlari for ease.
+      setSliders(prev => ({ ...prev, ...(tactics.slider_ayarlari as any) }))
       if ((tactics.slider_ayarlari as any)?.fourth_downs) {
         setFourthDowns((tactics.slider_ayarlari as any).fourth_downs)
       }
@@ -39,7 +46,7 @@ export function TacticsPage() {
   }, [tactics])
 
   if (isLoading) return (
-    <div className="space-y-4 pt-4">
+    <div className="space-y-4 pt-4 max-w-4xl mx-auto">
       <Skeleton className="h-12 w-full bg-white/5" />
       <Skeleton className="h-[400px] w-full bg-white/5" />
     </div>
@@ -49,10 +56,7 @@ export function TacticsPage() {
     if (!franchise) return
     setIsSaving(true)
     
-    const finalSliders = {
-      ...sliders,
-      fourth_downs: fourthDowns
-    }
+    const finalSliders = { ...sliders, fourth_downs: fourthDowns }
 
     try {
       if (tactics?.id === 'new') {
@@ -93,8 +97,7 @@ export function TacticsPage() {
   ]
 
   return (
-    <div className="space-y-6 pt-4 max-w-4xl mx-auto pb-20">
-      
+    <div className="space-y-6 pt-4 max-w-4xl mx-auto pb-20 px-4">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6 bg-[#00152b]/80 p-4 rounded-xl border border-[#005c99]/30">
         <Activity className="h-8 w-8 text-accent" />
@@ -105,6 +108,7 @@ export function TacticsPage() {
       </div>
 
       <div className="grid gap-6">
+        
         {/* Mismatch Scout Report */}
         <div className="bg-gradient-to-r from-[#00254c] to-[#00152b] p-5 rounded-xl border border-[#004b93]/50">
           <h2 className="text-sm font-display font-bold text-accent uppercase mb-6 flex items-center gap-2">
@@ -115,9 +119,7 @@ export function TacticsPage() {
               <span className="text-xs font-bold text-white/50">Haftanın Hakemi: <span className="text-white">Mike Thomas (KATI)</span></span>
               <span className="text-xs font-bold text-white/50">Hava Durumu: <span className="text-white">☁️ Bulutlu</span></span>
             </div>
-            
             <p className="text-xs text-white/70 mb-4">⚠️ MİSMATCH FIRSATLARI (Haftada 1 adet seçilebilir):</p>
-            
             <div className="space-y-3">
               {[
                 { id: 'mismatch_1', label: 'WR1 vs DB2', advantage: '+12 OVR Avantajı' },
@@ -132,14 +134,12 @@ export function TacticsPage() {
                     </div>
                   </div>
                   <button
-                    onClick={() => setSliders({...sliders, targeted_mismatch: m.id} as any)}
+                    onClick={() => setSliders({...sliders, targeted_mismatch: m.id})}
                     className={`px-4 py-2 rounded text-xs font-bold uppercase transition-colors ${
-                      ((sliders as any).targeted_mismatch) === m.id
-                        ? 'bg-accent text-[#001021]'
-                        : 'bg-black/40 text-white hover:bg-white/10 border border-white/20'
+                      sliders.targeted_mismatch === m.id ? 'bg-accent text-[#001021]' : 'bg-black/40 text-white hover:bg-white/10 border border-white/20'
                     }`}
                   >
-                    {((sliders as any).targeted_mismatch) === m.id ? '🎯 HEDEFLENDİ' : '🎯 HEDEFLE'}
+                    {sliders.targeted_mismatch === m.id ? '🎯 HEDEFLENDİ' : '🎯 HEDEFLE'}
                   </button>
                 </div>
               ))}
@@ -147,10 +147,158 @@ export function TacticsPage() {
           </div>
         </div>
 
+        {/* Oyun Odakları (Replacing Packages) */}
+        <div className="bg-gradient-to-r from-[#00254c] to-[#00152b] p-5 rounded-xl border border-[#004b93]/50">
+          <h2 className="text-sm font-display font-bold text-accent uppercase mb-6 flex items-center gap-2">
+            <Target className="w-4 h-4" /> Oyun Odakları (Focus)
+          </h2>
+          <div className="space-y-6">
+            <div>
+              <div className="text-xs font-bold text-white uppercase mb-3">Hücum Odağı</div>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                {[
+                  { id: 'power_run', label: 'İçeriden Koşu' },
+                  { id: 'outside_run', label: 'Dışarıdan Koşu' },
+                  { id: 'short_pass', label: 'Kısa Paslar' },
+                  { id: 'deep_bomb', label: 'Derin Bomba' },
+                  { id: 'mobile_qb', label: 'Mobil QB' }
+                ].map(p => (
+                  <button
+                    key={p.id}
+                    onClick={() => setSliders({...sliders, off_focus: p.id})}
+                    className={`px-3 py-2.5 rounded text-[10px] font-bold uppercase transition-colors border ${
+                      sliders.off_focus === p.id 
+                        ? 'bg-blue-500 text-white border-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.5)]' 
+                        : 'bg-black/40 text-white/50 border-white/10 hover:border-white/30 hover:text-white'
+                    }`}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <div className="text-xs font-bold text-white uppercase mb-3">Savunma Odağı</div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                {[
+                  { id: 'stop_run', label: 'Koşuyu Durdur' },
+                  { id: 'pass_def', label: 'Pası Savun' },
+                  { id: 'blitz', label: 'Agresif Baskı (Blitz)' },
+                  { id: 'balanced', label: 'Dengeli' }
+                ].map(p => (
+                  <button
+                    key={p.id}
+                    onClick={() => setSliders({...sliders, def_focus: p.id})}
+                    className={`px-3 py-2.5 rounded text-[10px] font-bold uppercase transition-colors border ${
+                      sliders.def_focus === p.id 
+                        ? 'bg-red-500 text-white border-red-400 shadow-[0_0_10px_rgba(239,68,68,0.5)]' 
+                        : 'bg-black/40 text-white/50 border-white/10 hover:border-white/30 hover:text-white'
+                    }`}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Takım Karakteri (X-Factors) */}
+        <div className="bg-gradient-to-r from-[#00254c] to-[#00152b] p-5 rounded-xl border border-[#004b93]/50">
+          <h2 className="text-sm font-display font-bold text-accent uppercase mb-6 flex items-center gap-2">
+            <BrainCircuit className="w-4 h-4" /> Takım Karakteri & Disiplin (X-Factors)
+          </h2>
+          <div className="grid md:grid-cols-3 gap-4">
+            <div className="bg-[#001021] p-4 rounded-lg border border-white/5">
+              <div className="text-[10px] font-bold text-white/50 uppercase mb-3">Rotasyon Anlayışı</div>
+              <select value={sliders.x_rotation} onChange={e => setSliders({...sliders, x_rotation: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded p-2 text-xs text-white">
+                <option value="ironman">Demir Adamlar (Aslar Yorulana Kadar)</option>
+                <option value="frequent">Sık Rotasyon (Yedekler Sürekli Girer)</option>
+              </select>
+            </div>
+            <div className="bg-[#001021] p-4 rounded-lg border border-white/5">
+              <div className="text-[10px] font-bold text-white/50 uppercase mb-3">Agresiflik</div>
+              <select value={sliders.x_aggressiveness} onChange={e => setSliders({...sliders, x_aggressiveness: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded p-2 text-xs text-white">
+                <option value="disciplined">Disiplinli (Az Ceza)</option>
+                <option value="physical">Fiziksel Oyna (Çok Ceza Riski)</option>
+              </select>
+            </div>
+            <div className="bg-[#001021] p-4 rounded-lg border border-white/5">
+              <div className="text-[10px] font-bold text-white/50 uppercase mb-3">QB Özgürlüğü</div>
+              <select value={sliders.x_qb_freedom} onChange={e => setSliders({...sliders, x_qb_freedom: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded p-2 text-xs text-white">
+                <option value="strict">Taktikten Şaşma</option>
+                <option value="audible">Doğaçlama Serbest (Audible)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Signature Play & Challenge Flag */}
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="bg-gradient-to-r from-[#00254c] to-[#00152b] p-5 rounded-xl border border-[#004b93]/50">
+            <h2 className="text-sm font-display font-bold text-accent uppercase mb-4 flex items-center gap-2">
+              <Zap className="w-4 h-4 text-yellow-400" /> Signature Play (Sezonluk Koz)
+            </h2>
+            <div className="space-y-4">
+              <div>
+                <div className="text-[10px] text-white/50 mb-1">Sezonda 1 kere kullanılacak özel oyun (100 Coin)</div>
+                <select value={sliders.signature_play} onChange={e => setSliders({...sliders, signature_play: e.target.value})} className="w-full bg-black/40 border border-yellow-500/30 text-yellow-100 rounded p-2 text-xs">
+                  <option value="none">Seçilmedi</option>
+                  <option value="hail_mary">Hail Mary Pass (+25% TD şansı, yüksek INT riski)</option>
+                  <option value="fake_punt">Fake Punt (Sürpriz 4th Down denemesi)</option>
+                  <option value="goal_line_stand">Goal Line Stand (Kırmızı Bölgede Duvar Ol)</option>
+                </select>
+              </div>
+              {sliders.signature_play !== 'none' && (
+                <div>
+                  <div className="text-[10px] text-white/50 mb-1">Otomatik Tetiklenme Şartı</div>
+                  <select value={sliders.signature_condition} onChange={e => setSliders({...sliders, signature_condition: e.target.value})} className="w-full bg-black/40 border border-white/10 text-white rounded p-2 text-xs">
+                    <option value="late_behind">Son 2 dakika gerideysem</option>
+                    <option value="red_zone">Kırmızı bölgeye girildiğinde</option>
+                    <option value="always">Şartlar oluştuğu ilk an kullan</option>
+                  </select>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-r from-[#00254c] to-[#00152b] p-5 rounded-xl border border-[#004b93]/50">
+            <h2 className="text-sm font-display font-bold text-accent uppercase mb-4 flex items-center gap-2">
+              <Flag className="w-4 h-4 text-red-500" /> Challenge Flag (İtiraz)
+            </h2>
+            <div className="space-y-3">
+              <div className="text-[10px] text-white/50">Maç başına 1 itiraz hakkı motor tarafından otomatik kullanılır. Hangi durumlarda kullanılsın?</div>
+              <label className="flex items-center gap-3 bg-[#001021] p-3 rounded border border-white/5 cursor-pointer hover:border-white/20">
+                <input type="checkbox" checked={sliders.challenge_td} onChange={e => setSliders({...sliders, challenge_td: e.target.checked})} className="accent-red-500" />
+                <span className="text-xs text-white">Tartışmalı Touchdown kararlarında (Son 2 dk)</span>
+              </label>
+              <label className="flex items-center gap-3 bg-[#001021] p-3 rounded border border-white/5 cursor-pointer hover:border-white/20">
+                <input type="checkbox" checked={sliders.challenge_4th} onChange={e => setSliders({...sliders, challenge_4th: e.target.checked})} className="accent-red-500" />
+                <span className="text-xs text-white">4th Down yer kazanımı itirazları</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        {/* Çeyrek Scripting */}
+        <div className="bg-gradient-to-r from-[#00254c] to-[#00152b] p-5 rounded-xl border border-[#004b93]/50">
+          <h2 className="text-sm font-display font-bold text-accent uppercase mb-6 flex items-center gap-2">
+            <Clock className="w-4 h-4" /> Çeyrek Senaryoları (Quarter Scripting)
+          </h2>
+          <div className="bg-[#001021] p-4 rounded-lg border border-white/5">
+            <div className="text-[10px] font-bold text-white/50 uppercase mb-3">4. Çeyrek Stratejisi</div>
+            <select value={sliders.q_scripting_4th} onChange={e => setSliders({...sliders, q_scripting_4th: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded p-2 text-xs text-white">
+              <option value="hold_lead">Skoru Koru (Öndeysek tempoyu düşür, savunmayı geriye çek)</option>
+              <option value="aggressive">Ne Olursa Olsun Saldır (Skora bakmaksızın agresif pas oyna)</option>
+              <option value="balanced">Temel Felsefeden Şaşma (Skor ne olursa olsun aynı taktiğe devam et)</option>
+            </select>
+          </div>
+        </div>
+
         {/* Sliders */}
         <div className="bg-gradient-to-r from-[#00254c] to-[#00152b] p-5 rounded-xl border border-[#004b93]/50">
           <h2 className="text-sm font-display font-bold text-accent uppercase mb-6 flex items-center gap-2">
-            <Shield className="w-4 h-4" /> Temel Felsefe
+            <Shield className="w-4 h-4" /> Temel Felsefe Ayarları
           </h2>
           <div className="space-y-8">
             {sliderConfig.map((config) => {
@@ -177,9 +325,7 @@ export function TacticsPage() {
                       value={value}
                       onChange={(e) => setSliders({...sliders, [config.key]: parseInt(e.target.value)})}
                       className="w-full h-2 bg-[#001021] rounded-lg appearance-none cursor-pointer"
-                      style={{
-                        background: `linear-gradient(to right, var(--color-accent) 0%, var(--color-accent) ${value}%, #001021 ${value}%, #001021 100%)`
-                      }}
+                      style={{ background: `linear-gradient(to right, var(--color-accent) 0%, var(--color-accent) ${value}%, #001021 ${value}%, #001021 100%)` }}
                     />
                     <div className="flex justify-between text-[10px] font-bold text-white/50 uppercase tracking-wider mt-2">
                       <span>{config.minLabel}</span>
@@ -203,18 +349,12 @@ export function TacticsPage() {
               <div key={config.key} className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-3 bg-[#001021] rounded border border-white/5">
                 <span className="text-xs font-bold text-white uppercase">{config.label}</span>
                 <div className="flex gap-2">
-                  {[
-                    { val: 'go', label: 'GO FOR IT' },
-                    { val: 'punt', label: 'PUNT' },
-                    { val: 'fg', label: 'FG' }
-                  ].map(opt => (
+                  {[{ val: 'go', label: 'GO FOR IT' }, { val: 'punt', label: 'PUNT' }, { val: 'fg', label: 'FG' }].map(opt => (
                     <button
                       key={opt.val}
                       onClick={() => setFourthDowns({ ...fourthDowns, [config.key]: opt.val })}
                       className={`px-3 py-1.5 rounded text-xs font-bold uppercase transition-colors ${
-                        (fourthDowns as any)[config.key] === opt.val
-                          ? 'bg-accent text-[#001021] border border-accent'
-                          : 'bg-black/40 text-white/50 border border-white/10 hover:border-white/30 hover:text-white'
+                        (fourthDowns as any)[config.key] === opt.val ? 'bg-accent text-[#001021] border border-accent' : 'bg-black/40 text-white/50 border border-white/10 hover:border-white/30 hover:text-white'
                       }`}
                     >
                       {opt.label}
@@ -225,87 +365,12 @@ export function TacticsPage() {
             ))}
           </div>
         </div>
-        {/* Packages & Personnel */}
-        <div className="bg-gradient-to-r from-[#00254c] to-[#00152b] p-5 rounded-xl border border-[#004b93]/50">
-          <h2 className="text-sm font-display font-bold text-accent uppercase mb-6 flex items-center gap-2">
-            <Shield className="w-4 h-4" /> Durumsal Paketler & Personel
-          </h2>
-          
-          <div className="space-y-6">
-            <div>
-              <div className="text-xs font-bold text-white uppercase mb-2">Hücum Personeli (Personnel Group)</div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                {[
-                  { id: '11', label: '11 Personnel (1 RB, 1 TE)' },
-                  { id: '10', label: '10 Personnel (1 RB, 0 TE)' },
-                  { id: '12', label: '12 Personnel (1 RB, 2 TE)' },
-                  { id: '21', label: '21 Personnel (2 RB, 1 TE)' }
-                ].map(p => (
-                  <button
-                    key={p.id}
-                    onClick={() => setSliders({...sliders, personnel: p.id} as any)}
-                    className={`px-3 py-2 rounded text-[10px] font-bold uppercase transition-colors border ${
-                      ((sliders as any).personnel || '11') === p.id 
-                        ? 'bg-accent text-[#001021] border-accent' 
-                        : 'bg-black/40 text-white/50 border-white/10 hover:border-white/30 hover:text-white'
-                    }`}
-                  >
-                    {p.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <div className="text-xs font-bold text-white uppercase mb-2">Hücum Paketi (Offensive Package)</div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                {['Shotgun', 'Spread', 'Goal Line', 'Hurry-Up', 'No-Huddle'].map(p => (
-                  <button
-                    key={p}
-                    onClick={() => setSliders({...sliders, off_package: p} as any)}
-                    className={`px-3 py-2 rounded text-[10px] font-bold uppercase transition-colors border ${
-                      ((sliders as any).off_package || 'Shotgun') === p 
-                        ? 'bg-blue-500 text-white border-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.5)]' 
-                        : 'bg-black/40 text-white/50 border-white/10 hover:border-white/30 hover:text-white'
-                    }`}
-                  >
-                    {p}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <div className="text-xs font-bold text-white uppercase mb-2">Savunma Paketi (Defensive Package)</div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                {['4-3', 'Nickel', 'Goal Line D', 'Prevent', 'Blitz Package'].map(p => (
-                  <button
-                    key={p}
-                    onClick={() => setSliders({...sliders, def_package: p} as any)}
-                    className={`px-3 py-2 rounded text-[10px] font-bold uppercase transition-colors border ${
-                      ((sliders as any).def_package || '4-3') === p 
-                        ? 'bg-red-500 text-white border-red-400 shadow-[0_0_10px_rgba(239,68,68,0.5)]' 
-                        : 'bg-black/40 text-white/50 border-white/10 hover:border-white/30 hover:text-white'
-                    }`}
-                  >
-                    {p}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
 
       </div>
 
-      <button 
-        onClick={handleSave} 
-        disabled={isSaving}
-        className="w-full osm-button bg-green-600 hover:bg-green-500 mt-8 py-4 text-lg"
-      >
+      <button onClick={handleSave} disabled={isSaving} className="w-full osm-button bg-green-600 hover:bg-green-500 mt-8 py-4 text-lg">
         {isSaving ? 'KAYDEDİLİYOR...' : 'TAKTİKLERİ KAYDET'}
       </button>
-
     </div>
   )
 }
