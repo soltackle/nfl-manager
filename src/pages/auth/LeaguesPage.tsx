@@ -49,25 +49,27 @@ export function LeaguesPage() {
     if (!user) return
     setJoiningId(league.id)
     try {
+      // Get fresh auth user
+      const { data: { user: freshUser } } = await supabase.auth.getUser()
+      if (!freshUser) throw new Error('Oturum bulunamadı.')
+
       const currentTeamsCount = league.franchises?.length || 0
       if (currentTeamsCount >= 8) {
         alert('Bu lig dolu!')
         return
       }
 
-      // TODO: If private, verify password here
-
       const { data: newFranchise, error: fError } = await supabase.from('franchises').insert({
         league_id: league.id,
-        user_id: user.id,
-        team_name: `${user.user_metadata?.username || 'Menajer'} Team`,
+        user_id: freshUser.id,
+        team_name: `${freshUser.user_metadata?.username || 'Menajer'} Team`,
         city: 'New City',
         club_fund: 100000
       }).select().single()
 
       if (fError) throw fError
       
-      await initialize(user.id)
+      await initialize(freshUser.id)
       await setActiveFranchise(newFranchise.id)
       navigate('/dashboard')
       
@@ -82,14 +84,18 @@ export function LeaguesPage() {
     if (!user || !newLeagueName) return
     setIsCreating(true)
     try {
-      // Create league directly
+      // Get fresh auth user to ensure we have the correct ID
+      const { data: { user: freshUser } } = await supabase.auth.getUser()
+      if (!freshUser) throw new Error('Oturum bulunamadı. Lütfen tekrar giriş yapın.')
+
       const isPublic = !newLeaguePassword
       
       const { data: newLeague, error: lError } = await supabase.from('leagues').insert({
         name: newLeagueName,
         match_time_utc: '20:00:00',
         is_public: isPublic,
-        status: 'waiting', // Wait for users to fill
+        owner_user_id: freshUser.id,
+        status: 'waiting',
       }).select().single()
       
       if (lError) throw lError
@@ -97,15 +103,15 @@ export function LeaguesPage() {
       // Create franchise for the commissioner (creator)
       const { data: newFranchise, error: fError } = await supabase.from('franchises').insert({
         league_id: newLeague.id,
-        user_id: user.id,
-        team_name: `${user.user_metadata?.username || 'Menajer'} Team`,
+        user_id: freshUser.id,
+        team_name: `${freshUser.user_metadata?.username || 'Menajer'} Team`,
         city: 'New City',
         club_fund: 100000
       }).select().single()
       
       if (fError) throw fError
 
-      await initialize(user.id)
+      await initialize(freshUser.id)
       await setActiveFranchise(newFranchise.id)
       navigate('/dashboard')
     } catch (err: any) {
