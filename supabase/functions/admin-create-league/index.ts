@@ -48,26 +48,51 @@ serve(async (req) => {
     if (leagueErr) throw leagueErr
 
     // 2. Create Admin Franchise
-    const { error: fErr } = await supabaseAdmin.from('franchises').insert({
+    const { data: adminFranchise, error: fErr } = await supabaseAdmin.from('franchises').insert({
       league_id: league.id,
       user_id: user.id,
       team_name: 'Admin Team',
       city: 'Test City',
       club_fund: 200000
-    })
+    }).select().single()
 
     if (fErr) throw fErr
+
+    // Helper to generate 53 players
+    const generateRoster = async (franchiseId: string) => {
+      const positions = [
+        { pos: 'QB', count: 3 }, { pos: 'RB', count: 4 }, { pos: 'WR', count: 6 },
+        { pos: 'TE', count: 3 }, { pos: 'OL', count: 10 }, { pos: 'DE', count: 5 },
+        { pos: 'LB', count: 7 }, { pos: 'CB', count: 6 }, { pos: 'S', count: 6 },
+        { pos: 'K', count: 3 }
+      ]
+      const playersToInsert = []
+      for (const p of positions) {
+        for (let i = 0; i < p.count; i++) {
+          const overall = Math.floor(Math.random() * 20) + 60 // 60-79 OVR
+          playersToInsert.push({
+            franchise_id: franchiseId,
+            name: `${p.pos} Player ${Math.floor(Math.random() * 1000)}`,
+            position: p.pos,
+            overall: overall,
+            value: overall * 100000
+          })
+        }
+      }
+      const { error } = await supabaseAdmin.from('players').insert(playersToInsert)
+      if (error) console.error("Roster generation error:", error)
+    }
+
+    // Generate roster for Admin
+    await generateRoster(adminFranchise.id)
 
     // 3. Create Bots if Test Modu
     if (mode === 'test') {
       const botNames = ['Bot Alpha', 'Bot Bravo', 'Bot Charlie', 'Bot Delta', 'Bot Echo', 'Bot Foxtrot', 'Bot Golf']
       for (const botName of botNames) {
-        // Find or create bot user
         let { data: botUser } = await supabaseAdmin.from('users').select('id').eq('username', botName).single()
         
         if (!botUser) {
-          // Since we can't easily create auth users via SQL without email, we'll just insert a dummy row in public.users
-          // NOTE: Real auth users have an id matching auth.users, but for bots we can generate a random UUID
           const botId = crypto.randomUUID()
           await supabaseAdmin.from('users').insert({
             id: botId,
@@ -78,13 +103,17 @@ serve(async (req) => {
           botUser = { id: botId }
         }
 
-        await supabaseAdmin.from('franchises').insert({
+        const { data: botFranchise, error: botFErr } = await supabaseAdmin.from('franchises').insert({
           league_id: league.id,
           user_id: botUser.id,
           team_name: `${botName} Team`,
           city: 'Bot City',
           club_fund: 100000
-        })
+        }).select().single()
+        
+        if (botFranchise) {
+          await generateRoster(botFranchise.id)
+        }
       }
       
       // Update league status
