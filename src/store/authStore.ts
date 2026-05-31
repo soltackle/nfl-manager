@@ -40,7 +40,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     let profile = null
     
     if (session?.user) {
-      const { data } = await supabase.from('users').select('*').eq('id', session.user.id).single()
+      const { data } = await supabase.from('users').select('*').eq('id', session.user.id).maybeSingle()
       profile = data
       const { useFranchiseStore } = await import('./franchiseStore')
       await useFranchiseStore.getState().initialize(session.user.id)
@@ -51,7 +51,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     supabase.auth.onAuthStateChange(async (_event, session) => {
       let currentProfile = null
       if (session?.user) {
-        const { data } = await supabase.from('users').select('*').eq('id', session.user.id).single()
+        const { data } = await supabase.from('users').select('*').eq('id', session.user.id).maybeSingle()
         currentProfile = data
         const { useFranchiseStore } = await import('./franchiseStore')
         await useFranchiseStore.getState().initialize(session.user.id)

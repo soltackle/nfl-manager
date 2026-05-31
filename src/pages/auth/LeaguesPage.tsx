@@ -87,6 +87,7 @@ export function LeaguesPage() {
       
       const { data: newLeague, error: lError } = await supabase.from('leagues').insert({
         name: newLeagueName,
+        match_time_utc: '20:00:00',
         is_public: isPublic,
         status: 'waiting', // Wait for users to fill
       }).select().single()
