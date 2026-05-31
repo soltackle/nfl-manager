@@ -2,6 +2,7 @@ export interface User {
   id: string
   email: string
   username: string
+  role?: string
   amfutcoin: number
   manager_xp: number
 }

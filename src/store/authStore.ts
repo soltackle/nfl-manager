@@ -1,9 +1,11 @@
 import { create } from 'zustand'
 import { supabase } from '@/lib/supabase'
-import type { User } from '@supabase/supabase-js'
+import type { User as SupabaseUser } from '@supabase/supabase-js'
+import type { User } from '@/types'
 
 interface AuthState {
-  user: User | null
+  user: SupabaseUser | null
+  profile: User | null
   session: any | null
   isLoading: boolean
   signIn: (email: string, password: string) => Promise<void>
@@ -14,6 +16,7 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
+  profile: null,
   session: null,
   isLoading: true,
   signIn: async (email, password) => {
@@ -30,14 +33,26 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
   signOut: async () => {
     await supabase.auth.signOut()
-    set({ user: null, session: null })
+    set({ user: null, profile: null, session: null })
   },
   initialize: async () => {
     const { data: { session } } = await supabase.auth.getSession()
-    set({ session, user: session?.user || null, isLoading: false })
+    let profile = null
     
-    supabase.auth.onAuthStateChange((_event, session) => {
-      set({ session, user: session?.user || null })
+    if (session?.user) {
+      const { data } = await supabase.from('users').select('*').eq('id', session.user.id).single()
+      profile = data
+    }
+    
+    set({ session, user: session?.user || null, profile, isLoading: false })
+    
+    supabase.auth.onAuthStateChange(async (_event, session) => {
+      let currentProfile = null
+      if (session?.user) {
+        const { data } = await supabase.from('users').select('*').eq('id', session.user.id).single()
+        currentProfile = data
+      }
+      set({ session, user: session?.user || null, profile: currentProfile })
     })
   }
 }))

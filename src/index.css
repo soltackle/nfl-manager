@@ -45,11 +45,9 @@
     @apply bg-gradient-to-b from-[#00a2ff] to-[#007acc] border-b-4 border-[#005c99] rounded text-white font-bold uppercase shadow text-center hover:brightness-110 active:border-b-0 active:translate-y-1 transition-all;
   }
 }
-  
   .text-gradient {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-accent to-accent-hover;
   }
-}
 
 @keyframes float {
   0% { transform: translateY(0px); }

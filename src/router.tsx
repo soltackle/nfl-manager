@@ -8,6 +8,8 @@ import { TacticsPage } from './pages/tactics/TacticsPage'
 import { MarketPage } from './pages/market/MarketPage'
 import { MatchResultPage } from './pages/match/MatchResultPage'
 import { DraftPage } from './pages/draft/DraftPage'
+import { AdminDashboard } from './pages/admin/AdminDashboard'
+import { AdminRoute } from './components/auth/AdminRoute'
 import { useAuthStore } from './store/authStore'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -33,6 +35,13 @@ const router = createBrowserRouter([
       { path: 'match/:id', element: <MatchResultPage /> },
       { path: 'draft', element: <DraftPage /> },
       { path: 'profile', element: <div>Profile Stub</div> }, // STUB
+      { 
+        path: 'admin', 
+        element: <AdminRoute />,
+        children: [
+          { index: true, element: <AdminDashboard /> }
+        ]
+      },
     ]
   }
 ])

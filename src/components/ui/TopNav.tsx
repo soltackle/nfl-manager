@@ -4,7 +4,7 @@ import { Bell, UserCircle, Coins, Shield } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 
 export function TopNav() {
-  const { user } = useAuthStore()
+  const { user, profile } = useAuthStore()
   const { franchise } = useFranchiseStore()
 
   return (
@@ -49,8 +49,15 @@ export function TopNav() {
 
           <div className="flex items-center gap-2 cursor-pointer hover:bg-white/5 p-1 rounded-lg transition-colors ml-2">
             <div className="text-right hidden sm:block">
-              <div className="font-bold text-sm leading-tight">{user?.username}</div>
-              <div className="text-[10px] text-gray-400 font-bold bg-[#00152b] inline-block px-1.5 rounded">LVL 5</div>
+              <div className="font-bold text-sm leading-tight">{profile?.username || user?.user_metadata?.username || 'Menajer'}</div>
+              <div className="flex items-center justify-end gap-1 mt-0.5">
+                {profile?.role === 'admin' && (
+                  <NavLink to="/admin" className="text-[9px] text-white font-bold bg-red-600 px-1.5 rounded-sm hover:bg-red-500 transition border border-red-400">
+                    ADMIN
+                  </NavLink>
+                )}
+                <div className="text-[10px] text-gray-400 font-bold bg-[#00152b] inline-block px-1.5 rounded">LVL {profile?.manager_xp ? Math.floor(profile.manager_xp / 100) + 1 : 1}</div>
+              </div>
             </div>
             <UserCircle className="h-8 w-8 text-white" />
           </div>
