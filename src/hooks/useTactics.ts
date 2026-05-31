@@ -1,12 +1,38 @@
 import useSWR from 'swr'
-import { apiFetch } from '@/lib/api'
+import { supabase } from '@/lib/supabase'
+import { useFranchiseStore } from '@/store/franchiseStore'
 import type { Tactics } from '@/types'
 
 export function useTactics() {
-  const { data, error, isLoading, mutate } = useSWR<{ data: Tactics }>(
-    (('https://rqlurvmugjyvwwqhtirn.supabase.co') || 'https://rqlurvmugjyvwwqhtirn.supabase.co') + '/functions/v1/tactics',
-    apiFetch,
+  const { franchise } = useFranchiseStore()
+
+  const fetcher = async () => {
+    if (!franchise) return null
+    const { data, error } = await supabase
+      .from('tactics')
+      .select('*')
+      .eq('franchise_id', franchise.id)
+      .maybeSingle()
+    
+    if (error) throw error
+    
+    // If no tactics exist for franchise, return default
+    if (!data) {
+      return {
+        id: 'new',
+        franchise_id: franchise.id,
+        slider_ayarlari: { pass_ratio: 50, aggression: 50, tempo: 50, defense_line: 50 },
+        paketler: []
+      } as Tactics
+    }
+    return data as Tactics
+  }
+
+  const { data, error, isLoading, mutate } = useSWR<Tactics | null>(
+    franchise ? `tactics-${franchise.id}` : null,
+    fetcher,
     { refreshInterval: 60_000 }
   )
-  return { tactics: data?.data, error, isLoading, mutate }
+
+  return { tactics: data, error, isLoading, mutate }
 }
