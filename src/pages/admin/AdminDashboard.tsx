@@ -81,11 +81,12 @@ export function AdminDashboard() {
       const { data: poolPlayers } = await supabase
         .from('players')
         .select('id')
+        .eq('league_id', league.id)
         .is('franchise_id', null)
         .limit(1)
 
       if (!poolPlayers || poolPlayers.length === 0) {
-        // Create a draft pool of ~100 free agents
+        // Create a draft pool of ~100 free agents for this league
         const positions = ['QB', 'RB', 'WR', 'TE', 'OL', 'DE', 'LB', 'CB', 'S', 'K']
         const poolInsert = []
         for (let i = 0; i < 100; i++) {
@@ -94,7 +95,8 @@ export function AdminDashboard() {
             position: positions[i % positions.length],
             overall: 55 + Math.floor(Math.random() * 35),
             value: 50000 + Math.floor(Math.random() * 500000),
-            franchise_id: null
+            franchise_id: null,
+            league_id: league.id
           })
         }
         await supabase.from('players').insert(poolInsert)
