@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/Skeleton'
 export function MatchResultPage() {
   const { id } = useParams()
   const { data: result, isLoading } = useSWR(
-    id ? import.meta.env.VITE_SUPABASE_URL + `/functions/v1/matches-result?id=${id}` : null,
+    id ? (('https://rqlurvmugjyvwwqhtirn.supabase.co') || 'https://rqlurvmugjyvwwqhtirn.supabase.co') + `/functions/v1/matches-result?id=${id}` : null,
     apiFetch
   )
 

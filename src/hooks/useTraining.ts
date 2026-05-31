@@ -4,7 +4,7 @@ import type { TrainingSession } from '@/types'
 
 export function useTraining() {
   const { data, error, isLoading, mutate } = useSWR<{ data: TrainingSession[] }>(
-    import.meta.env.VITE_SUPABASE_URL + '/functions/v1/training-sessions', // assuming we have a GET endpoint
+    (('https://rqlurvmugjyvwwqhtirn.supabase.co') || 'https://rqlurvmugjyvwwqhtirn.supabase.co') + '/functions/v1/training-sessions', // assuming we have a GET endpoint
     apiFetch,
     { refreshInterval: 60_000 }
   )

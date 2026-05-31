@@ -4,7 +4,7 @@ import type { Match } from '@/types'
 
 export function useMatch() {
   const { data, error, isLoading, mutate } = useSWR<{ data: Match }>(
-    import.meta.env.VITE_SUPABASE_URL + '/functions/v1/matches-next',
+    (('https://rqlurvmugjyvwwqhtirn.supabase.co') || 'https://rqlurvmugjyvwwqhtirn.supabase.co') + '/functions/v1/matches-next',
     apiFetch,
     { refreshInterval: 10_000 }
   )

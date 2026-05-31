@@ -4,7 +4,7 @@ import type { DepthChart } from '@/types'
 
 export function useDepthChart() {
   const { data, error, isLoading, mutate } = useSWR<{ data: DepthChart[] }>(
-    import.meta.env.VITE_SUPABASE_URL + '/functions/v1/franchise-depth-chart',
+    (('https://rqlurvmugjyvwwqhtirn.supabase.co') || 'https://rqlurvmugjyvwwqhtirn.supabase.co') + '/functions/v1/franchise-depth-chart',
     apiFetch,
     { refreshInterval: 60_000 }
   )

@@ -4,7 +4,7 @@ import type { Tactics } from '@/types'
 
 export function useTactics() {
   const { data, error, isLoading, mutate } = useSWR<{ data: Tactics }>(
-    import.meta.env.VITE_SUPABASE_URL + '/functions/v1/tactics',
+    (('https://rqlurvmugjyvwwqhtirn.supabase.co') || 'https://rqlurvmugjyvwwqhtirn.supabase.co') + '/functions/v1/tactics',
     apiFetch,
     { refreshInterval: 60_000 }
   )

@@ -20,7 +20,7 @@ export function MarketPage() {
     setBuyingId(playerId)
     try {
       const res = await apiFetch<{success: boolean, error?: string}>(
-        import.meta.env.VITE_SUPABASE_URL + '/functions/v1/market-buy',
+        (('https://rqlurvmugjyvwwqhtirn.supabase.co') || 'https://rqlurvmugjyvwwqhtirn.supabase.co') + '/functions/v1/market-buy',
         {
           method: 'POST',
           body: JSON.stringify({ player_id: playerId })

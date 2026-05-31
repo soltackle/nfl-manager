@@ -23,7 +23,7 @@ export function TacticsPage() {
   if (isLoading) return <Skeleton className="h-[400px] w-full" />
 
   const handleSave = async () => {
-    await apiFetch(import.meta.env.VITE_SUPABASE_URL + '/functions/v1/tactics', {
+    await apiFetch((('https://rqlurvmugjyvwwqhtirn.supabase.co') || 'https://rqlurvmugjyvwwqhtirn.supabase.co') + '/functions/v1/tactics', {
       method: 'PATCH',
       body: JSON.stringify({ slider_ayarlari: sliders })
     })

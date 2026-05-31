@@ -4,7 +4,7 @@ import type { Achievement } from '@/types'
 
 export function useAchievements() {
   const { data, error, isLoading, mutate } = useSWR<{ data: Achievement[] }>(
-    import.meta.env.VITE_SUPABASE_URL + '/functions/v1/achievements',
+    (('https://rqlurvmugjyvwwqhtirn.supabase.co') || 'https://rqlurvmugjyvwwqhtirn.supabase.co') + '/functions/v1/achievements',
     apiFetch,
     { refreshInterval: 120_000 }
   )
