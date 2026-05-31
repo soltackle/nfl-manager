@@ -1,9 +1,15 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #0B1D3A;
+  --color-accent: #F5A623;
+  --color-surface: #1A2332;
+  --color-muted: #2D3748;
+}
 
 @layer base {
   body {
-    @apply bg-primary text-white;
+    background-color: var(--color-primary);
+    color: white;
   }
 }
