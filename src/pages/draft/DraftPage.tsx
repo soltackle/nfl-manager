@@ -21,7 +21,10 @@ export function DraftPage() {
     const interval = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 1) {
-          // Auto-pick logic could trigger here on client side or rely on backend
+          // Auto-pick when time expires
+          if (!isPicking) {
+            handlePick(null)
+          }
           return 0
         }
         return prev - 1
@@ -29,7 +32,7 @@ export function DraftPage() {
     }, 1000)
     
     return () => clearInterval(interval)
-  }, [draftSession, franchise?.id])
+  }, [draftSession?.current_pick_franchise_id, franchise?.id, isPicking])
 
   if (isLoading) {
     return (
@@ -40,7 +43,23 @@ export function DraftPage() {
     )
   }
 
-  if (!draftSession) {
+  // If draft is over (session deleted) but we have a franchise
+  if (!draftSession && franchise) {
+    // If we have picks or league status is active, redirect to dashboard
+    if (picks.length > 0) {
+      setTimeout(() => {
+        window.location.href = '/dashboard'
+      }, 3000)
+      
+      return (
+        <div className="pt-24 text-center">
+          <Trophy className="w-16 h-16 text-accent mx-auto mb-4 animate-bounce" />
+          <h2 className="text-2xl font-display font-black text-white uppercase tracking-widest">DRAFT TAMAMLANDI!</h2>
+          <p className="text-white/50 mt-2">Kadrolar oluşturuldu, Fikstür ayarlandı. Ana merkeze yönlendiriliyorsunuz...</p>
+        </div>
+      )
+    }
+
     return (
       <div className="pt-24 text-center">
         <ShieldAlert className="w-16 h-16 text-yellow-500 mx-auto mb-4 opacity-50" />
@@ -50,18 +69,37 @@ export function DraftPage() {
     )
   }
 
-  const isMyTurn = draftSession.current_pick_franchise_id === franchise?.id
+  const isMyTurn = draftSession?.current_pick_franchise_id === franchise?.id
   const filteredPlayers = availablePlayers.filter(p => filter === 'TÜMÜ' || p.position === filter)
 
-  const handlePick = async (playerId: string) => {
+  const handlePick = async (playerId: string | null) => {
     if (!isMyTurn || isPicking) return
     setIsPicking(true)
     try {
       await makePick(playerId)
     } catch (err: any) {
-      alert('Seçim hatası: ' + err.message)
+      if (playerId) alert('Seçim hatası: ' + err.message)
+      else console.error('Auto-pick hatası: ' + err.message)
     } finally {
       setIsPicking(false)
+    }
+  }
+
+  const handleAddTime = async () => {
+    if (!isMyTurn) return
+    if (franchise.club_fund < 15) {
+      return alert('Yeterli AmFutCoin yok!')
+    }
+    
+    // Optimistic UI update
+    setTimeLeft(prev => prev + 10)
+    
+    try {
+      // In a real app we'd call an Edge Function or RPC to deduct funds and sync time.
+      // For this implementation, we deduct locally via RPC for simplicity.
+      await supabase.rpc('deduct_club_fund', { p_franchise_id: franchise.id, p_amount: 15 })
+    } catch (e) {
+      console.error("Time add error", e)
     }
   }
 
@@ -77,7 +115,7 @@ export function DraftPage() {
           </div>
           <div>
             <h1 className="text-2xl font-display font-black text-white uppercase tracking-wider">
-              TUR {draftSession.current_round} / 8
+              TUR {draftSession?.current_round || 1} / 8
             </h1>
             <p className={`font-bold uppercase ${isMyTurn ? 'text-green-400' : 'text-accent'}`}>
               {isMyTurn ? 'SIRA SİZDE!' : 'Rakip Seçim Yapıyor...'}
@@ -92,7 +130,11 @@ export function DraftPage() {
               00:{timeLeft.toString().padStart(2, '0')}
             </div>
           </div>
-          <button className="bg-yellow-500 text-black px-4 py-2 rounded font-bold text-xs uppercase hover:bg-yellow-400 flex flex-col items-center leading-none">
+          <button 
+            onClick={handleAddTime}
+            disabled={!isMyTurn}
+            className={`bg-yellow-500 text-black px-4 py-2 rounded font-bold text-xs uppercase hover:bg-yellow-400 flex flex-col items-center leading-none ${!isMyTurn && 'opacity-50 cursor-not-allowed'}`}
+          >
             <span>+10 Saniye</span>
             <span className="text-[9px] opacity-70">15🪙</span>
           </button>
@@ -187,7 +229,15 @@ export function DraftPage() {
             )}
           </div>
           
-          <button className="mt-4 w-full py-3 bg-[#00254c] text-white/50 font-bold uppercase text-xs rounded hover:bg-[#003366] hover:text-white transition-colors border border-dashed border-white/20 flex items-center justify-center gap-2">
+          <button 
+            onClick={() => handlePick(null)}
+            disabled={!isMyTurn || isPicking}
+            className={`mt-4 w-full py-3 text-white/50 font-bold uppercase text-xs rounded border border-dashed border-white/20 flex items-center justify-center gap-2 transition-colors ${
+              isMyTurn && !isPicking 
+                ? 'bg-[#00254c] hover:bg-[#003366] hover:text-white cursor-pointer' 
+                : 'bg-[#001021] opacity-50 cursor-not-allowed'
+            }`}
+          >
             <Cpu className="w-4 h-4" /> Bot Olarak Seç (AFK)
           </button>
         </div>
