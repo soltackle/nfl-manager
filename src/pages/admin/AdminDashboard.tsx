@@ -2,9 +2,27 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Shield, Plus, Zap, AlertTriangle, CheckCircle2, Server, Play, FastForward, Activity } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
 
 export function AdminDashboard() {
   const [isSimulating, setIsSimulating] = useState(false)
+  const [isCreating, setIsCreating] = useState(false)
+  const [leagueName, setLeagueName] = useState('')
+
+  const handleCreateLeague = async () => {
+    setIsCreating(true)
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-create-league', {
+        body: { name: leagueName, mode: 'test' }
+      })
+      if (error) throw error
+      alert('Lig başarıyla kuruldu ve botlar eklendi!')
+    } catch (err: any) {
+      alert('Hata: ' + err.message)
+    } finally {
+      setIsCreating(false)
+    }
+  }
 
   const handleSimulateMatch = () => {
     setIsSimulating(true)
@@ -39,7 +57,13 @@ export function AdminDashboard() {
           <CardContent className="space-y-4">
             <div>
               <label className="text-xs text-text-dim font-bold uppercase mb-1 block">Lig İsmi</label>
-              <input type="text" className="w-full bg-[#001021] border border-[#004b93] rounded p-2 text-white" placeholder="Örn: Test_Liga_01" />
+              <input 
+                type="text" 
+                value={leagueName}
+                onChange={(e) => setLeagueName(e.target.value)}
+                className="w-full bg-[#001021] border border-[#004b93] rounded p-2 text-white" 
+                placeholder="Örn: Test_Liga_01" 
+              />
             </div>
             
             <div className="space-y-2">
@@ -66,7 +90,13 @@ export function AdminDashboard() {
               </label>
             </div>
 
-            <Button className="w-full osm-button bg-accent">Botlarla Doldur ve Başlat</Button>
+            <Button 
+              className="w-full osm-button bg-accent"
+              onClick={handleCreateLeague}
+              disabled={isCreating}
+            >
+              {isCreating ? 'Lig Kuruluyor...' : 'Botlarla Doldur ve Başlat'}
+            </Button>
           </CardContent>
         </Card>
 
