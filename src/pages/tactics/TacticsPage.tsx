@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useTactics } from '@/hooks/useTactics'
 import { useFranchiseStore } from '@/store/franchiseStore'
 import { supabase } from '@/lib/supabase'
-import { Shield, Zap, ChevronRight, Activity, Crosshair, ShieldAlert, FastForward, Navigation } from 'lucide-react'
+import { Shield, Zap, ChevronRight, Activity, Crosshair, ShieldAlert, FastForward, Navigation, Search } from 'lucide-react'
 import { Skeleton } from '@/components/ui/Skeleton'
 
 export function TacticsPage() {
@@ -105,6 +105,48 @@ export function TacticsPage() {
       </div>
 
       <div className="grid gap-6">
+        {/* Mismatch Scout Report */}
+        <div className="bg-gradient-to-r from-[#00254c] to-[#00152b] p-5 rounded-xl border border-[#004b93]/50">
+          <h2 className="text-sm font-display font-bold text-accent uppercase mb-6 flex items-center gap-2">
+            <Search className="w-4 h-4" /> Rakip İstihbarat Raporu (Scout Report)
+          </h2>
+          <div className="bg-[#001021] border border-white/10 rounded-lg p-4">
+            <div className="flex justify-between items-center mb-4 pb-2 border-b border-white/10">
+              <span className="text-xs font-bold text-white/50">Haftanın Hakemi: <span className="text-white">Mike Thomas (KATI)</span></span>
+              <span className="text-xs font-bold text-white/50">Hava Durumu: <span className="text-white">☁️ Bulutlu</span></span>
+            </div>
+            
+            <p className="text-xs text-white/70 mb-4">⚠️ MİSMATCH FIRSATLARI (Haftada 1 adet seçilebilir):</p>
+            
+            <div className="space-y-3">
+              {[
+                { id: 'mismatch_1', label: 'WR1 vs DB2', advantage: '+12 OVR Avantajı' },
+                { id: 'mismatch_2', label: 'TE1 vs LB3', advantage: '+8 OVR Avantajı' }
+              ].map((m, idx) => (
+                <div key={m.id} className="flex items-center justify-between p-3 rounded bg-white/5 border border-white/10">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-accent/20 text-accent flex items-center justify-center font-bold">{idx + 1}</div>
+                    <div>
+                      <div className="text-white font-bold text-sm">{m.label}</div>
+                      <div className="text-green-400 text-xs font-bold">{m.advantage}</div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setSliders({...sliders, targeted_mismatch: m.id} as any)}
+                    className={`px-4 py-2 rounded text-xs font-bold uppercase transition-colors ${
+                      ((sliders as any).targeted_mismatch) === m.id
+                        ? 'bg-accent text-[#001021]'
+                        : 'bg-black/40 text-white hover:bg-white/10 border border-white/20'
+                    }`}
+                  >
+                    {((sliders as any).targeted_mismatch) === m.id ? '🎯 HEDEFLENDİ' : '🎯 HEDEFLE'}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
         {/* Sliders */}
         <div className="bg-gradient-to-r from-[#00254c] to-[#00152b] p-5 rounded-xl border border-[#004b93]/50">
           <h2 className="text-sm font-display font-bold text-accent uppercase mb-6 flex items-center gap-2">
