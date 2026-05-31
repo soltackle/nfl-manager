@@ -42,6 +42,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     if (session?.user) {
       const { data } = await supabase.from('users').select('*').eq('id', session.user.id).single()
       profile = data
+      const { useFranchiseStore } = await import('./franchiseStore')
+      await useFranchiseStore.getState().initialize(session.user.id)
     }
     
     set({ session, user: session?.user || null, profile, isLoading: false })
@@ -51,6 +53,11 @@ export const useAuthStore = create<AuthState>((set) => ({
       if (session?.user) {
         const { data } = await supabase.from('users').select('*').eq('id', session.user.id).single()
         currentProfile = data
+        const { useFranchiseStore } = await import('./franchiseStore')
+        await useFranchiseStore.getState().initialize(session.user.id)
+      } else {
+        const { useFranchiseStore } = await import('./franchiseStore')
+        useFranchiseStore.getState().clearFranchise()
       }
       set({ session, user: session?.user || null, profile: currentProfile })
     })
