@@ -9,6 +9,7 @@ import { DepthChartPage } from './pages/depth-chart/DepthChartPage'
 import { TacticsPage } from './pages/tactics/TacticsPage'
 import { MarketPage } from './pages/market/MarketPage'
 import { TrainingPage } from './pages/training/TrainingPage'
+import { ClubPage } from './pages/club/ClubPage'
 import { MatchResultPage } from './pages/match/MatchResultPage'
 import { DraftPage } from './pages/draft/DraftPage'
 import { AdminDashboard } from './pages/admin/AdminDashboard'
@@ -53,6 +54,7 @@ const router = createBrowserRouter([
           { path: 'draft', element: <DraftPage /> },
           { path: 'profile', element: <div>Profile Stub</div> },
           { path: 'training', element: <TrainingPage /> },
+          { path: 'club', element: <ClubPage /> },
         ]
       },
       { 
