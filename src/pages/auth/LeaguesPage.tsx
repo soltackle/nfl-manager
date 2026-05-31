@@ -227,7 +227,7 @@ export function LeaguesPage() {
                 </div>
                 <div className="flex items-center gap-3 text-sm text-white/80">
                   <div className="w-2 h-2 rounded-full bg-accent"></div>
-                  Maçlar her gün 20:00 UTC oynanır.
+                  Maçlar ve Draft her gün 18:00 UTC oynanır.
                 </div>
               </div>
 
