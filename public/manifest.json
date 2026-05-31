@@ -1,0 +1,11 @@
+{
+  "name": "NFL Manager",
+  "short_name": "NFLMgr",
+  "theme_color": "#0B1D3A",
+  "background_color": "#0B1D3A",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/",
+  "start_url": "/",
+  "icons": []
+}
