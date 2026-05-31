@@ -132,7 +132,7 @@ export function DraftPage() {
                       {p.overall >= 75 && p.overall < 85 && <span className="text-[10px] bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded border border-blue-500/30">SOLID</span>}
                     </div>
                     <div className="text-xs text-white/50 uppercase font-bold mt-1">
-                      {p.age} YAŞ • {p.traits?.length || 0} TRAIT
+                      ${((p.value || 0) / 1000).toFixed(0)}K DEĞERİNDE
                     </div>
                   </div>
                 </div>

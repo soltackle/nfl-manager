@@ -1,0 +1,1 @@
+CREATE POLICY draft_sessions_insert_auth ON draft_sessions FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);CREATE POLICY players_insert_auth ON players FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);  

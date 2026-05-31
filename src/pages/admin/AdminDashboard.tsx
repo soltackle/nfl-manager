@@ -42,9 +42,62 @@ export function AdminDashboard() {
   const handleStartDraft = async () => {
     if (!league) return alert('Aktif bir ligde değilsiniz!')
     try {
+      // First create a draft session
+      const { data: franchises } = await supabase
+        .from('franchises')
+        .select('id')
+        .eq('league_id', league.id)
+        .order('created_at')
+      
+      if (!franchises || franchises.length < 2) {
+        return alert('Ligde en az 2 takım olmalı!')
+      }
+
+      // Create draft session if not exists
+      const { data: existingSession } = await supabase
+        .from('draft_sessions')
+        .select('id')
+        .eq('league_id', league.id)
+        .maybeSingle()
+
+      if (!existingSession) {
+        const { error: dsErr } = await supabase
+          .from('draft_sessions')
+          .insert({
+            league_id: league.id,
+            current_round: 1,
+            current_pick_franchise_id: franchises[0].id
+          })
+        if (dsErr) throw dsErr
+      }
+
+      // Generate draft pool (free agent players) if not exists
+      const { data: poolPlayers } = await supabase
+        .from('players')
+        .select('id')
+        .is('franchise_id', null)
+        .limit(1)
+
+      if (!poolPlayers || poolPlayers.length === 0) {
+        // Create a draft pool of ~100 free agents
+        const positions = ['QB', 'RB', 'WR', 'TE', 'OL', 'DE', 'LB', 'CB', 'S', 'K']
+        const poolInsert = []
+        for (let i = 0; i < 100; i++) {
+          poolInsert.push({
+            name: `FA Player ${i + 1}`,
+            position: positions[i % positions.length],
+            overall: 55 + Math.floor(Math.random() * 35),
+            value: 50000 + Math.floor(Math.random() * 500000),
+            franchise_id: null
+          })
+        }
+        await supabase.from('players').insert(poolInsert)
+      }
+
+      // Set league to draft
       const { error } = await supabase.from('leagues').update({ status: 'draft' }).eq('id', league.id)
       if (error) throw error
-      alert('Draft beklemesi atlandı, Draft başlatıldı!')
+      alert('Draft başlatıldı! Şimdi /draft sayfasına gidin.')
     } catch (err: any) {
       alert('Hata: ' + err.message)
     }

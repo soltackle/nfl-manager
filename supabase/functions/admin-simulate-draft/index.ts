@@ -31,40 +31,59 @@ serve(async (req) => {
 
     // 1. Get franchises in league
     const { data: franchises } = await supabaseAdmin.from('franchises').select('id').eq('league_id', league_id)
-    if (!franchises || franchises.length !== 8) {
-      throw new Error('Ligde tam 8 takım olmalı. Önce botlarla doldurun.')
+    if (!franchises || franchises.length < 2) {
+      throw new Error('Ligde en az 2 takım olmalı. Önce botlarla doldurun.')
     }
 
-    // 2. Generate random players for each franchise to simulate draft
-    // In a real app we'd pull from draft_picks and create them based on the snake draft logic,
-    // but for "hızlı geç" we will just generate 22 players per team (11 offense, 11 defense).
-    const positions = ['QB', 'RB', 'WR', 'TE', 'OL', 'DL', 'LB', 'DB']
-    
+    // 2. Set league status to 'draft' first
+    await supabaseAdmin.from('leagues').update({ status: 'draft' }).eq('id', league_id)
+
+    // 3. Create a draft session
+    const { data: draftSession, error: dsErr } = await supabaseAdmin.from('draft_sessions').insert({
+      league_id,
+      current_round: 1,
+      current_pick_franchise_id: franchises[0].id
+    }).select().single()
+    if (dsErr) {
+      // Session might already exist, try to fetch it
+      const { data: existingSession } = await supabaseAdmin.from('draft_sessions').select('*').eq('league_id', league_id).single()
+      if (!existingSession) throw new Error("Draft session oluşturulamadı: " + dsErr.message)
+    }
+
+    // 4. Generate random players for each franchise to simulate draft
+    // Use only valid enum positions: QB, RB, WR, TE, OL, DE, LB, CB, S, K
+    const positions: string[] = ['QB', 'RB', 'WR', 'WR', 'TE', 'OL', 'OL', 'OL', 'OL', 'OL', 'DE', 'DE', 'LB', 'LB', 'LB', 'CB', 'CB', 'S', 'S', 'K', 'RB', 'WR']
+
     for (const franchise of franchises) {
+      // First, check if franchise already has players (avoid duplicates on re-run)
+      const { data: existingPlayers } = await supabaseAdmin.from('players').select('id').eq('franchise_id', franchise.id).limit(1)
+      if (existingPlayers && existingPlayers.length > 0) continue
+
       const playersToInsert = []
-      // Generate 22 starters
       for (let i = 0; i < 22; i++) {
         const pos = positions[i % positions.length]
+        const names = ['James', 'Williams', 'Johnson', 'Brown', 'Davis', 'Miller', 'Wilson', 'Moore', 'Taylor', 'Anderson', 'Thomas', 'Jackson', 'White', 'Harris', 'Martin', 'Thompson', 'Garcia', 'Martinez', 'Robinson', 'Clark', 'Rodriguez', 'Lewis']
         playersToInsert.push({
           franchise_id: franchise.id,
-          first_name: 'Drafted',
-          last_name: `Player_${i}`,
+          name: `${names[i]} ${pos}${Math.floor(Math.random() * 99)}`,
           position: pos,
-          age: 20 + Math.floor(Math.random() * 10),
           overall: 60 + Math.floor(Math.random() * 30),
-          potential: 70 + Math.floor(Math.random() * 25),
-          status: 'roster'
+          value: 100000 + Math.floor(Math.random() * 900000)
         })
       }
-      
+
       const { error: pErr } = await supabaseAdmin.from('players').insert(playersToInsert)
-      if (pErr) console.error("Player insert error", pErr)
+      if (pErr) throw new Error("Player insert error: " + pErr.message)
     }
 
-    // 3. Set league to active to start the season!
+    // 5. Generate fixtures for the season
+    const { error: fixErr } = await supabaseAdmin.rpc('generate_fixtures', { p_league_id: league_id })
+    if (fixErr) console.error("Fixture generation error:", fixErr)
+
+    // 6. Set league to active to start the season!
     await supabaseAdmin.from('leagues').update({ status: 'active' }).eq('id', league_id)
 
-    return new Response(JSON.stringify({ success: true, message: 'Draft tamamlandı, lig başladı!' }), {
+    return new Response(JSON.stringify({ success: true, message: 'Draft simüle edildi, fikstür oluşturuldu ve sezon başladı!' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     })

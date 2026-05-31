@@ -1,4 +1,3 @@
-import useSWR from 'swr'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useFranchiseStore } from '@/store/franchiseStore'
@@ -8,49 +7,59 @@ export function useDraft() {
   const [draftSession, setDraftSession] = useState<any>(null)
   const [availablePlayers, setAvailablePlayers] = useState<any[]>([])
   const [picks, setPicks] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    if (!franchise) return
+    if (!franchise) {
+      setIsLoading(false)
+      return
+    }
 
     const fetchInitialData = async () => {
-      // Get session
-      const { data: session } = await supabase
-        .from('draft_sessions')
-        .select('*')
-        .eq('league_id', franchise.league_id)
-        .single()
-      
-      setDraftSession(session)
+      setIsLoading(true)
+      try {
+        // Get session
+        const { data: session } = await supabase
+          .from('draft_sessions')
+          .select('*')
+          .eq('league_id', franchise.league_id)
+          .maybeSingle()
+        
+        setDraftSession(session)
 
-      if (session) {
-        // Fetch picks
-        const { data: pickData } = await supabase
-          .from('draft_picks')
-          .select('*, players(*), franchises(team_name)')
-          .eq('session_id', session.id)
-          .order('created_at', { ascending: false })
-        setPicks(pickData || [])
+        if (session) {
+          // Fetch picks
+          const { data: pickData } = await supabase
+            .from('draft_picks')
+            .select('*, players(*), franchises(team_name)')
+            .eq('session_id', session.id)
+            .order('created_at', { ascending: false })
+          setPicks(pickData || [])
+        }
+
+        // Fetch global available players (Draft pool)
+        const { data: players } = await supabase
+          .from('players')
+          .select('*')
+          .is('franchise_id', null)
+          .order('overall', { ascending: false })
+          .limit(100)
+        
+        setAvailablePlayers(players || [])
+      } catch (err) {
+        console.error('Draft fetch error:', err)
+      } finally {
+        setIsLoading(false)
       }
-
-      // Fetch global available players (Draft pool)
-      // Since players don't have league_id, we fetch top 100 free agents
-      const { data: players } = await supabase
-        .from('players')
-        .select('*')
-        .is('franchise_id', null)
-        .order('overall', { ascending: false })
-        .limit(100)
-      
-      setAvailablePlayers(players || [])
     }
 
     fetchInitialData()
 
     // Realtime subscriptions
-    const channel = supabase.channel('draft_room')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'draft_picks' }, (payload) => {
+    const channel = supabase.channel(`draft_room_${franchise.league_id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'draft_picks' }, () => {
         // Refresh picks
-        fetchInitialData() 
+        fetchInitialData()
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'draft_sessions' }, (payload) => {
         setDraftSession(payload.new)
@@ -60,7 +69,7 @@ export function useDraft() {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [franchise])
+  }, [franchise?.id, franchise?.league_id])
 
   const makePick = async (playerId: string) => {
     if (!franchise || !draftSession) return
@@ -76,6 +85,6 @@ export function useDraft() {
     availablePlayers,
     picks,
     makePick,
-    isLoading: !draftSession 
+    isLoading
   }
 }
