@@ -1,6 +1,27 @@
 -- Extension for uuid
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
+-- Drop existing tables to allow clean re-runs
+DROP TABLE IF EXISTS training_sessions CASCADE;
+DROP TABLE IF EXISTS admin_logs CASCADE;
+DROP TABLE IF EXISTS achievements CASCADE;
+DROP TABLE IF EXISTS sponsors CASCADE;
+DROP TABLE IF EXISTS draft_picks CASCADE;
+DROP TABLE IF EXISTS draft_sessions CASCADE;
+DROP TABLE IF EXISTS match_drive_logs CASCADE;
+DROP TABLE IF EXISTS matches CASCADE;
+DROP TABLE IF EXISTS tactics CASCADE;
+DROP TABLE IF EXISTS depth_charts CASCADE;
+DROP TABLE IF EXISTS players CASCADE;
+DROP TABLE IF EXISTS franchises CASCADE;
+DROP TABLE IF EXISTS league_members CASCADE;
+DROP TABLE IF EXISTS leagues CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+
+-- Drop existing types if they exist to prevent errors during re-runs
+DROP TYPE IF EXISTS league_status CASCADE;
+DROP TYPE IF EXISTS player_position CASCADE;
+
 -- Enum types
 CREATE TYPE league_status AS ENUM ('waiting', 'draft', 'active', 'playoffs', 'completed');
 CREATE TYPE player_position AS ENUM ('QB', 'RB', 'WR', 'TE', 'OL', 'DE', 'LB', 'CB', 'S', 'K');
@@ -10,6 +31,7 @@ CREATE TABLE users (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   email TEXT NOT NULL,
   username TEXT NOT NULL,
+  role TEXT DEFAULT 'user',
   amfutcoin INTEGER DEFAULT 0,
   manager_xp INTEGER DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW(),

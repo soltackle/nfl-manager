@@ -35,6 +35,7 @@ const router = createBrowserRouter([
       { path: 'match/:id', element: <MatchResultPage /> },
       { path: 'draft', element: <DraftPage /> },
       { path: 'profile', element: <div>Profile Stub</div> }, // STUB
+      { path: 'training', element: <div className="p-8 text-center text-xl font-bold">Antrenman Sayfası Yapım Aşamasında</div> }, // STUB
       { 
         path: 'admin', 
         element: <AdminRoute />,
@@ -42,6 +43,7 @@ const router = createBrowserRouter([
           { index: true, element: <AdminDashboard /> }
         ]
       },
+      { path: '*', element: <Navigate to="/dashboard" replace /> }
     ]
   }
 ])
