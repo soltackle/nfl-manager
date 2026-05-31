@@ -344,21 +344,11 @@ export function DepthChartPage() {
 
           {/* THE PITCH */}
           <div 
-            className="relative w-full h-[400px] sm:h-[500px] lg:h-[600px] bg-[#00152b] rounded-xl overflow-hidden border-2 border-[#005c99] shadow-[inset_0_0_80px_rgba(0,0,0,0.8)]"
-            style={{
-              backgroundImage: `
-                linear-gradient(to right, rgba(255,255,255,0.08) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px)
-              `,
-              backgroundSize: '10% 20%'
-            }}
+            className="relative w-full h-[400px] sm:h-[500px] lg:h-[600px] bg-[#00152b] rounded-xl overflow-hidden border-2 border-[#005c99] shadow-[inset_0_0_80px_rgba(0,0,0,0.8)] bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: `url('/pitch_bg.png')` }}
           >
-            {/* Field Decoration */}
-            <div className="absolute inset-0 flex flex-col justify-between py-[10%] opacity-20 pointer-events-none">
-              <div className="w-full border-t border-dashed border-white/50"></div>
-              <div className="w-full border-t-2 border-solid border-white/30"></div>
-              <div className="w-full border-t border-dashed border-white/50"></div>
-            </div>
+            {/* Field Decoration Overlay (Optional darkness) */}
+            <div className="absolute inset-0 bg-black/20 pointer-events-none"></div>
             
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 opacity-5 pointer-events-none">
               <Shield className="w-full h-full text-white" />
