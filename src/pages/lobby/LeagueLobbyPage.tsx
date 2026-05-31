@@ -63,22 +63,36 @@ export function LeagueLobbyPage() {
     if (members.length === 8 && league?.match_time_utc) {
       // Calculate once immediately
       const updateTimer = () => {
-        const now = new Date()
-        const [hours, minutes] = league.match_time_utc.split(':').map(Number)
-        
-        const target = new Date()
-        target.setUTCHours(hours, minutes, 0, 0)
-        
-        if (target.getTime() <= now.getTime()) {
-          // If it's past the time today, target is tomorrow
-          target.setUTCDate(target.getUTCDate() + 1)
-        }
-        
-        const diff = target.getTime() - now.getTime()
-        if (diff <= 0) {
+        try {
+          const now = new Date()
+          // Robust parsing of time string (e.g. "20:00:00" or "20:00" or "20:00:00+00")
+          const timeStr = league.match_time_utc || '20:00:00'
+          const parts = timeStr.split(':')
+          const hours = parseInt(parts[0] || '20', 10)
+          const minutes = parseInt(parts[1] || '0', 10)
+          
+          if (isNaN(hours) || isNaN(minutes)) {
+            setTimeLeft(0)
+            return
+          }
+          
+          const target = new Date()
+          target.setUTCHours(hours, minutes, 0, 0)
+          
+          if (target.getTime() <= now.getTime()) {
+            // If it's past the time today, target is tomorrow
+            target.setUTCDate(target.getUTCDate() + 1)
+          }
+          
+          const diff = target.getTime() - now.getTime()
+          if (diff <= 0) {
+            setTimeLeft(0)
+          } else {
+            setTimeLeft(diff)
+          }
+        } catch (e) {
+          console.error("Timer error:", e)
           setTimeLeft(0)
-        } else {
-          setTimeLeft(diff)
         }
       }
       
