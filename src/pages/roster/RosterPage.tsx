@@ -13,6 +13,8 @@ const SPECIAL_POS = ['K']
 export function RosterPage() {
   const { roster, isLoading } = useRoster()
   const [activeTab, setActiveTab] = useState<'ALL' | 'OFF' | 'DEF' | 'ST'>('ALL')
+  const [isSelling, setIsSelling] = useState<string | null>(null)
+  const { franchise, setFranchise } = useFranchiseStore()
 
   if (isLoading) return (
     <div className="space-y-4 pt-4">
@@ -45,9 +47,6 @@ export function RosterPage() {
   const sortedFiltered = [...filteredRoster].sort((a, b) => b.overall - a.overall)
   const mainRoster = sortedFiltered.slice(0, 22)
   const practiceSquad = sortedFiltered.slice(22)
-
-  const [isSelling, setIsSelling] = useState<string | null>(null)
-  const { franchise, setFranchise } = useFranchiseStore()
 
   const handleSell = async (player: any) => {
     if (!franchise) return
