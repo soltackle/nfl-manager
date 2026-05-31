@@ -136,7 +136,10 @@ serve(async (req) => {
       }
       
       // Update league status
-      await supabaseAdmin.from('leagues').update({ status: 'draft' }).eq('id', league.id)
+      await supabaseAdmin.from('leagues').update({ status: 'active' }).eq('id', league.id)
+      
+      // Generate fixtures for the league!
+      await supabaseAdmin.rpc('generate_fixtures', { p_league_id: league.id })
     }
 
     return new Response(JSON.stringify({ success: true, league }), {

@@ -24,12 +24,28 @@ export function AdminDashboard() {
     }
   }
 
-  const handleSimulateMatch = () => {
+  const handleSimulateMatch = async () => {
+    const weekInput = prompt("Hangi haftayı simüle etmek istiyorsunuz? (Sayı girin)", "1")
+    const week = parseInt(weekInput || "1", 10)
+    
+    // We need league_id to simulate match. 
+    // Usually an Admin selects a league, but here we can prompt or assume the most recent.
+    const { data: leagues } = await supabase.from('leagues').select('id').order('created_at', { ascending: false }).limit(1)
+    if (!leagues || leagues.length === 0) return alert("Hiç lig bulunamadı!")
+    const league_id = leagues[0].id
+
     setIsSimulating(true)
-    setTimeout(() => {
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-simulate-match', {
+        body: { league_id, week }
+      })
+      if (error) throw error
+      alert(`Hafta ${week} başarıyla simüle edildi!`)
+    } catch (err: any) {
+      alert('Simülasyon Hatası: ' + err.message)
+    } finally {
       setIsSimulating(false)
-      alert('Maç motoru başarıyla simüle edildi ve loglar üretildi!')
-    }, 1500)
+    }
   }
 
   return (

@@ -17,68 +17,58 @@ export function DashboardPage() {
       <div className="relative w-full rounded-xl bg-gradient-to-b from-[#004b93]/90 to-[#001f40]/90 border border-[#005c99] shadow-2xl overflow-hidden p-6">
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20"></div>
         
-        {/* Header */}
-        <div className="relative z-10 flex flex-col items-center mb-6">
-          <div className="bg-[#00254c] border-2 border-[#005c99] rounded px-4 py-1 mb-2 shadow-lg">
-            <span className="text-white font-display font-bold uppercase tracking-widest text-sm">MAÇ GÜNÜ 6</span>
-          </div>
-          <span className="text-white font-bold text-sm tracking-wide">Sıradaki maç</span>
-          <span className="text-white font-display font-bold text-3xl drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">06s 35d 31s</span>
-        </div>
-
-        {/* VS Section */}
-        <div className="relative z-10 flex items-center justify-between max-w-2xl mx-auto px-4">
-          
-          {/* Home Team */}
-          <div className="flex flex-col items-center w-1/3">
-            <div className="relative">
-              <Shield className="h-28 w-28 text-purple-600 drop-shadow-[0_0_15px_rgba(147,51,234,0.6)]" fill="currentColor" />
-              <div className="absolute -bottom-2 -right-2 bg-[#00152b] rounded-full p-1 border border-gray-600">
-                <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=Eyupspor`} className="w-8 h-8 rounded-full" />
+        {match ? (
+          <>
+            {/* Header */}
+            <div className="relative z-10 flex flex-col items-center mb-6">
+              <div className="bg-[#00254c] border-2 border-[#005c99] rounded px-4 py-1 mb-2 shadow-lg">
+                <span className="text-white font-display font-bold uppercase tracking-widest text-sm">MAÇ GÜNÜ {match.week}</span>
               </div>
+              <span className="text-white font-bold text-sm tracking-wide">Sıradaki maç</span>
             </div>
-            <div className="text-white font-display font-bold text-lg mt-4 uppercase tracking-wide">EYÜPSPOR</div>
-            <div className="flex gap-1 mt-2">
-              <span className="w-4 h-4 rounded-full bg-red-600 text-[10px] flex items-center justify-center font-bold text-white shadow">M</span>
-              <span className="w-4 h-4 rounded-full bg-red-600 text-[10px] flex items-center justify-center font-bold text-white shadow">M</span>
-              <span className="w-4 h-4 rounded-full bg-gray-500 text-[10px] flex items-center justify-center font-bold text-white shadow">B</span>
-              <span className="w-4 h-4 rounded-full bg-red-600 text-[10px] flex items-center justify-center font-bold text-white shadow">M</span>
-            </div>
-          </div>
 
-          {/* VS */}
-          <div className="flex flex-col items-center justify-center">
-            <div className="text-6xl font-display font-black text-[#00152b] drop-shadow-[0_2px_4px_rgba(255,255,255,0.2)]" style={{ WebkitTextStroke: '2px #00a2ff' }}>VS</div>
-            <div className="flex items-center gap-2 mt-8 bg-[#00152b]/50 px-3 py-1 rounded-full border border-white/10">
-              <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=referee`} className="w-6 h-6 rounded-full" />
-              <CloudRain className="h-5 w-5 text-blue-300" />
-            </div>
-            <div className="text-center mt-2">
-              <div className="text-white/60 text-xs uppercase tracking-wider font-bold">Hakem</div>
-              <div className="text-white text-sm font-bold">Cihan Aydın</div>
-            </div>
-          </div>
-
-          {/* Away Team */}
-          <div className="flex flex-col items-center w-1/3">
-            <div className="relative">
-              <div className="absolute -top-4 -left-4 bg-[#00152b] rounded-full w-8 h-8 flex items-center justify-center border border-[#005c99] text-white font-bold text-xs shadow-lg">74</div>
-              <Shield className="h-28 w-28 text-accent drop-shadow-[0_0_15px_rgba(255,156,0,0.6)]" fill="currentColor" />
-              <div className="absolute -bottom-2 -right-2 bg-[#00152b] rounded-full p-1 border border-gray-600">
-                <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username}`} className="w-8 h-8 rounded-full" />
+            {/* VS Section */}
+            <div className="relative z-10 flex items-center justify-between max-w-2xl mx-auto px-4">
+              
+              {/* Home Team */}
+              <div className="flex flex-col items-center w-1/3 text-center">
+                <div className="relative">
+                  <Shield className={`h-28 w-28 drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] ${match.home_franchise_id === franchise?.id ? 'text-accent' : 'text-purple-600'}`} fill="currentColor" />
+                </div>
+                <div className="text-white font-display font-bold text-lg mt-4 uppercase tracking-wide">
+                  {(match as any).home_franchise?.team_name || 'Ev Sahibi'}
+                </div>
+                {match.home_franchise_id === franchise?.id && <div className="text-[#00a2ff] text-xs font-bold mt-1">Sizin Takımınız</div>}
               </div>
-            </div>
-            <div className="text-white font-display font-bold text-lg mt-4 uppercase tracking-wide text-center">İSTANBUL BAŞAKŞEHİR</div>
-            <div className="text-[#00a2ff] text-xs font-bold">🇹🇷 {user?.username}</div>
-            <div className="flex gap-1 mt-2">
-              <span className="w-4 h-4 rounded-full bg-green-500 text-[10px] flex items-center justify-center font-bold text-white shadow">G</span>
-              <span className="w-4 h-4 rounded-full bg-green-500 text-[10px] flex items-center justify-center font-bold text-white shadow">G</span>
-              <span className="w-4 h-4 rounded-full bg-gray-500 text-[10px] flex items-center justify-center font-bold text-white shadow">B</span>
-              <span className="w-4 h-4 rounded-full bg-gray-500 text-[10px] flex items-center justify-center font-bold text-white shadow">B</span>
-            </div>
-          </div>
 
-        </div>
+              {/* VS */}
+              <div className="flex flex-col items-center justify-center">
+                <div className="text-6xl font-display font-black text-[#00152b] drop-shadow-[0_2px_4px_rgba(255,255,255,0.2)]" style={{ WebkitTextStroke: '2px #00a2ff' }}>VS</div>
+                <div className="flex items-center gap-2 mt-8 bg-[#00152b]/50 px-3 py-1 rounded-full border border-white/10">
+                  <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=referee`} className="w-6 h-6 rounded-full" />
+                  <CloudRain className="h-5 w-5 text-blue-300" />
+                </div>
+              </div>
+
+              {/* Away Team */}
+              <div className="flex flex-col items-center w-1/3 text-center">
+                <div className="relative">
+                  <Shield className={`h-28 w-28 drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] ${match.away_franchise_id === franchise?.id ? 'text-accent' : 'text-purple-600'}`} fill="currentColor" />
+                </div>
+                <div className="text-white font-display font-bold text-lg mt-4 uppercase tracking-wide">
+                  {(match as any).away_franchise?.team_name || 'Deplasman'}
+                </div>
+                {match.away_franchise_id === franchise?.id && <div className="text-[#00a2ff] text-xs font-bold mt-1">Sizin Takımınız</div>}
+              </div>
+
+            </div>
+          </>
+        ) : (
+          <div className="relative z-10 flex flex-col items-center justify-center h-48">
+            <span className="text-white font-display font-bold text-2xl uppercase tracking-wider">LİGDE SIRADAKİ MAÇ YOK</span>
+            <span className="text-white/60 text-sm mt-2">Fikstür tamamlanmış veya henüz çekilmemiş olabilir.</span>
+          </div>
+        )}
       </div>
 
       {/* 2. OSM Quick Actions Layout */}
