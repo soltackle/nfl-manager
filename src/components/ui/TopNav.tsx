@@ -80,12 +80,13 @@ export function TopNav() {
       <div className="bg-[#001f40] border-t border-[#003366]">
         <div className="container mx-auto max-w-6xl px-4 flex items-center justify-center gap-1 overflow-x-auto no-scrollbar">
           <NavTab to="/dashboard" label="EV SAHİBİ" />
-          <NavTab to="/roster" label="TAKIM" />
-          <NavTab to="/training" label="ANTRENMAN SAHASI" />
+          <NavTab to="/roster" label="KADRO" />
+          <NavTab to="/depth-chart" label="İLK 11" />
+          <NavTab to="/tactics" label="TAKTİKLER" />
+          <NavTab to="/training" label="ANTRENMAN" />
           <NavTab to="/matches" label="MAÇLAR" />
           <NavTab to="/club" label="KULÜP" />
-          <NavTab to="/staff" label="TEKNİK EKİP" />
-          <NavTab to="/market" label="MAĞAZA" />
+          <NavTab to="/market" label="TRANSFER" />
         </div>
       </div>
     </div>

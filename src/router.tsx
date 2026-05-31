@@ -16,6 +16,8 @@ import { AdminDashboard } from './pages/admin/AdminDashboard'
 import { AdminRoute } from './components/auth/AdminRoute'
 import { useAuthStore } from './store/authStore'
 import { useFranchiseStore } from './store/franchiseStore'
+import { FranchiseSetupPage } from './pages/onboarding/FranchiseSetupPage'
+import { LeagueLobbyPage } from './pages/lobby/LeagueLobbyPage'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuthStore()
@@ -24,10 +26,30 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
-// Guard specifically for pages that require an active franchise
+// Guard for pages that require an active franchise
 function FranchiseRoute({ children }: { children: React.ReactNode }) {
   const { activeFranchiseId } = useFranchiseStore()
   if (!activeFranchiseId) return <Navigate to="/slots" replace />
+  return <>{children}</>
+}
+
+// Guard for game pages (Dashboard, Roster etc) to ensure league has started
+function GameRoute({ children }: { children: React.ReactNode }) {
+  const { activeFranchiseId, franchise, league } = useFranchiseStore()
+  if (!activeFranchiseId || !franchise || !league) return <Navigate to="/slots" replace />
+  
+  if (franchise.team_name.endsWith(' Team')) {
+    return <Navigate to="/setup" replace />
+  }
+  
+  if (league.status === 'waiting') {
+    return <Navigate to="/lobby" replace />
+  }
+
+  if (league.status === 'draft') {
+    return <Navigate to="/draft" replace />
+  }
+
   return <>{children}</>
 }
 
@@ -40,9 +62,22 @@ const router = createBrowserRouter([
       { index: true, element: <Navigate to="/slots" replace /> },
       { path: 'slots', element: <SlotsPage /> },
       { path: 'leagues', element: <LeaguesPage /> },
+      
+      // Setup and Lobby are standalone screens
       {
         path: '',
-        element: <FranchiseRoute><Layout /></FranchiseRoute>,
+        element: <FranchiseRoute><Outlet /></FranchiseRoute>,
+        children: [
+          { path: 'setup', element: <FranchiseSetupPage /> },
+          { path: 'lobby', element: <LeagueLobbyPage /> },
+          { path: 'draft', element: <DraftPage /> },
+        ]
+      },
+
+      // Game screens wrapped in Layout and GameRoute
+      {
+        path: '',
+        element: <GameRoute><Layout /></GameRoute>,
         children: [
           { path: 'dashboard', element: <DashboardPage /> },
           { path: 'roster', element: <RosterPage /> },
@@ -51,7 +86,6 @@ const router = createBrowserRouter([
           { path: 'market', element: <MarketPage /> },
           { path: 'match', element: <div>Next Match Stub</div> },
           { path: 'match/:id', element: <MatchResultPage /> },
-          { path: 'draft', element: <DraftPage /> },
           { path: 'profile', element: <div>Profile Stub</div> },
           { path: 'training', element: <TrainingPage /> },
           { path: 'club', element: <ClubPage /> },

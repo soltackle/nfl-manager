@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/Button'
 import { Shield, Plus, Zap, AlertTriangle, CheckCircle2, Server, Play, FastForward, Activity } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
-export function AdminDashboard() {
+  const { league } = useFranchiseStore()
   const [isSimulating, setIsSimulating] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
   const [leagueName, setLeagueName] = useState('')
@@ -24,20 +24,52 @@ export function AdminDashboard() {
     }
   }
 
+  const handleFillBots = async () => {
+    if (!league) return alert('Aktif bir ligde değilsiniz!')
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-fill-bots', {
+        body: { league_id: league.id }
+      })
+      if (error) throw error
+      alert('Boş slotlar botlarla dolduruldu! Lig tamamen doldu.')
+    } catch (err: any) {
+      alert('Hata: ' + err.message)
+    }
+  }
+
+  const handleStartDraft = async () => {
+    if (!league) return alert('Aktif bir ligde değilsiniz!')
+    try {
+      const { error } = await supabase.from('leagues').update({ status: 'draft' }).eq('id', league.id)
+      if (error) throw error
+      alert('Draft beklemesi atlandı, Draft başlatıldı!')
+    } catch (err: any) {
+      alert('Hata: ' + err.message)
+    }
+  }
+
+  const handleSimulateDraft = async () => {
+    if (!league) return alert('Aktif bir ligde değilsiniz!')
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-simulate-draft', {
+        body: { league_id: league.id }
+      })
+      if (error) throw error
+      alert('Draft simüle edildi ve sezon başladı!')
+    } catch (err: any) {
+      alert('Hata: ' + err.message)
+    }
+  }
+
   const handleSimulateMatch = async () => {
+    if (!league) return alert("Aktif bir ligde değilsiniz!")
     const weekInput = prompt("Hangi haftayı simüle etmek istiyorsunuz? (Sayı girin)", "1")
     const week = parseInt(weekInput || "1", 10)
     
-    // We need league_id to simulate match. 
-    // Usually an Admin selects a league, but here we can prompt or assume the most recent.
-    const { data: leagues } = await supabase.from('leagues').select('id').order('created_at', { ascending: false }).limit(1)
-    if (!leagues || leagues.length === 0) return alert("Hiç lig bulunamadı!")
-    const league_id = leagues[0].id
-
     setIsSimulating(true)
     try {
       const { data, error } = await supabase.functions.invoke('admin-simulate-match', {
-        body: { league_id, week }
+        body: { league_id: league.id, week }
       })
       if (error) throw error
       alert(`Hafta ${week} başarıyla simüle edildi!`)
@@ -62,56 +94,38 @@ export function AdminDashboard() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         
-        {/* 1. Lig Kurma */}
+        {/* 1. Lobi ve Draft Kontrolü */}
         <Card className="bg-gradient-to-br from-[#00254c] to-[#00152b] border-[#005c99]">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2 font-display uppercase">
-              <Plus className="h-5 w-5 text-accent" />
-              Yeni Lig Oluştur (Admin Modu)
+              <Activity className="h-5 w-5 text-accent" />
+              Aktif Lig Kontrolü: {league ? league.name : 'Yok'}
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <label className="text-xs text-text-dim font-bold uppercase mb-1 block">Lig İsmi</label>
-              <input 
-                type="text" 
-                value={leagueName}
-                onChange={(e) => setLeagueName(e.target.value)}
-                className="w-full bg-[#001021] border border-[#004b93] rounded p-2 text-white" 
-                placeholder="Örn: Test_Liga_01" 
-              />
+          <CardContent className="space-y-3">
+            <div className="mb-4 text-xs font-bold uppercase text-white/50">
+              Durum: <span className="text-white">{league?.status || 'Bilinmiyor'}</span>
             </div>
             
-            <div className="space-y-2">
-              <label className="text-xs text-text-dim font-bold uppercase block">Mod Seçimi</label>
-              <label className="flex items-center gap-2 text-sm text-white bg-white/5 p-2 rounded border border-white/10 cursor-pointer hover:bg-white/10">
-                <input type="radio" name="mode" className="accent-accent" />
-                Normal Mod — 8 gerçek oyuncu
-              </label>
-              <label className="flex items-center gap-2 text-sm text-white bg-white/5 p-2 rounded border border-white/10 cursor-pointer hover:bg-white/10">
-                <input type="radio" name="mode" className="accent-accent" defaultChecked />
-                Test Modu — 1 gerçek oyuncu + 7 bot
-              </label>
-            </div>
-
-            <div className="bg-[#001021] p-3 rounded border border-yellow-500/30">
-              <label className="text-xs text-yellow-500 font-bold uppercase block mb-2">Test Kontrolleri</label>
-              <label className="flex items-center gap-2 text-sm text-white mb-2">
-                <input type="checkbox" className="accent-accent" defaultChecked />
-                2x Kulüp Fonu Başlangıç
-              </label>
-              <label className="flex items-center gap-2 text-sm text-white">
-                <input type="checkbox" className="accent-accent" defaultChecked />
-                Maçları Anında Oynat (Zamanı atla)
-              </label>
-            </div>
+            <Button 
+              className="w-full justify-start border border-[#005c99] bg-[#00152b] hover:bg-[#003366] text-white"
+              onClick={handleFillBots}
+            >
+              🤖 EKSİK SLOTLARI BOTLARLA DOLDUR
+            </Button>
 
             <Button 
-              className="w-full osm-button bg-accent"
-              onClick={handleCreateLeague}
-              disabled={isCreating}
+              className="w-full justify-start border border-[#005c99] bg-[#00152b] hover:bg-[#003366] text-white"
+              onClick={handleStartDraft}
             >
-              {isCreating ? 'Lig Kuruluyor...' : 'Botlarla Doldur ve Başlat'}
+              ⚡ DRAFT BEKLEMESİNİ ATLA (ANINDA BAŞLAT)
+            </Button>
+
+            <Button 
+              className="w-full justify-start border border-accent bg-accent/10 hover:bg-accent hover:text-[#001021] text-accent"
+              onClick={handleSimulateDraft}
+            >
+              ⏩ DRAFTI HIZLI GEÇ (SİMÜLE ET VE SEZONU BAŞLAT)
             </Button>
           </CardContent>
         </Card>
@@ -134,10 +148,6 @@ export function AdminDashboard() {
               >
                 <Play className="h-4 w-4 mr-2 text-green-400" />
                 {isSimulating ? 'Simüle Ediliyor...' : 'BU HAFTAYI ŞİMDİ OYNAT'}
-              </Button>
-              <Button variant="outline" className="w-full justify-start text-white border-[#005c99] hover:bg-[#005c99] hover:text-white">
-                <FastForward className="h-4 w-4 mr-2 text-blue-400" />
-                BİR SONRAKİ HAFTAYA ATLA
               </Button>
               <Button variant="outline" className="w-full justify-start text-white border-red-500/50 hover:bg-red-500/20 hover:text-white">
                 <Activity className="h-4 w-4 mr-2 text-red-400" />
