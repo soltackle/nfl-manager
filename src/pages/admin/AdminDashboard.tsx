@@ -3,7 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Shield, Plus, Zap, AlertTriangle, CheckCircle2, Server, Play, FastForward, Activity } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { useFranchiseStore } from '@/store/franchiseStore'
 
+export function AdminDashboard() {
   const { league } = useFranchiseStore()
   const [isSimulating, setIsSimulating] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
