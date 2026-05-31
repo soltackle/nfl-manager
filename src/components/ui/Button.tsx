@@ -6,8 +6,8 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger'
+export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger'
   size?: 'sm' | 'md' | 'lg'
 }
 
@@ -17,15 +17,17 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         className={cn(
-          'inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50 disabled:pointer-events-none ring-offset-primary',
+          'inline-flex items-center justify-center rounded-lg font-medium transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-primary disabled:opacity-50 disabled:pointer-events-none active:scale-95',
           {
-            'bg-accent text-white hover:bg-accent/90': variant === 'primary',
-            'bg-surface text-white hover:bg-surface/90': variant === 'secondary',
-            'hover:bg-surface hover:text-accent': variant === 'ghost',
-            'bg-red-600 text-white hover:bg-red-700': variant === 'danger',
-            'h-9 px-3 text-sm': size === 'sm',
-            'h-10 py-2 px-4': size === 'md',
-            'h-11 px-8 text-lg': size === 'lg',
+            'bg-gradient-to-r from-accent to-accent-hover text-white shadow-lg shadow-accent/30 hover:shadow-accent/50 hover:-translate-y-0.5': variant === 'primary',
+            'bg-primary-light text-white hover:bg-white/10 hover:shadow-md': variant === 'secondary',
+            'border-2 border-accent text-accent hover:bg-accent/10': variant === 'outline',
+            'bg-transparent text-text-dim hover:text-white hover:bg-white/5': variant === 'ghost',
+            'bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/50': variant === 'danger',
+            
+            'h-9 px-4 text-sm': size === 'sm',
+            'h-11 px-6 text-base': size === 'md',
+            'h-14 px-8 text-lg font-semibold': size === 'lg',
           },
           className
         )}

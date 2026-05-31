@@ -1,15 +1,51 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #0B1D3A;
-  --color-accent: #F5A623;
-  --color-surface: #1A2332;
-  --color-muted: #2D3748;
+  --font-sans: 'Inter', sans-serif;
+  --font-display: 'Outfit', sans-serif;
+  
+  --color-primary: #0A1128;
+  --color-primary-light: #162447;
+  --color-accent: #E85D04;
+  --color-accent-hover: #F48C06;
+  --color-surface: rgba(22, 36, 71, 0.7);
+  --color-muted: #4A5568;
+  --color-text-bright: #F8F9FA;
+  --color-text-dim: #A0AEC0;
 }
 
 @layer base {
   body {
     background-color: var(--color-primary);
-    color: white;
+    background-image: radial-gradient(circle at top right, #162447, #0A1128);
+    background-attachment: fixed;
+    color: var(--color-text-bright);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
   }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer utilities {
+  .glass-panel {
+    @apply bg-surface backdrop-blur-md border border-white/10 shadow-xl;
+  }
+  
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-accent to-accent-hover;
+  }
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
 }
