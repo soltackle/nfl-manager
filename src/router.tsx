@@ -11,6 +11,7 @@ import { MarketPage } from './pages/market/MarketPage'
 import { TrainingPage } from './pages/training/TrainingPage'
 import { ClubPage } from './pages/club/ClubPage'
 import { MatchResultPage } from './pages/match/MatchResultPage'
+import { MatchesPage } from './pages/match/MatchesPage'
 import { DraftPage } from './pages/draft/DraftPage'
 import { AdminDashboard } from './pages/admin/AdminDashboard'
 import { AdminRoute } from './components/auth/AdminRoute'
@@ -111,7 +112,8 @@ const router = createBrowserRouter([
           { path: 'depth-chart', element: <DepthChartPage /> },
           { path: 'tactics', element: <TacticsPage /> },
           { path: 'market', element: <MarketPage /> },
-          { path: 'match', element: <div>Next Match Stub</div> },
+          { path: 'matches', element: <MatchesPage /> },
+          { path: 'match', element: <Navigate to="/matches" replace /> },
           { path: 'match/:id', element: <MatchResultPage /> },
           { path: 'profile', element: <div>Profile Stub</div> },
           { path: 'training', element: <TrainingPage /> },

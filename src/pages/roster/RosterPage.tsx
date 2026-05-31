@@ -27,6 +27,101 @@ export function RosterPage() {
     return true
   })
 
+  // Determine age and form deterministically based on player ID or just mock it for UI
+  const getPlayerDetails = (id: string) => {
+    const hash = id.split('-')[0] || '000'
+    const num = parseInt(hash, 16) || 0
+    const age = 20 + (num % 15) // 20 to 34
+    const form = 60 + (num % 40) // 60% to 99%
+    const traitsList = ['Kavrama (Clutch)', 'Hızlı (Speedster)', 'Lider', 'Güçlü', 'Dayanıklı']
+    const trait = traitsList[num % traitsList.length]
+    return { age, form, trait }
+  }
+
+  // Split into Main and Practice
+  // For simplicity, top 22 by overall are Main, rest are Practice
+  const sortedFiltered = [...filteredRoster].sort((a, b) => b.overall - a.overall)
+  const mainRoster = sortedFiltered.slice(0, 22)
+  const practiceSquad = sortedFiltered.slice(22)
+
+  const [isSelling, setIsSelling] = useState<string | null>(null)
+  const { franchise, setFranchise } = useFranchiseStore()
+
+  const handleSell = async (player: any) => {
+    if (!franchise) return
+    const sellValue = Math.floor(player.value * 0.8) // 80% of value
+    if (confirm(`${player.name} isimli oyuncuyu $${(sellValue / 1000000).toFixed(1)}M karşılığında serbest bırakmak istediğinize emin misiniz?`)) {
+      setIsSelling(player.id)
+      try {
+        const { error: updateError } = await supabase
+          .from('players')
+          .update({ franchise_id: null })
+          .eq('id', player.id)
+          
+        if (updateError) throw updateError
+
+        const { error: fundError } = await supabase
+          .from('franchises')
+          .update({ club_fund: franchise.club_fund + sellValue })
+          .eq('id', franchise.id)
+          
+        if (fundError) throw fundError
+
+        setFranchise({ ...franchise, club_fund: franchise.club_fund + sellValue })
+        alert('Oyuncu başarıyla satıldı!')
+      } catch (err: any) {
+        alert('Hata: ' + err.message)
+      } finally {
+        setIsSelling(null)
+      }
+    }
+  }
+
+  const renderPlayerCard = (player: any) => {
+    const { age, form, trait } = getPlayerDetails(player.id)
+    return (
+      <div 
+        key={player.id} 
+        className="flex items-center justify-between bg-gradient-to-r from-[#00254c] to-[#00152b] p-3 rounded-lg border border-[#004b93]/50 hover:border-accent/50 transition-colors"
+      >
+        <div className="flex items-center gap-4">
+          <div className={`w-10 h-10 rounded flex items-center justify-center font-display font-bold text-sm shadow-inner ${
+            OFFENSE_POS.includes(player.position) ? 'bg-blue-900/50 text-blue-300 border border-blue-500/30' :
+            DEFENSE_POS.includes(player.position) ? 'bg-red-900/50 text-red-300 border border-red-500/30' :
+            'bg-yellow-900/50 text-yellow-300 border border-yellow-500/30'
+          }`}>
+            {player.position}
+          </div>
+          <div>
+            <div className="text-white font-bold text-sm flex items-center gap-2">
+              {player.name}
+              <span className="text-[10px] bg-white/10 px-1 rounded text-white/50">{age} Yaş</span>
+              <span className="text-[10px] bg-white/10 px-1 rounded text-accent">🔥 %{form}</span>
+            </div>
+            <div className="flex items-center gap-2 mt-0.5">
+              <div className="text-green-400 text-xs font-bold">${(player.value / 1000000).toFixed(1)}M</div>
+              <div className="text-[9px] uppercase font-bold text-white/30 tracking-wider">• {trait}</div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => handleSell(player)}
+            disabled={isSelling === player.id}
+            className="text-[10px] uppercase font-bold px-2 py-1 bg-red-500/20 text-red-400 border border-red-500/30 rounded hover:bg-red-500 hover:text-white transition-colors"
+          >
+            {isSelling === player.id ? 'SATILIYOR...' : 'SAT'}
+          </button>
+          <div className="flex flex-col items-center justify-center w-12 h-12 rounded-full bg-[#001021] border-2 border-[#005c99]">
+            <span className="text-white font-display font-bold text-lg leading-none">{player.overall}</span>
+          </div>
+          <ChevronRight className="w-5 h-5 text-white/30" />
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-4 pt-4 max-w-4xl mx-auto pb-20">
       
@@ -35,7 +130,7 @@ export function RosterPage() {
         <Shield className="h-8 w-8 text-accent" />
         <div>
           <h1 className="text-xl font-display font-bold text-white tracking-wider">KADRO</h1>
-          <p className="text-white/60 text-xs font-bold uppercase">{roster.length} Oyuncu</p>
+          <p className="text-white/60 text-xs font-bold uppercase">{roster.length} / 25 Oyuncu</p>
         </div>
       </div>
 
@@ -58,33 +153,24 @@ export function RosterPage() {
 
       {/* Roster List */}
       <div className="grid gap-2 mt-4">
-        {filteredRoster.map(player => (
-          <div 
-            key={player.id} 
-            className="flex items-center justify-between bg-gradient-to-r from-[#00254c] to-[#00152b] p-3 rounded-lg border border-[#004b93]/50 cursor-pointer hover:border-accent/50 transition-colors"
-          >
-            <div className="flex items-center gap-4">
-              <div className={`w-10 h-10 rounded flex items-center justify-center font-display font-bold text-sm shadow-inner ${
-                OFFENSE_POS.includes(player.position) ? 'bg-blue-900/50 text-blue-300 border border-blue-500/30' :
-                DEFENSE_POS.includes(player.position) ? 'bg-red-900/50 text-red-300 border border-red-500/30' :
-                'bg-yellow-900/50 text-yellow-300 border border-yellow-500/30'
-              }`}>
-                {player.position}
-              </div>
-              <div>
-                <div className="text-white font-bold text-sm">{player.name}</div>
-                <div className="text-green-400 text-xs font-bold mt-0.5">${(player.value / 1000000).toFixed(1)}M</div>
-              </div>
+        {mainRoster.length > 0 && (
+          <>
+            <div className="text-xs font-bold uppercase text-white/50 mt-2 mb-1">Ana Kadro (A Takım) - {mainRoster.length}/22</div>
+            {mainRoster.map(renderPlayerCard)}
+          </>
+        )}
+
+        {practiceSquad.length > 0 && (
+          <>
+            <div className="text-xs font-bold uppercase text-accent mt-6 mb-1 flex items-center gap-2">
+              Gelişim Takımı (Practice Squad) - {practiceSquad.length}/3
+              <span className="bg-accent/20 text-accent text-[9px] px-1.5 py-0.5 rounded">GELİŞİMDE</span>
             </div>
-            
-            <div className="flex items-center gap-4">
-              <div className="flex flex-col items-center justify-center w-12 h-12 rounded-full bg-[#001021] border-2 border-[#005c99]">
-                <span className="text-white font-display font-bold text-lg leading-none">{player.overall}</span>
-              </div>
-              <ChevronRight className="w-5 h-5 text-white/30" />
+            <div className="opacity-80">
+              {practiceSquad.map(renderPlayerCard)}
             </div>
-          </div>
-        ))}
+          </>
+        )}
         
         {filteredRoster.length === 0 && (
           <div className="text-center py-12 text-white/50 text-sm font-bold border border-dashed border-white/10 rounded-xl">

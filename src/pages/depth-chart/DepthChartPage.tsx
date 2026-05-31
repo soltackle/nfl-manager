@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/ui/Skeleton'
 
 const OFFENSE_SLOTS = [
   { pos: 'QB', count: 1 }, { pos: 'RB', count: 1 }, { pos: 'WR', count: 3 },
-  { pos: 'TE', count: 1 }, { pos: 'OL', count: 5 }
+  { pos: 'TE', count: 1 }, { pos: 'OL', count: 2 }
 ]
 const DEFENSE_SLOTS = [
   { pos: 'DE', count: 4 }, { pos: 'LB', count: 3 }, { pos: 'CB', count: 2 }, { pos: 'S', count: 2 }
@@ -147,6 +147,17 @@ export function DepthChartPage() {
     </div>
   )
 
+  const [captain, setCaptain] = useState<string | null>(null)
+
+  const getPlayerDetails = (id: string) => {
+    const hash = id.split('-')[0] || '000'
+    const num = parseInt(hash, 16) || 0
+    const form = 60 + (num % 40) // 60% to 99%
+    const isRising = form > 85
+    const isInjured = form < 65
+    return { form, isRising, isInjured }
+  }
+
   const renderSlots = (slots: {pos: string, count: number}[], unit: string) => {
     return slots.map(({pos, count}) => {
       return Array.from({length: count}).map((_, i) => {
@@ -154,31 +165,63 @@ export function DepthChartPage() {
         const playerId = localDc[slotKey]
         const player = roster?.find(r => r.id === playerId)
 
+        let battleIndicator = false
+        if (player && roster) {
+          // Check if there is a backup within 5 OVR
+          const backups = roster.filter(r => r.position === pos && r.id !== player.id)
+          if (backups.length > 0) {
+            const bestBackup = [...backups].sort((a, b) => b.overall - a.overall)[0]
+            if (player.overall - bestBackup.overall < 5) {
+              battleIndicator = true
+            }
+          }
+        }
+
+        const details = player ? getPlayerDetails(player.id) : null
+
         return (
-          <div key={slotKey} className="flex items-center justify-between bg-gradient-to-r from-[#00254c] to-[#00152b] p-3 rounded-lg border border-[#004b93]/50">
+          <div key={slotKey} className="flex flex-col sm:flex-row sm:items-center justify-between bg-gradient-to-r from-[#00254c] to-[#00152b] p-3 rounded-lg border border-[#004b93]/50 gap-3">
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 rounded flex items-center justify-center font-display font-bold text-sm bg-[#001021] text-white border border-[#005c99]">
                 {pos === 'PS' ? (player ? player.position : 'PS') : pos}
               </div>
               <div>
-                <div className="text-white font-bold text-sm">{player ? player.name : 'Seçilmedi'}</div>
+                <div className="text-white font-bold text-sm flex items-center gap-2 flex-wrap">
+                  {player ? (player.overall >= 85 ? '⭐ ' : '🔄 ') + player.name : 'Seçilmedi'}
+                  {details && (
+                    <>
+                      <span className="text-[10px] bg-white/10 px-1 rounded text-accent">Form: {details.form}</span>
+                      {details.isRising && <span className="text-[10px] bg-green-500/20 text-green-400 px-1 rounded">↑ Yükselişte</span>}
+                      {details.isInjured && <span className="text-[10px] bg-red-500/20 text-red-400 px-1 rounded">🔒 Kilitli</span>}
+                      {battleIndicator && <span className="text-[10px] bg-orange-500/20 text-orange-400 px-1 rounded border border-orange-500/30">⚔️ Savaş!</span>}
+                      {captain === player.id && <span className="text-[10px] bg-yellow-400 text-[#001021] px-1 rounded font-black">©️ KAPTAN</span>}
+                    </>
+                  )}
+                </div>
                 {player && <div className="text-white/50 text-xs font-bold mt-0.5">OVR: {player.overall} | DEĞER: ${player.value.toLocaleString()}</div>}
               </div>
             </div>
             
-            {player ? (
-              <button onClick={() => {
-                const newDc = {...localDc}
-                newDc[slotKey] = null
-                setLocalDc(newDc)
-              }} className="p-2 text-red-400 hover:bg-red-500/20 rounded">
-                <X className="w-5 h-5" />
-              </button>
-            ) : (
-              <div className="text-accent text-xs font-bold px-2 py-1 bg-accent/10 rounded border border-accent/30 cursor-pointer" onClick={handleAutoFill}>
-                OTO DOLDUR
-              </div>
-            )}
+            <div className="flex items-center gap-2">
+              {player && captain !== player.id && (
+                <button onClick={() => setCaptain(player.id)} className="text-[10px] uppercase font-bold text-white/40 hover:text-yellow-400 px-2 py-1 bg-white/5 hover:bg-white/10 rounded transition-colors">
+                  Kaptan Yap
+                </button>
+              )}
+              {player ? (
+                <button onClick={() => {
+                  const newDc = {...localDc}
+                  newDc[slotKey] = null
+                  setLocalDc(newDc)
+                }} className="p-2 text-red-400 hover:bg-red-500/20 rounded">
+                  <X className="w-5 h-5" />
+                </button>
+              ) : (
+                <div className="text-accent text-xs font-bold px-2 py-1 bg-accent/10 rounded border border-accent/30 cursor-pointer" onClick={handleAutoFill}>
+                  OTO DOLDUR
+                </div>
+              )}
+            </div>
           </div>
         )
       })
@@ -189,7 +232,7 @@ export function DepthChartPage() {
     <div className="space-y-4 pt-4 max-w-4xl mx-auto pb-20">
       
       {/* Header */}
-      <div className="flex items-center justify-between mb-6 bg-[#00152b]/80 p-4 rounded-xl border border-[#005c99]/30">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 bg-[#00152b]/80 p-4 rounded-xl border border-[#005c99]/30 gap-4">
         <div className="flex items-center gap-3">
           <Shield className="h-8 w-8 text-accent" />
           <div>

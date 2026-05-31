@@ -183,6 +183,77 @@ export function TacticsPage() {
             ))}
           </div>
         </div>
+        {/* Packages & Personnel */}
+        <div className="bg-gradient-to-r from-[#00254c] to-[#00152b] p-5 rounded-xl border border-[#004b93]/50">
+          <h2 className="text-sm font-display font-bold text-accent uppercase mb-6 flex items-center gap-2">
+            <Shield className="w-4 h-4" /> Durumsal Paketler & Personel
+          </h2>
+          
+          <div className="space-y-6">
+            <div>
+              <div className="text-xs font-bold text-white uppercase mb-2">Hücum Personeli (Personnel Group)</div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                {[
+                  { id: '11', label: '11 Personnel (1 RB, 1 TE)' },
+                  { id: '10', label: '10 Personnel (1 RB, 0 TE)' },
+                  { id: '12', label: '12 Personnel (1 RB, 2 TE)' },
+                  { id: '21', label: '21 Personnel (2 RB, 1 TE)' }
+                ].map(p => (
+                  <button
+                    key={p.id}
+                    onClick={() => setSliders({...sliders, personnel: p.id} as any)}
+                    className={`px-3 py-2 rounded text-[10px] font-bold uppercase transition-colors border ${
+                      ((sliders as any).personnel || '11') === p.id 
+                        ? 'bg-accent text-[#001021] border-accent' 
+                        : 'bg-black/40 text-white/50 border-white/10 hover:border-white/30 hover:text-white'
+                    }`}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <div className="text-xs font-bold text-white uppercase mb-2">Hücum Paketi (Offensive Package)</div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                {['Shotgun', 'Spread', 'Goal Line', 'Hurry-Up', 'No-Huddle'].map(p => (
+                  <button
+                    key={p}
+                    onClick={() => setSliders({...sliders, off_package: p} as any)}
+                    className={`px-3 py-2 rounded text-[10px] font-bold uppercase transition-colors border ${
+                      ((sliders as any).off_package || 'Shotgun') === p 
+                        ? 'bg-blue-500 text-white border-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.5)]' 
+                        : 'bg-black/40 text-white/50 border-white/10 hover:border-white/30 hover:text-white'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <div className="text-xs font-bold text-white uppercase mb-2">Savunma Paketi (Defensive Package)</div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                {['4-3', 'Nickel', 'Goal Line D', 'Prevent', 'Blitz Package'].map(p => (
+                  <button
+                    key={p}
+                    onClick={() => setSliders({...sliders, def_package: p} as any)}
+                    className={`px-3 py-2 rounded text-[10px] font-bold uppercase transition-colors border ${
+                      ((sliders as any).def_package || '4-3') === p 
+                        ? 'bg-red-500 text-white border-red-400 shadow-[0_0_10px_rgba(239,68,68,0.5)]' 
+                        : 'bg-black/40 text-white/50 border-white/10 hover:border-white/30 hover:text-white'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <button 
