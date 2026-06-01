@@ -9,6 +9,7 @@ export function TacticsPage() {
   const { tactics, isLoading, mutate } = useTactics()
   const { franchise } = useFranchiseStore()
   const [isSaving, setIsSaving] = useState(false)
+  const [coaches, setCoaches] = useState<any[]>([])
   
   const [sliders, setSliders] = useState({
     pass_ratio: 50,
@@ -44,6 +45,15 @@ export function TacticsPage() {
       }
     }
   }, [tactics])
+
+  useEffect(() => {
+    const fetchCoaches = async () => {
+      if (!franchise) return
+      const { data } = await supabase.from('coaches').select('*').eq('franchise_id', franchise.id)
+      if (data) setCoaches(data)
+    }
+    fetchCoaches()
+  }, [franchise])
 
   if (isLoading) return (
     <div className="space-y-4 pt-4 max-w-4xl mx-auto">
@@ -106,6 +116,33 @@ export function TacticsPage() {
           <p className="text-white/60 text-xs font-bold uppercase">Maç öncesi stratejinizi belirleyin</p>
         </div>
       </div>
+
+      {coaches.length > 0 && (
+        <div className="grid md:grid-cols-2 gap-4 mb-6">
+          {coaches.map(coach => (
+            <div key={coach.id} className="bg-gradient-to-r from-[#00152b] to-[#001021] p-4 rounded-xl border border-white/10 flex items-center gap-4">
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center font-display font-black text-xl ${
+                coach.type === 'offensive' ? 'bg-blue-500/20 text-blue-400 border-blue-500' : 'bg-green-500/20 text-green-400 border-green-500'
+              } border`}>
+                {coach.prediction_rating}
+              </div>
+              <div>
+                <div className="text-xs font-bold text-white/50 uppercase tracking-widest">
+                  {coach.type === 'offensive' ? 'Hücum Koçu (OC)' : 'Savunma Koçu (DC)'}
+                </div>
+                <div className="text-white font-bold text-lg leading-tight">{coach.name}</div>
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {coach.traits?.map((t: string) => (
+                    <span key={t} className="text-[9px] uppercase font-bold text-white/70 bg-white/5 border border-white/10 px-1.5 py-0.5 rounded">
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="grid gap-6">
         
