@@ -235,8 +235,34 @@ serve(async (req) => {
         const powerAdvantage = (currentOffPower - currentDefPower) / 100
         let roll = Math.random() + powerAdvantage
 
-        let offFocus = offTac.off_focus || 'short_pass'
-        const defFocus = defTac.def_focus || 'balanced'
+        // SITUATION ANALYZER
+        let situationKey = 'first_down'
+        if (down === 1) situationKey = 'first_down'
+        else if (down === 2 && distance <= 3) situationKey = 'second_short'
+        else if (down === 2 && distance > 3) situationKey = 'second_long'
+        else if (down === 3 && distance <= 3) situationKey = 'third_short'
+        else if (down === 3 && distance > 3) situationKey = 'third_long'
+        else if (down === 4) situationKey = 'first_down' // 4th down is handled separately for punts, if played it defaults back to base
+
+        // FIELD POSITION OVERRIDES
+        if (yardLine >= 80 && yardLine < 95) situationKey = 'red_zone'
+        else if (yardLine >= 95) situationKey = 'goal_line'
+        else if (yardLine <= 10) situationKey = 'backed_up'
+
+        // FETCH PLAYBOOK
+        const offPlaybook = offTac.playbook?.offense || {
+          first_down: 'play_action', second_short: 'power_run', second_long: 'short_pass',
+          third_short: 'power_run', third_long: 'deep_bomb', red_zone: 'short_pass',
+          goal_line: 'power_run', backed_up: 'power_run'
+        }
+        const defPlaybook = defTac.playbook?.defense || {
+          first_down: 'balanced', second_short: 'stop_run', second_long: 'pass_def',
+          third_short: 'stop_run', third_long: 'dime_prevent', red_zone: 'red_zone_wall',
+          goal_line: 'goal_line_stand', backed_up: 'blitz'
+        }
+
+        let offFocus = (offPlaybook as any)[situationKey] || 'short_pass'
+        let defFocus = (defPlaybook as any)[situationKey] || 'balanced'
 
         const offCoaches = possession === 'home' ? homeCoaches : awayCoaches
         const defCoaches = possession === 'home' ? awayCoaches : homeCoaches
@@ -348,36 +374,52 @@ serve(async (req) => {
         const hasBallHawk = hasTrait(defTeamStr, 'DB', 'Ball Hawk')
         const hasHitPower = hasTrait(defTeamStr, 'LB', 'Hit Power') || hasTrait(defTeamStr, 'DL', 'Hit Power')
 
+        // MAPPING NEW PLAYBOOK STRINGS TO BASE LOGIC
+        const isDeep = offFocus === 'deep_bomb'
+        const isRun = offFocus === 'power_run' || offFocus === 'outside_run' || offFocus === 'qb_scramble'
+        const isPower = offFocus === 'power_run'
+        const isScreen = offFocus === 'screen_pass'
+        const isPlayAction = offFocus === 'play_action'
+        
+        const isPassDef = defFocus === 'pass_def' || defFocus === 'man_coverage' || defFocus === 'dime_prevent'
+        const isRunDef = defFocus === 'stop_run' || defFocus === 'red_zone_wall' || defFocus === 'goal_line_stand'
+        const isBlitz = defFocus === 'blitz'
+
         // BALANCED RNG LOGIC
-        if (offFocus === 'deep_bomb') {
+        if (isDeep) {
           currentPlayType = 'deep_bomb'
-          if (defFocus === 'pass_def') {
+          if (defFocus === 'dime_prevent') {
+            // Hard counter to deep bomb
+            if (roll < 0.90) yardsGained = 0, eventOccurred = 'incomplete', outcomeText += getRandomLog("INCOMPLETE_PASS", teamName)
+            else if (roll < 0.95) isTurnover = true, eventOccurred = 'interception', outcomeText += getRandomLog("INTERCEPTION", teamName)
+            else yardsGained = 15 + Math.floor(Math.random() * 10), outcomeText += getRandomLog("DERIN_BOMBA_BASARILI", teamName, yardsGained)
+          } else if (isPassDef) {
             const intChance = hasBallHawk ? 0.82 : 0.85
             if (roll < 0.70) yardsGained = 0, eventOccurred = 'incomplete', outcomeText += getRandomLog("INCOMPLETE_PASS", teamName)
             else if (roll < intChance) isTurnover = true, eventOccurred = 'interception', outcomeText += getRandomLog("INTERCEPTION", teamName) + (hasBallHawk ? " (BALL HAWK!)" : "")
             else yardsGained = 20 + Math.floor(Math.random() * 20), outcomeText += getRandomLog("DERIN_BOMBA_BASARILI", teamName, yardsGained)
-          } else if (defFocus === 'blitz') {
+          } else if (isBlitz) {
             const sackChance = hasPassProtector ? 0.40 : 0.50
             if (roll < sackChance) yardsGained = -(5 + Math.floor(Math.random() * 5)), eventOccurred = 'sack', outcomeText += getRandomLog("SACK", teamName, yardsGained)
             else yardsGained = 30 + Math.floor(Math.random() * 30), outcomeText += getRandomLog("DERIN_BOMBA_BASARILI", teamName, yardsGained)
           } else {
-            // balanced defense
             const intChance = hasBallHawk ? 0.72 : 0.75
             if (roll < 0.60) yardsGained = 0, eventOccurred = 'incomplete', outcomeText += getRandomLog("INCOMPLETE_PASS", teamName)
             else if (roll < intChance) isTurnover = true, eventOccurred = 'interception', outcomeText += getRandomLog("INTERCEPTION", teamName) + (hasBallHawk ? " (BALL HAWK!)" : "")
             else yardsGained = 20 + Math.floor(Math.random() * 25), outcomeText += getRandomLog("DERIN_BOMBA_BASARILI", teamName, yardsGained)
           }
         } 
-        else if (offFocus === 'power_run' || offFocus === 'outside_run') {
+        else if (isRun) {
           currentPlayType = 'run'
-          const isPower = offFocus === 'power_run'
-          if (defFocus === 'stop_run') {
+          if (defFocus === 'dime_prevent') {
+            // Dime prevent gets crushed by runs
+            yardsGained = 10 + Math.floor(Math.random() * 10), outcomeText += getRandomLog("ICERIDEN_SERT_KOSU", teamName, yardsGained) + " (Dime Savunması ezildi!)"
+          } else if (isRunDef) {
             if (roll < 0.65) yardsGained = Math.floor(Math.random() * 2), outcomeText += yardsGained === 0 ? getRandomLog("NO_GAIN", teamName) : getRandomLog("ICERIDEN_SERT_KOSU", teamName, yardsGained)
             else yardsGained = 2 + Math.floor(Math.random() * 4), outcomeText += isPower ? getRandomLog("ICERIDEN_SERT_KOSU", teamName, yardsGained) : getRandomLog("DISARIDAN_KOSU_BASARILI", teamName, yardsGained)
-          } else if (defFocus === 'pass_def') {
+          } else if (isPassDef) {
             yardsGained = 4 + Math.floor(Math.random() * 6), outcomeText += isPower ? getRandomLog("ICERIDEN_SERT_KOSU", teamName, yardsGained) : getRandomLog("DISARIDAN_KOSU_BASARILI", teamName, yardsGained)
           } else {
-            // balanced defense
             const fumbleChance = hasHitPower ? 0.28 : 0.25
             if (roll < 0.20) yardsGained = 0, outcomeText += getRandomLog("NO_GAIN", teamName)
             else if (roll < fumbleChance) isTurnover = true, eventOccurred = 'fumble', outcomeText += getRandomLog("FUMBLE", teamName) + (hasHitPower ? " (HIT POWER!)" : "")
@@ -385,20 +427,29 @@ serve(async (req) => {
           }
         } 
         else {
-          // short_pass
+          // short_pass, screen_pass, play_action
           currentPlayType = 'short_pass'
-          if (defFocus === 'blitz') {
+          
+          if (isScreen && isBlitz) {
+            // Screen perfectly counters blitz
+            yardsGained = 15 + Math.floor(Math.random() * 15), outcomeText += getRandomLog("KISA_PAS_BASARILI", teamName, yardsGained) + " (Screen pası Blitz'i cezalandırdı!)"
+          }
+          else if (isPlayAction && isRunDef) {
+            // Play action perfectly counters run stop
+            yardsGained = 15 + Math.floor(Math.random() * 10), outcomeText += getRandomLog("DERIN_BOMBA_BASARILI", teamName, yardsGained) + " (Play-Action savunmayı kandırdı!)"
+          }
+          else if (isBlitz) {
             if (roll < 0.3) yardsGained = 0, eventOccurred = 'incomplete', outcomeText += getRandomLog("INCOMPLETE_PASS", teamName)
             else yardsGained = 8 + Math.floor(Math.random() * 10), outcomeText += getRandomLog("KISA_PAS_BASARILI", teamName, yardsGained)
-          } else if (defFocus === 'pass_def') {
+          } else if (isPassDef) {
             if (roll < 0.65) yardsGained = 0, eventOccurred = 'incomplete', outcomeText += getRandomLog("INCOMPLETE_PASS", teamName)
             else if (roll < 0.75) isTurnover = true, eventOccurred = 'interception', outcomeText += getRandomLog("INTERCEPTION", teamName)
             else yardsGained = 2 + Math.floor(Math.random() * 4), outcomeText += getRandomLog("KISA_PAS_BASARILI", teamName, yardsGained)
           } else {
-            // balanced
             if (roll < 0.40) yardsGained = 0, eventOccurred = 'incomplete', outcomeText += getRandomLog("INCOMPLETE_PASS", teamName)
             else yardsGained = 4 + Math.floor(Math.random() * 6) + (hasYacMachine ? 3 : 0), outcomeText += getRandomLog("KISA_PAS_BASARILI", teamName, yardsGained) + (hasYacMachine ? " (YAC MACHINE!)" : "")
           }
+          
           if (eventOccurred === 'sack' && hasPocketPresence && Math.random() < 0.5) {
              eventOccurred = 'incomplete'
              yardsGained = 0

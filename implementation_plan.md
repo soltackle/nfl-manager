@@ -1,67 +1,78 @@
-# Koçluk Sistemi ve Taktik Savaşları Entegrasyonu
+# Gelişmiş Taktik Matrisi (Play Call Sheet) Entegrasyonu
 
-Bu belge, oyuna eklenecek olan yeni "Savunma Koçu (Defensive Coordinator / Head Coach)" sisteminin ve maç motorundaki taktiksel dengelemenin teknik tasarımını içermektedir.
+Bu belge, gerçek NFL koçlarının kullandığı durumsal (situational) taktik kağıdının (Play Call Sheet) oyuna entegre edilmesini sağlayacak değişiklikleri içerir. Bu sistem sayesinde menajerler, maçın her farklı anı için (Down, Mesafe, Saha Konumu) ayrı bir oyun stratejisi belirleyebilecek ve maç motoru bu spesifik kararları çarpıştıracaktır.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> **Aşağıdaki kritik kararlar için onayınız veya geri bildiriminiz gereklidir:**
-> 1. **Koç Seçim Ekranı:** Draft bittikten hemen sonra yöneticiler ana ekrana (Dashboard) gitmeden önce zorunlu bir "Koç Seçim (Coach Selection)" ekranına mı yönlendirilsin? Yoksa bu işlem Transfer/Personel ekranından istenildiği zaman mı yapılsın? (Şu anki plana göre Draft sonrası zorunlu ekran olarak kurgulandı).
-> 2. **Koç Ücretleri:** Koçların bir maaşı veya işe alım bedeli (AmFutCoin) olsun mu, yoksa sezonluk ücretsiz bir tercih mi olsun?
-> 3. **Hücum Koçu:** Şu anda sadece "Savunma Koçu" üzerinden bir dengeleme istediniz. İleride Hücum Koçu (Offensive Coordinator) da eklenecek şekilde genel bir `coaches` altyapısı kuruyorum, uygun mudur?
+> **Kritik Kararlar ve Onaylar:**
+> 1. **Mevcut "Slider" Sistemi:** Önceden tasarladığımız "Temel Felsefe" (Tempo, Pas Oranı vb.) slider'larını tamamen kaldırıp sadece bu detaylı matrise mi geçelim, yoksa Slider'lar genel katsayıyı (bonus/malus) belirleyip Matris spesifik oyunu mu seçsin? (Önerilen: Slider'lar kalsın, koçun genel ruh halini yansıtsın. Matris ise o anki net hamleyi (Play) belirlesin).
+> 2. **Senaryo Havuzu:** Hücum için (Power Run, Outside Run, Short Pass, Deep Bomb, Play-Action, Screen Pass) ve Savunma için (Run Stop, Balanced, Pass Def, Blitz, Dime/Prevent, Red Zone Wall) seçeneklerini kurguladım. Eklemek istediğiniz bir oyun tipi var mı?
 
 ## Open Questions
 
 > [!TIP]
-> - Koçların sahip olabileceği *Trait (Özellik)* havuzu için özel bir isim tercihiniz var mı? (Örn: "Blitz Ustası", "Duvar", "Zihin Okuyucu" vb.)
+> - "The Script" (İlk 15 Oyun) mekaniğini bu aşamada Matrise ekleyelim mi? Yoksa sadece Down&Distance ve Field Position'ı mı yapalım? (Şu anki plana The Script dahil edilmemiştir, matrisin çok karmaşık olmaması için adım adım gidilmesi tavsiye edilir).
 
 ## Proposed Changes
 
-Değişiklikler üç ana katmanda yapılacaktır: Veritabanı, Arayüz (Frontend) ve Maç Motoru (Backend).
+### 1. Veritabanı (Veri Yapısı)
 
----
+Mevcut `tactics` tablosundaki `slider_ayarlari` JSONB objesine yeni bir `playbook` alanı eklenecektir. Migration (SQL) gerektirmez, doğrudan kod üzerinden JSON yapısı genişletilecektir.
 
-### Veritabanı (Database)
+```json
+"playbook": {
+  "offense": {
+    "first_down": "play_action",
+    "second_short": "power_run",
+    "second_long": "short_pass",
+    "third_short": "power_run",
+    "third_long": "deep_bomb",
+    "red_zone": "short_pass",
+    "goal_line": "power_run",
+    "backed_up": "power_run"
+  },
+  "defense": {
+    "first_down": "balanced",
+    "second_short": "run_stop",
+    "second_long": "pass_def",
+    "third_short": "run_stop",
+    "third_long": "dime_prevent",
+    "red_zone": "red_zone_wall",
+    "goal_line": "goal_line_stand",
+    "backed_up": "blitz"
+  }
+}
+```
 
-#### [NEW] `supabase/migrations/XXX_add_coaches.sql`
-- `coaches` tablosu oluşturulacak.
-  - `id`, `name`, `prediction_rating` (Tahmin yüzdesi, Örn: 60-90 arası), `traits` (JSONB)
-- `franchises` tablosuna `defensive_coach_id` kolonu eklenecek.
+### 2. Arayüz (Frontend)
 
----
+#### [MODIFY] `src/pages/tactics/TacticsPage.tsx`
+- Mevcut "Oyun Odakları (Focus)" bölümü kaldırılarak, yerine devasa ve profesyonel görünümlü bir **Durumsal Taktik Matrisi (Situational Matrix)** eklenecek.
+- Tabloda 8 farklı durum (1st Down, 2nd&Short, 2nd&Long, 3rd&Short, 3rd&Long, Red Zone, Goal Line, Backed Up) listelenecek.
+- Her durum için bir "Hücum Tercihi" ve bir "Savunma Tercihi" seçilebilen Dropdown/Buton grupları olacak.
+- Tasarım bir Head Coach klasörüne benzeyecek.
 
-### Arayüz (Frontend)
-
-#### [MODIFY] `src/hooks/useDraft.ts` & `src/pages/draft/DraftPage.tsx`
-- Draft bittiğinde `window.location.href = '/dashboard'` yerine `window.location.href = '/coach-selection'` olarak güncellenecek.
-
-#### [NEW] `src/pages/coach-selection/CoachSelectionPage.tsx`
-- Kullanıcının karşısına sistem tarafından rastgele üretilmiş 3 farklı Koç çıkarılacak.
-- Her koçun Tahmin Yüzdesi (Prediction Yeteneği) ve 2 adet Trait'i görünecek.
-- Kullanıcı birini seçtiğinde bu koç takımın `franchises` verisine kaydedilecek ve ardından Dashboard'a geçilecek.
-
----
-
-### Maç Motoru (Supabase Edge Functions)
+### 3. Maç Motoru (Supabase Edge Functions)
 
 #### [MODIFY] `supabase/functions/admin-simulate-match/index.ts`
-- **Taktiksel Çarpışma Mantığı:** 
-  - Maç motoru her *Down* için hücumun oyun planını (Koşu veya Pas) ve savunmanın dizilişini çekecek.
-  - **Uyumsuzluk (Mismatch) Senaryosu:** Eğer hücum takımı Pas oynarsa ve savunma ağır koşu (Blitz/Run Stop) dizilişindeyse, hücum tarafı matematiksel olarak büyük bir avantaj elde edecek.
-- **Tahmin ve Dengeleme Sistemi:**
-  - Uyumsuzluk olduğu anlarda *Savunma Koçu* devreye girecek.
-  - Koçun `prediction_rating`'i oranında bir zar atılacak. (Örn: %75).
-  - **Başarılı Tahmin:** Koç rakibin oyununu önceden okur ve savunmayı son saniyede (Audible) doğru dizilişe kaydırır. Hücumun avantajı sıfırlanır, taktiksel savunma zarı uygulanır.
-  - **Başarısız Tahmin:** Savunma hazırlıksız yakalanır ve hücum avantajı kullanır (Fakat uçuk farklı skorları engellemek için maksimum hasar %20 başarısızlık limitiyle sınırlandırılır).
-- **Koç Traitleri:**
-  - Koçların özellikleri maçın kritik anlarında devreye girecek. Örn: *"Red Zone Duvarı"* özelliğine sahip koç, son 20 yarda içinde rakibin pas şansını ekstra düşürecek.
+- **Durum Tespiti (Situation Engine):** Oyun motoru artık her *Down* başında sahadaki durumu analiz edecek.
+  - Mesafe (Distance) <= 3 ise `short`, > 3 ise `long`.
+  - Yard Line >= 80 ise `red_zone`, >= 95 ise `goal_line`.
+  - Yard Line <= 10 ise `backed_up`.
+- **Dinamik Oyun Seçimi:** Motor, statik bir hücum odağı (`off_focus`) yerine, durum analizine göre menajerin `playbook` JSON'ından o anki durumu bulup ilgili oyunu çekecek.
+- **Matematik ve Katsayılar:** 
+  - Örneğin, hücum `third_long` durumunda "Screen Pass" oynamışsa ve savunma "Dime/Prevent" yapmışsa, savunma ekran pasına hazırlıklı olmadığı için hücuma bonus verilecek.
+  - Önceden yazdığımız "Koç Tahmin Sistemi" bu yeni durumsal oyunlara entegre edilecek. (Örn: Savunma koçu, 3. hakta rakibin pas atacağını okursa savunmayı `pass_def`'e kaydıracak).
+- **Spiker Logları:** Spiker artık durumu daha belirtecek. "3. Hak ve uzun mesafede menajer derin bir bomba çizdi!" şeklinde raporlar verilecek.
 
 ## Verification Plan
 
 ### Automated Tests
-- `admin-simulate-match` fonksiyonu lokal ortamda çalıştırılarak, farklı taktiklere sahip iki takımın skorlarının 70-0 gibi uçuk farklara ulaşmadığı, aksine 24-21, 17-14 gibi NFL standartlarında taktiksel savaşlara sahne olduğu izlenecek.
+- `admin-simulate-match` fonksiyonuna statik bir test verisi gönderilerek, maç motorunun 3. haklarda gerçekten Playbook'taki 3rd down oyununu çekip çekmediği loglanacak.
+- Red zone içindeyken (yardLine > 80) motorun otomatik olarak Red Zone taktiklerine geçiş yaptığı teyit edilecek.
 
 ### Manual Verification
-- Bir lig kurulup draft tamamlanacak.
-- Draft sonrası sistemin bizi "Koç Seçim" ekranına atıp atmadığı kontrol edilecek.
-- Seçilen koçun özelliklerinin kadro/taktik ekranında görünüp görünmediği test edilecek.
+- Arayüzde Taktik sayfasına girilip tüm matris doldurulacak ve kaydedilecek.
+- Veritabanına `playbook` formatında doğru kaydedildiği gözlemlenecek.
+- Bir maç simüle edilecek ve spiker loglarında, ayarlanan spesifik durumsal taktiklerin işlediği teyit edilecek.
