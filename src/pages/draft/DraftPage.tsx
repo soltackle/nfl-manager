@@ -82,10 +82,10 @@ export function DraftPage() {
 
   // If draft is over (session deleted) but we have a franchise
   if (!draftSession && franchise) {
-    // If we have picks or league status is active, redirect to dashboard
+    // If we have picks or league status is active, redirect to coach selection
     if (picks.length > 0) {
       setTimeout(() => {
-        window.location.href = '/dashboard'
+        window.location.href = '/coach-selection'
       }, 3000)
       
       return (

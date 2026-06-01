@@ -139,6 +139,9 @@ serve(async (req) => {
       const { data: homePlayers } = await supabaseAdmin.from('players').select('overall, traits, position').eq('franchise_id', match.home_franchise_id)
       const { data: awayPlayers } = await supabaseAdmin.from('players').select('overall, traits, position').eq('franchise_id', match.away_franchise_id)
       
+      const { data: homeCoaches } = await supabaseAdmin.from('coaches').select('*').eq('franchise_id', match.home_franchise_id)
+      const { data: awayCoaches } = await supabaseAdmin.from('coaches').select('*').eq('franchise_id', match.away_franchise_id)
+      
       const getTeamPower = (players: any[]) => {
         if (!players || players.length === 0) return 50
         const sorted = players.sort((a, b) => b.overall - a.overall).slice(0, 11)
@@ -230,12 +233,57 @@ serve(async (req) => {
         }
 
         const powerAdvantage = (currentOffPower - currentDefPower) / 100
-        const roll = Math.random() + powerAdvantage
+        let roll = Math.random() + powerAdvantage
 
         let offFocus = offTac.off_focus || 'short_pass'
         const defFocus = defTac.def_focus || 'balanced'
 
-        let outcomeText = ''
+        const offCoaches = possession === 'home' ? homeCoaches : awayCoaches
+        const defCoaches = possession === 'home' ? awayCoaches : homeCoaches
+        
+        const offCoach = offCoaches?.find(c => c.type === 'offensive')
+        const defCoach = defCoaches?.find(c => c.type === 'defensive')
+        
+        let predictionText = ''
+        
+        if (offFocus === 'deep_bomb' && defFocus === 'blitz') {
+          if (defCoach) {
+             const predRoll = Math.random() * 100;
+             if (predRoll < defCoach.prediction_rating) {
+               predictionText = `[Koç ${defCoach.name} BLITZ'i iptal edip pası savundu - BAŞARILI TAHMİN!] `
+               roll -= 0.15 
+             } else {
+               predictionText = `[Koç ${defCoach.name} hazırlıksız yakalandı! (Hatalı Okuma)] `
+               roll += 0.15 
+             }
+          }
+        } 
+        else if (offFocus === 'short_pass' && defFocus === 'pass_def') {
+          if (offCoach) {
+             const predRoll = Math.random() * 100;
+             if (predRoll < offCoach.prediction_rating) {
+               predictionText = `[Hücum Koçu ${offCoach.name} ekran pası çağırdı - BAŞARILI TAHMİN!] `
+               roll += 0.10 
+             } else {
+               predictionText = `[Hücum Koçu ${offCoach.name} savunmanın tuzağına düştü (Hatalı Okuma)] `
+               roll -= 0.10
+             }
+          }
+        }
+        else if ((offFocus === 'power_run' || offFocus === 'outside_run') && defFocus === 'pass_def') {
+          if (defCoach) {
+             const predRoll = Math.random() * 100;
+             if (predRoll < defCoach.prediction_rating) {
+               predictionText = `[DC ${defCoach.name} koşuyu sezdi, kutuyu doldurdu - BAŞARILI TAHMİN!] `
+               roll -= 0.15 
+             } else {
+               predictionText = `[DC ${defCoach.name} pas beklerken koşuyla ezildi! (Hatalı Okuma)] `
+               roll += 0.15 
+             }
+          }
+        }
+
+        let outcomeText = predictionText
         let yardsGained = 0
         let isTurnover = false
         let isScore = false
