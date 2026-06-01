@@ -17,7 +17,6 @@ export function TacticsPage() {
     tempo: 50,
     defense_line: 50,
     off_focus: 'short_pass',
-    def_focus: 'balanced',
     x_rotation: 'ironman',
     x_aggressiveness: 'disciplined',
     x_qb_freedom: 'strict',
@@ -27,6 +26,29 @@ export function TacticsPage() {
     challenge_4th: true,
     q_scripting_4th: 'hold_lead',
     targeted_mismatch: ''
+  })
+
+  const [playbook, setPlaybook] = useState({
+    offense: {
+      first_down: 'play_action',
+      second_short: 'power_run',
+      second_long: 'short_pass',
+      third_short: 'power_run',
+      third_long: 'deep_bomb',
+      red_zone: 'short_pass',
+      goal_line: 'power_run',
+      backed_up: 'power_run'
+    },
+    defense: {
+      first_down: 'balanced',
+      second_short: 'stop_run',
+      second_long: 'pass_def',
+      third_short: 'stop_run',
+      third_long: 'dime_prevent',
+      red_zone: 'red_zone_wall',
+      goal_line: 'goal_line_stand',
+      backed_up: 'blitz'
+    }
   })
 
   const [fourthDowns, setFourthDowns] = useState({
@@ -42,6 +64,9 @@ export function TacticsPage() {
       setSliders(prev => ({ ...prev, ...(tactics.slider_ayarlari as any) }))
       if ((tactics.slider_ayarlari as any)?.fourth_downs) {
         setFourthDowns((tactics.slider_ayarlari as any).fourth_downs)
+      }
+      if ((tactics.slider_ayarlari as any)?.playbook) {
+        setPlaybook((tactics.slider_ayarlari as any).playbook)
       }
     }
   }, [tactics])
@@ -66,7 +91,7 @@ export function TacticsPage() {
     if (!franchise) return
     setIsSaving(true)
     
-    const finalSliders = { ...sliders, fourth_downs: fourthDowns }
+    const finalSliders = { ...sliders, fourth_downs: fourthDowns, playbook }
 
     try {
       if (tactics?.id === 'new') {
@@ -184,60 +209,73 @@ export function TacticsPage() {
           </div>
         </div>
 
-        {/* Oyun Odakları (Replacing Packages) */}
+        {/* Situational Matrix (Play Call Sheet) */}
         <div className="bg-gradient-to-r from-[#00254c] to-[#00152b] p-5 rounded-xl border border-[#004b93]/50">
           <h2 className="text-sm font-display font-bold text-accent uppercase mb-6 flex items-center gap-2">
-            <Target className="w-4 h-4" /> Oyun Odakları (Focus)
+            <Target className="w-4 h-4" /> Durumsal Oyun Planı (Play Call Sheet)
           </h2>
-          <div className="space-y-6">
-            <div>
-              <div className="text-xs font-bold text-white uppercase mb-3">Hücum Odağı</div>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-white/20">
+                  <th className="py-3 px-2 text-xs text-white/50 uppercase font-bold w-1/3">Durum</th>
+                  <th className="py-3 px-2 text-xs text-blue-400 uppercase font-bold w-1/3">Hücum Tercihi</th>
+                  <th className="py-3 px-2 text-xs text-green-400 uppercase font-bold w-1/3">Savunma Tercihi</th>
+                </tr>
+              </thead>
+              <tbody>
                 {[
-                  { id: 'power_run', label: 'İçeriden Koşu' },
-                  { id: 'outside_run', label: 'Dışarıdan Koşu' },
-                  { id: 'short_pass', label: 'Kısa Paslar' },
-                  { id: 'deep_bomb', label: 'Derin Bomba' },
-                  { id: 'mobile_qb', label: 'Mobil QB' }
-                ].map(p => (
-                  <button
-                    key={p.id}
-                    onClick={() => setSliders({...sliders, off_focus: p.id})}
-                    className={`px-3 py-2.5 rounded text-[10px] font-bold uppercase transition-colors border ${
-                      sliders.off_focus === p.id 
-                        ? 'bg-blue-500 text-white border-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.5)]' 
-                        : 'bg-black/40 text-white/50 border-white/10 hover:border-white/30 hover:text-white'
-                    }`}
-                  >
-                    {p.label}
-                  </button>
+                  { key: 'first_down', label: '1. Hak (Tüm Sahada)' },
+                  { key: 'second_short', label: '2. Hak & Kısa (1-3 Yd)' },
+                  { key: 'second_long', label: '2. Hak & Uzun (7+ Yd)' },
+                  { key: 'third_short', label: '3. Hak & Kısa (Kritik)' },
+                  { key: 'third_long', label: '3. Hak & Uzun (Kritik)' },
+                  { key: 'red_zone', label: 'Kırmızı Bölge (Rakip 20 Yd İçi)' },
+                  { key: 'goal_line', label: 'Gol Çizgisi (Rakip 5 Yd İçi)' },
+                  { key: 'backed_up', label: 'Sıkışık Durum (Kendi 10 Yd İçi)' },
+                ].map((row, idx) => (
+                  <tr key={row.key} className={`border-b border-white/5 ${idx % 2 === 0 ? 'bg-white/5' : ''}`}>
+                    <td className="py-3 px-2 text-xs font-bold text-white uppercase">{row.label}</td>
+                    <td className="py-3 px-2">
+                      <select 
+                        value={(playbook.offense as any)[row.key]}
+                        onChange={(e) => setPlaybook({ ...playbook, offense: { ...playbook.offense, [row.key]: e.target.value }})}
+                        className="w-full bg-[#001021] text-xs font-bold text-white border border-white/10 rounded p-2 focus:border-accent"
+                      >
+                        <option value="power_run">Ağır Koşu (İçeriden)</option>
+                        <option value="outside_run">Dışarıdan Koşu</option>
+                        <option value="play_action">Play-Action (Sürpriz Pas)</option>
+                        <option value="short_pass">Kısa & Güvenli Pas</option>
+                        <option value="screen_pass">Screen Pas</option>
+                        <option value="deep_bomb">Derin Bomba</option>
+                        <option value="qb_scramble">QB Scramble</option>
+                      </select>
+                    </td>
+                    <td className="py-3 px-2">
+                      <select 
+                        value={(playbook.defense as any)[row.key]}
+                        onChange={(e) => setPlaybook({ ...playbook, defense: { ...playbook.defense, [row.key]: e.target.value }})}
+                        className="w-full bg-[#001021] text-xs font-bold text-white border border-white/10 rounded p-2 focus:border-green-500"
+                      >
+                        <option value="stop_run">Kutuyu Doldur (Koşu Sav.)</option>
+                        <option value="pass_def">Alan Savunması (Zone)</option>
+                        <option value="man_coverage">Adam Adama (Man)</option>
+                        <option value="blitz">Agresif Baskı (Blitz)</option>
+                        <option value="dime_prevent">Dime/Prevent (Uzun Pas Koruma)</option>
+                        <option value="red_zone_wall">Kırmızı Bölge Duvarı</option>
+                        <option value="goal_line_stand">Ağır Çizgi Savunması</option>
+                        <option value="balanced">Dengeli</option>
+                      </select>
+                    </td>
+                  </tr>
                 ))}
-              </div>
-            </div>
-            <div>
-              <div className="text-xs font-bold text-white uppercase mb-3">Savunma Odağı</div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                {[
-                  { id: 'stop_run', label: 'Koşuyu Durdur' },
-                  { id: 'pass_def', label: 'Pası Savun' },
-                  { id: 'blitz', label: 'Agresif Baskı (Blitz)' },
-                  { id: 'balanced', label: 'Dengeli' }
-                ].map(p => (
-                  <button
-                    key={p.id}
-                    onClick={() => setSliders({...sliders, def_focus: p.id})}
-                    className={`px-3 py-2.5 rounded text-[10px] font-bold uppercase transition-colors border ${
-                      sliders.def_focus === p.id 
-                        ? 'bg-red-500 text-white border-red-400 shadow-[0_0_10px_rgba(239,68,68,0.5)]' 
-                        : 'bg-black/40 text-white/50 border-white/10 hover:border-white/30 hover:text-white'
-                    }`}
-                  >
-                    {p.label}
-                  </button>
-                ))}
-              </div>
-            </div>
+              </tbody>
+            </table>
           </div>
+          <p className="text-[10px] text-white/40 mt-4 leading-relaxed">
+            * Oyun motoru sahadaki konuma (Yard Line) ve Mesafe/Hak durumuna göre yukarıdaki matristen eşleşen taktiği seçer. 
+            Menajerin Slider (Temel Felsefe) ayarları bu taktiklerin genel katsayılarını ve oyuncuların agresifliğini modifiye eder.
+          </p>
         </div>
 
         {/* Takım Karakteri (X-Factors) */}
