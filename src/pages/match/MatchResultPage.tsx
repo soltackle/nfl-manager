@@ -4,8 +4,120 @@ import useSWR from 'swr'
 import { supabase } from '@/lib/supabase'
 import { Trophy, Activity, CloudLightning, Play } from 'lucide-react'
 import { Skeleton } from '@/components/ui/Skeleton'
+import { motion, AnimatePresence } from 'framer-motion'
 
 const TOUCHDOWN_SOUND = new Audio('/sounds/Touchdown.mp3')
+
+const AnimatedPitch = ({ log }: { log: any }) => {
+  if (!log) return null
+
+  // 120 yards total: 10 EZ + 100 Field + 10 EZ
+  // We represent X as a percentage from 0 to 100% of the container
+  const getAbsoluteXPercentage = (yardLine: number, possession: string) => {
+    const rawYards = possession === 'home' ? 10 + yardLine : 110 - yardLine
+    return (rawYards / 120) * 100
+  }
+
+  // Fallbacks for old logs that don't have structured data
+  if (!log.startYard || !log.possession) {
+    return (
+      <div className="relative w-full h-[120px] md:h-[200px] bg-[#2E7D32] rounded-xl overflow-hidden border-4 border-white/80 shadow-[inset_0_0_50px_rgba(0,0,0,0.8)] flex items-center justify-center">
+         <div className="text-white/50 text-sm font-bold uppercase tracking-widest">Klasik Motor Logu (Görselleştirilemiyor)</div>
+      </div>
+    )
+  }
+
+  const startX = getAbsoluteXPercentage(log.startYard, log.possession)
+  const endX = getAbsoluteXPercentage(log.endYard, log.possession)
+
+  // Determine Y animation (parabola for passes, linear for runs)
+  const isPass = log.playType === 'deep_bomb' || log.playType === 'short_pass'
+  const isDeep = log.playType === 'deep_bomb' || log.playType === 'punt' || log.playType === 'fg'
+  
+  const yAnimation = isDeep ? ['50%', '10%', '50%'] : ['50%', '50%']
+  const duration = isDeep ? 1.5 : 0.8
+
+  return (
+    <div className="relative w-full h-[120px] md:h-[200px] bg-[#2E7D32] rounded-xl overflow-hidden border-4 border-white/80 shadow-[inset_0_0_50px_rgba(0,0,0,0.8)] my-6">
+      
+      {/* Pitch Markings */}
+      <div className="absolute inset-0 flex flex-col justify-between py-2">
+        <div className="w-full h-px bg-white/20"></div>
+        <div className="w-full h-px bg-white/20"></div>
+        <div className="w-full h-px bg-white/20"></div>
+        <div className="w-full h-px bg-white/20"></div>
+        <div className="w-full h-px bg-white/20"></div>
+      </div>
+
+      <div className="absolute inset-0 flex justify-between items-center text-white/40 font-black text-xl md:text-3xl px-2">
+        <div className="rotate-[-90deg] origin-center tracking-widest opacity-50">HOME</div>
+        <div className="rotate-[90deg] origin-center tracking-widest opacity-50">AWAY</div>
+      </div>
+
+      {/* Yard Lines */}
+      {Array.from({ length: 11 }).map((_, i) => {
+        const yardNum = i * 10
+        const isEndzone = yardNum === 0 || yardNum === 100
+        const absolutePos = (10 + yardNum) / 120 * 100
+        return (
+          <div 
+            key={i} 
+            className={`absolute top-0 bottom-0 border-l ${isEndzone ? 'border-white border-2' : 'border-white/40 border-dashed'} flex flex-col justify-between py-1`}
+            style={{ left: `${absolutePos}%` }}
+          >
+            {!isEndzone && <span className="text-white/60 text-[10px] md:text-xs font-bold -translate-x-1/2">{yardNum <= 50 ? yardNum : 100 - yardNum}</span>}
+          </div>
+        )
+      })}
+
+      {/* Endzones Colors */}
+      <div className="absolute top-0 bottom-0 left-0 w-[8.33%] bg-blue-600/30"></div>
+      <div className="absolute top-0 bottom-0 right-0 w-[8.33%] bg-orange-600/30"></div>
+
+      {/* Line of Scrimmage */}
+      <motion.div 
+        initial={{ left: `${startX}%` }}
+        animate={{ left: `${startX}%` }}
+        className="absolute top-0 bottom-0 w-[2px] bg-blue-500 shadow-[0_0_10px_rgba(0,0,255,1)] z-10"
+      />
+
+      {/* The Ball */}
+      <motion.div
+        key={log.time + log.text} // Re-trigger animation on new log
+        initial={{ left: `${startX}%`, top: '50%', scale: 1, rotate: 0 }}
+        animate={{ 
+          left: `${endX}%`, 
+          top: yAnimation,
+          rotate: isPass ? 720 : 180,
+          scale: isDeep ? [1, 1.5, 1] : 1
+        }}
+        transition={{ duration, ease: "easeInOut" }}
+        className="absolute w-4 h-4 md:w-6 md:h-6 -ml-2 md:-ml-3 -mt-2 md:-mt-3 z-20"
+      >
+        <span className="text-xl md:text-2xl drop-shadow-lg block leading-none">🏉</span>
+      </motion.div>
+
+      {/* Event Popups */}
+      <AnimatePresence>
+        {log.event && log.event !== 'incomplete' && (
+          <motion.div
+            key={`event-${log.time}`}
+            initial={{ opacity: 0, scale: 0.5, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.5 }}
+            transition={{ type: "spring", damping: 10, stiffness: 100, delay: duration * 0.8 }}
+            className={`absolute top-1/4 -translate-y-1/2 z-30 font-black text-2xl md:text-4xl tracking-widest drop-shadow-[0_5px_5px_rgba(0,0,0,1)]
+              ${log.event === 'touchdown' ? 'text-yellow-400' : 'text-red-500'}
+            `}
+            style={{ left: `calc(${endX}% - 50px)` }}
+          >
+            {log.event.toUpperCase()}!
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
 
 export function MatchResultPage() {
   const { id } = useParams()
@@ -14,6 +126,7 @@ export function MatchResultPage() {
   const [visibleLogs, setVisibleLogs] = useState<any[]>([])
   const [currentHomeScore, setCurrentHomeScore] = useState(0)
   const [currentAwayScore, setCurrentAwayScore] = useState(0)
+  const [currentLog, setCurrentLog] = useState<any>(null)
   
   const fetcher = async () => {
     if (!id) return null
@@ -58,10 +171,11 @@ export function MatchResultPage() {
         if (currentIndex < totalLogs) {
           const log = data.logs[currentIndex]
           setVisibleLogs(prev => [...prev, log])
+          setCurrentLog(log)
           
           const text = log.text || Object.values(log)[0] || ''
-          const isHome = text.includes('Ev Sahibi')
-          const isAway = text.includes('Deplasman')
+          const isHome = text.includes('Ev Sahibi') || log.possession === 'home'
+          const isAway = text.includes('Deplasman') || log.possession === 'away'
           
           if (text.includes('TOUCHDOWN')) {
             try {
@@ -76,7 +190,6 @@ export function MatchResultPage() {
             if (isHome) tempHomeScore += 3
             if (isAway) tempAwayScore += 3
           } else if (text.includes('Skor:')) {
-            // Fallback for old engine format
             const matchHome = text.match(/Ev Sahibi takım sayıları buluyor\. Skor: (\d+)/)
             if (matchHome) tempHomeScore = parseInt(matchHome[1])
             const matchAway = text.match(/Deplasman takımı cevap veriyor\. Skor: (\d+)/)
@@ -90,11 +203,10 @@ export function MatchResultPage() {
         } else {
           clearInterval(interval)
           setPlaybackState('finished')
-          // Set exact final score at the end
           setCurrentHomeScore(data.match.home_score)
           setCurrentAwayScore(data.match.away_score)
         }
-      }, 800) // 0.8 seconds per log for faster down-by-down pace
+      }, 2000) // 2.0 seconds per log so we can see the full animation!
 
       return () => clearInterval(interval)
     }
@@ -189,6 +301,11 @@ export function MatchResultPage() {
           </div>
         </div>
       </div>
+
+      {/* 2D Animated Pitch */}
+      {playbackState === 'playing' && currentLog && (
+        <AnimatedPitch log={currentLog} />
+      )}
       
       {/* Play-by-play Logs */}
       <div>
@@ -199,16 +316,16 @@ export function MatchResultPage() {
         
         <div className="space-y-3">
           {visibleLogs.length > 0 ? (
-            visibleLogs.map((log: any, i: number) => {
+            visibleLogs.slice().reverse().map((log: any, i: number) => {
               const time = log.time || Object.keys(log)[0]
               const text = log.text || log[time]
               
-              const isHighlight = text.includes('TOUCHDOWN') || text.includes('SIGNATURE PLAY') || text.includes('INTERCEPTION')
+              const isHighlight = text.includes('TOUCHDOWN') || text.includes('SIGNATURE PLAY') || text.includes('INTERCEPTION') || log.event
               
               return (
                 <div 
                   key={i} 
-                  className={`flex flex-col md:flex-row md:items-start gap-2 md:gap-4 p-4 rounded-xl border transition-all duration-500 animate-in fade-in slide-in-from-bottom-2
+                  className={`flex flex-col md:flex-row md:items-start gap-2 md:gap-4 p-4 rounded-xl border transition-all duration-500 animate-in fade-in slide-in-from-top-2
                     ${isHighlight 
                       ? 'bg-gradient-to-r from-accent/20 to-black/40 border-accent shadow-[0_0_15px_rgba(255,156,0,0.2)]' 
                       : 'bg-gradient-to-r from-[#00152b] to-[#001021] border-white/5'
@@ -220,10 +337,9 @@ export function MatchResultPage() {
                   </div>
                   <div>
                     <p className={`text-sm md:text-base ${isHighlight ? 'text-white font-bold' : 'text-white/80'}`}>{text}</p>
-                    {/* Placeholder for special highlights UI in the future */}
-                    {isHighlight && (
-                      <div className="mt-2 text-[10px] text-accent/60 uppercase tracking-widest font-bold">
-                        -- HIGHLIGHT OLAYI --
+                    {isHighlight && log.event && (
+                      <div className="mt-2 text-[10px] text-accent/80 uppercase tracking-widest font-bold">
+                        -- {log.event} --
                       </div>
                     )}
                   </div>

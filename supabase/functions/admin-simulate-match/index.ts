@@ -35,7 +35,6 @@ serve(async (req) => {
     for (const match of matches) {
       if (match.final_stats?.played) continue
 
-      // Get Powers
       const { data: homePlayers } = await supabaseAdmin.from('players').select('overall').eq('franchise_id', match.home_franchise_id)
       const { data: awayPlayers } = await supabaseAdmin.from('players').select('overall').eq('franchise_id', match.away_franchise_id)
       
@@ -48,14 +47,12 @@ serve(async (req) => {
       let homePower = getTeamPower(homePlayers)
       let awayPower = getTeamPower(awayPlayers)
 
-      // Get Tactics
       const { data: homeTacData } = await supabaseAdmin.from('tactics').select('slider_ayarlari').eq('franchise_id', match.home_franchise_id).single()
       const { data: awayTacData } = await supabaseAdmin.from('tactics').select('slider_ayarlari').eq('franchise_id', match.away_franchise_id).single()
       
       const homeTac = (homeTacData?.slider_ayarlari || {}) as any
       const awayTac = (awayTacData?.slider_ayarlari || {}) as any
 
-      // Apply Stadium Advantage
       const { data: stadium } = await supabaseAdmin.from('stadiums').select('turf_level').eq('franchise_id', match.home_franchise_id).single()
       if (stadium) {
         if (stadium.turf_level === 1) homePower *= 1.02
@@ -63,36 +60,45 @@ serve(async (req) => {
         if (stadium.turf_level === 3) homePower *= 1.06
       }
 
-      // X-Factors
       if (homeTac.x_aggressiveness === 'physical') homePower += 2
       if (awayTac.x_aggressiveness === 'physical') awayPower += 2
       if (homeTac.x_rotation === 'ironman') homePower += 2
       if (awayTac.x_rotation === 'ironman') awayPower += 2
 
-      // Match State
       let homeScore = 0
       let awayScore = 0
-      let possession = 'home' // 'home' or 'away'
-      let yardLine = 25 // 1 to 99. 99 is 1 yard away from scoring TD. 25 is touchback line.
+      let possession = 'home'
+      let yardLine = 25
       let down = 1
       let distance = 10
       let quarter = 1
       let playInQuarter = 0
-      const maxPlaysPerQuarter = 25 // 100 plays total
+      const maxPlaysPerQuarter = 25
       const logs: any[] = []
 
-      logs.push({ time: "BAŞLANGIÇ", text: "Maç başladı! İlk hücum hakkı Ev Sahibi'nde." })
+      const addLog = (time: string, text: string, playType: string, event: string | null = null, endYard: number = yardLine) => {
+        logs.push({
+          time,
+          text,
+          possession,
+          startYard: yardLine,
+          endYard,
+          playType,
+          event
+        })
+      }
+
+      addLog("BAŞLANGIÇ", "Maç başladı! İlk hücum hakkı Ev Sahibi'nde.", "kickoff", null, 25)
 
       const switchPossession = (isKickoff = false) => {
         possession = possession === 'home' ? 'away' : 'home'
-        yardLine = isKickoff ? 25 : 100 - yardLine // Fumble/Downs turnover flips the field
-        if (yardLine <= 0) yardLine = 20 // Touchback
-        if (yardLine >= 100) yardLine = 99 // Safety prevention for simplicity
+        yardLine = isKickoff ? 25 : 100 - yardLine
+        if (yardLine <= 0) yardLine = 20
+        if (yardLine >= 100) yardLine = 99
         down = 1
         distance = 10
       }
 
-      // Main Loop
       for (let totalPlays = 0; totalPlays < maxPlaysPerQuarter * 4; totalPlays++) {
         quarter = Math.floor(totalPlays / maxPlaysPerQuarter) + 1
         playInQuarter = totalPlays % maxPlaysPerQuarter
@@ -105,25 +111,20 @@ serve(async (req) => {
         const teamName = possession === 'home' ? 'Ev Sahibi' : 'Deplasman'
         const timePrefix = `${quarter}Q | ${down}${down === 1 ? 'st' : down === 2 ? 'nd' : down === 3 ? 'rd' : 'th'} & ${distance}`
 
-        // Check Quarter Scripting & Fatigue
         let currentOffPower = offPower
         let currentDefPower = defPower
 
         if (quarter === 4) {
           if (offTac.x_rotation === 'ironman') currentOffPower -= 3
           if (defTac.x_rotation === 'ironman') currentDefPower -= 3
-
           if (offTac.q_scripting_4th === 'aggressive' && ((possession === 'home' && homeScore <= awayScore) || (possession === 'away' && awayScore <= homeScore))) {
-            currentOffPower += 5 // Desperation boost
+            currentOffPower += 5
           }
         }
 
-        // Calculate Play Outcome
-        // Base RNG + Power Diff
-        const powerAdvantage = (currentOffPower - currentDefPower) / 100 // usually between -0.2 and +0.2
+        const powerAdvantage = (currentOffPower - currentDefPower) / 100
         const roll = Math.random() + powerAdvantage
 
-        // Tactical Modifiers
         let offFocus = offTac.off_focus || 'short_pass'
         const defFocus = defTac.def_focus || 'balanced'
 
@@ -131,8 +132,9 @@ serve(async (req) => {
         let yardsGained = 0
         let isTurnover = false
         let isScore = false
+        let eventOccurred: string | null = null
+        let currentPlayType = offFocus
 
-        // Decision logic
         if (down === 4) {
           const fourthDowns = offTac.fourth_downs || { fourth_1: 'punt', fourth_2_3: 'punt', fourth_4_6: 'punt', fourth_7_plus: 'punt', fourth_goal: 'fg' }
           let decision = 'punt'
@@ -145,60 +147,55 @@ serve(async (req) => {
           if (yardLine >= 80) decision = fourthDowns.fourth_goal
 
           if (decision === 'punt') {
-            logs.push({ time: timePrefix, text: `${teamName} Punt vurdu (Degaj). Top rakibe geçiyor.` })
-            yardLine += 40 // Punt distance
+            addLog(timePrefix, `${teamName} Punt vurdu (Degaj). Top rakibe geçiyor.`, "punt", null, yardLine + 40)
+            yardLine += 40
             switchPossession()
             continue
           } else if (decision === 'fg') {
             if (yardLine < 60) {
-              // Too far for FG, just punt
-              logs.push({ time: timePrefix, text: `${teamName} Field Goal mesafesinde değil, mecburen Punt vuruyor.` })
+              addLog(timePrefix, `${teamName} Field Goal mesafesinde değil, mecburen Punt vuruyor.`, "punt", null, yardLine + 40)
               yardLine += 40
               switchPossession()
               continue
             }
-            // FG attempt
-            const distanceToGoal = 100 - yardLine + 17 // FG distance
+            const distanceToGoal = 100 - yardLine + 17
             const fgProb = distanceToGoal < 40 ? 0.95 : distanceToGoal < 50 ? 0.75 : 0.40
             if (Math.random() < fgProb) {
               if (possession === 'home') homeScore += 3; else awayScore += 3;
-              logs.push({ time: timePrefix, text: `${teamName} FIELD GOAL (3 sayı) isabetli! Şut mesafesi: ${distanceToGoal} yarda.` })
+              addLog(timePrefix, `${teamName} FIELD GOAL (3 sayı) isabetli! Şut mesafesi: ${distanceToGoal} yarda.`, "fg", "fg_good", 100)
             } else {
-              logs.push({ time: timePrefix, text: `${teamName} FIELD GOAL kaçırdı!` })
+              addLog(timePrefix, `${teamName} FIELD GOAL kaçırdı!`, "fg", "fg_miss", 100)
             }
-            switchPossession(true) // Kickoff after score or missed FG from spot
+            switchPossession(true)
             continue
           }
-          // If 'go', continue to play calculation
           outcomeText = `${teamName} 4th Down'da riske girip oyunu oynuyor! `
         }
 
-        // Signature Play?
-        let isSignaturePlay = false
         if (quarter === 4 && playInQuarter > 15 && offTac.signature_play === 'hail_mary' && offTac.signature_condition === 'late_behind') {
           const isTrailing = possession === 'home' ? homeScore < awayScore : awayScore < homeScore
           if (isTrailing) {
-            isSignaturePlay = true
             offFocus = 'deep_bomb'
+            currentPlayType = 'deep_bomb'
             outcomeText += "🚨 SIGNATURE PLAY: Son bir umut, HAIL MARY deneniyor! "
           }
         }
 
-        // Play Result Calculation based on Focus
         if (offFocus === 'deep_bomb') {
           if (defFocus === 'pass_def') {
-            if (roll < 0.6) yardsGained = 0, outcomeText += "Derin pas denemesi, ancak savunma geride hazırlıklı, pas yere düştü."
-            else if (roll < 0.8) isTurnover = true, outcomeText += "Derin pas, ancak INTERCEPTION! Savunma topu çaldı!"
+            if (roll < 0.6) yardsGained = 0, outcomeText += "Derin pas denemesi, ancak savunma geride hazırlıklı, pas yere düştü.", eventOccurred = 'incomplete'
+            else if (roll < 0.8) isTurnover = true, outcomeText += "Derin pas, ancak INTERCEPTION! Savunma topu çaldı!", eventOccurred = 'interception'
             else yardsGained = 30 + Math.floor(Math.random() * 20), outcomeText += `Mükemmel bir derin pas! Savunmaya rağmen ${yardsGained} yarda kazanıldı.`
           } else if (defFocus === 'blitz') {
-            if (roll < 0.4) yardsGained = -7, outcomeText += "Derin pas için zaman kalmadı, SACK! Oyun kurucu devrildi."
+            if (roll < 0.4) yardsGained = -7, outcomeText += "Derin pas için zaman kalmadı, SACK! Oyun kurucu devrildi.", eventOccurred = 'sack'
             else yardsGained = 40 + Math.floor(Math.random() * 30), outcomeText += `Blitz'i cezalandırdılar! Derin pas boşta kaldı, devasa bir kazanç: ${yardsGained} yarda!`
           } else {
-            if (roll < 0.4) yardsGained = 0, outcomeText += "Derin pas denemesi başarısız, top dışarıda."
-            else if (roll < 0.5) isTurnover = true, outcomeText += "Derin pas, INTERCEPTION!"
+            if (roll < 0.4) yardsGained = 0, outcomeText += "Derin pas denemesi başarısız, top dışarıda.", eventOccurred = 'incomplete'
+            else if (roll < 0.5) isTurnover = true, outcomeText += "Derin pas, INTERCEPTION!", eventOccurred = 'interception'
             else yardsGained = 25 + Math.floor(Math.random() * 25), outcomeText += `Güzel bir uzun pas yakalayışı! ${yardsGained} yarda kazanç.`
           }
         } else if (offFocus === 'power_run' || offFocus === 'outside_run') {
+          currentPlayType = 'run'
           const runType = offFocus === 'power_run' ? 'İçeriden sert koşu' : 'Dışarıdan hızlı koşu'
           if (defFocus === 'stop_run') {
             if (roll < 0.7) yardsGained = Math.floor(Math.random() * 3) - 1, outcomeText += `${runType}, ancak savunma duvar ördü! Sadece ${yardsGained} yarda.`
@@ -206,34 +203,39 @@ serve(async (req) => {
           } else if (defFocus === 'pass_def') {
             yardsGained = 4 + Math.floor(Math.random() * 8), outcomeText += `${runType}, savunma pas beklediği için boşluk bulundu: ${yardsGained} yarda.`
           } else {
-            if (roll < 0.1) isTurnover = true, outcomeText += `${runType}, ancak FUMBLE! Topu düşürdüler ve savunma aldı!`
+            if (roll < 0.1) isTurnover = true, outcomeText += `${runType}, ancak FUMBLE! Topu düşürdüler ve savunma aldı!`, eventOccurred = 'fumble'
             else yardsGained = 2 + Math.floor(Math.random() * 6), outcomeText += `${runType}, ${yardsGained} yarda kazanç.`
           }
         } else {
-          // short_pass or mobile_qb
+          currentPlayType = 'short_pass'
           if (defFocus === 'blitz') {
             yardsGained = 6 + Math.floor(Math.random() * 10), outcomeText += "Blitz'e karşı hızlı kısa pas! Savunma eksik yakalandı, " + yardsGained + " yarda kazanç."
           } else if (defFocus === 'pass_def') {
-            if (roll < 0.4) yardsGained = 0, outcomeText += "Kısa pas denemesi, savunma çok iyi kapattı, incomplete."
+            if (roll < 0.4) yardsGained = 0, outcomeText += "Kısa pas denemesi, savunma çok iyi kapattı, incomplete.", eventOccurred = 'incomplete'
             else yardsGained = 3 + Math.floor(Math.random() * 4), outcomeText += `Zorlama kısa pas, sadece ${yardsGained} yarda.`
           } else {
             yardsGained = 4 + Math.floor(Math.random() * 7), outcomeText += `Dengeli oyuna karşı rahat kısa pas, ${yardsGained} yarda kazanç.`
           }
         }
 
-        // Apply Penalty RNG
         if (offTac.x_aggressiveness === 'physical' && Math.random() < 0.05) {
           yardsGained = -10
           outcomeText = "Hücum takımından gereksiz sertlik (Holding/Personal Foul) cezası! 10 yarda geriye."
+          eventOccurred = 'penalty'
+          currentPlayType = 'penalty'
         }
         if (defTac.x_aggressiveness === 'physical' && Math.random() < 0.05) {
           yardsGained = 15
           outcomeText = "Savunma takımından maskeden çekme (Face Mask) cezası! Otomatik First Down ve 15 yarda."
+          eventOccurred = 'penalty'
+          currentPlayType = 'penalty'
         }
 
-        // State Update
+        let endY = yardLine + yardsGained
+
         if (isTurnover) {
-          logs.push({ time: timePrefix, text: outcomeText })
+          addLog(timePrefix, outcomeText, currentPlayType, eventOccurred, endY)
+          yardLine = endY
           switchPossession()
           continue
         }
@@ -242,15 +244,14 @@ serve(async (req) => {
 
         if (yardLine >= 100) {
           if (possession === 'home') homeScore += 7; else awayScore += 7;
-          logs.push({ time: timePrefix, text: `${outcomeText} VE TOUCHDOWN (7 sayı)!! Harika bir hücum.` })
+          addLog(timePrefix, `${outcomeText} VE TOUCHDOWN (7 sayı)!! Harika bir hücum.`, currentPlayType, 'touchdown', 100)
           switchPossession(true)
           continue
         }
 
         if (yardLine <= 0) {
-          // Safety (rare)
           if (possession === 'home') awayScore += 2; else homeScore += 2;
-          logs.push({ time: timePrefix, text: `${outcomeText} İNANILMAZ! Kendi endzone'unda düşürüldü. SAFETY! Rakip 2 sayı kazanıyor.` })
+          addLog(timePrefix, `${outcomeText} İNANILMAZ! Kendi endzone'unda düşürüldü. SAFETY! Rakip 2 sayı kazanıyor.`, currentPlayType, 'safety', 0)
           switchPossession(true)
           continue
         }
@@ -260,31 +261,28 @@ serve(async (req) => {
         if (distance <= 0) {
           down = 1
           distance = 10
-          // Can't have distance to goal be > remaining yards
           if (yardLine + distance > 100) distance = 100 - yardLine
-          logs.push({ time: timePrefix, text: `${outcomeText} - FIRST DOWN!` })
+          addLog(timePrefix, `${outcomeText} - FIRST DOWN!`, currentPlayType, eventOccurred, yardLine)
         } else {
           down++
-          logs.push({ time: timePrefix, text: outcomeText })
+          addLog(timePrefix, outcomeText, currentPlayType, eventOccurred, yardLine)
           if (down > 4) {
-            logs.push({ time: timePrefix, text: "4th Down başarısız! TURNOVER ON DOWNS. Top rakibe geçiyor." })
+            addLog(timePrefix, "4th Down başarısız! TURNOVER ON DOWNS. Top rakibe geçiyor.", 'turnover', 'turnover', yardLine)
             switchPossession()
           }
         }
       }
 
-      // Tie breaker (OT simplified)
       if (homeScore === awayScore) {
         if (Math.random() < homePower / (homePower + awayPower)) {
           homeScore += 3
-          logs.push({ time: "OT", text: "Uzatmalarda Ev Sahibi FG bularak maçı noktaladı!" })
+          addLog("OT", "Uzatmalarda Ev Sahibi FG bularak maçı noktaladı!", "fg", "fg_good", 100)
         } else {
           awayScore += 3
-          logs.push({ time: "OT", text: "Uzatmalarda Deplasman FG bularak maçı noktaladı!" })
+          addLog("OT", "Uzatmalarda Deplasman FG bularak maçı noktaladı!", "fg", "fg_good", 100)
         }
       }
 
-      // Final Update
       await supabaseAdmin.from('matches').update({
         home_score: homeScore,
         away_score: awayScore,
@@ -300,7 +298,6 @@ serve(async (req) => {
         expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
       })
 
-      // Economy
       const { data: capStadium } = await supabaseAdmin.from('stadiums').select('capacity_level').eq('franchise_id', match.home_franchise_id).single()
       let gateMult = 1.0
       if (capStadium) {
