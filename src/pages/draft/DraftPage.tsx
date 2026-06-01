@@ -3,6 +3,7 @@ import { useDraft } from '@/hooks/useDraft'
 import { useFranchiseStore } from '@/store/franchiseStore'
 import { Trophy, Clock, UserCheck, ShieldAlert, Cpu } from 'lucide-react'
 import { Skeleton } from '@/components/ui/Skeleton'
+import { TraitBadge } from '@/components/ui/TraitBadge'
 
 export function DraftPage() {
   const { draftSession, availablePlayers, picks, makePick, isLoading } = useDraft()
@@ -175,8 +176,13 @@ export function DraftPage() {
                       {p.overall >= 85 && <span className="text-[10px] bg-yellow-500/20 text-yellow-500 px-1.5 py-0.5 rounded border border-yellow-500/30">STAR</span>}
                       {p.overall >= 75 && p.overall < 85 && <span className="text-[10px] bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded border border-blue-500/30">SOLID</span>}
                     </div>
-                    <div className="text-xs text-white/50 uppercase font-bold mt-1">
-                      ${((p.value || 0) / 1000).toFixed(0)}K DEĞERİNDE
+                    <div className="flex items-center gap-2 mt-1">
+                      <div className="text-xs text-white/50 uppercase font-bold">
+                        ${((p.value || 0) / 1000).toFixed(0)}K
+                      </div>
+                      {p.traits && p.traits.map((trait: string, idx: number) => (
+                        <TraitBadge key={idx} trait={trait} />
+                      ))}
                     </div>
                   </div>
                 </div>

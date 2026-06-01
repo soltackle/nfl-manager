@@ -4,6 +4,7 @@ import { useFranchiseStore } from '@/store/franchiseStore'
 import { supabase } from '@/lib/supabase'
 import { ShoppingCart, DollarSign, ArrowRight } from 'lucide-react'
 import { Skeleton } from '@/components/ui/Skeleton'
+import { TraitBadge } from '@/components/ui/TraitBadge'
 
 export function MarketPage() {
   const { freeAgents, isLoading, mutate } = useMarket()
@@ -74,14 +75,21 @@ export function MarketPage() {
               <div className="flex flex-col items-center justify-center w-14 h-14 rounded-full bg-[#001021] border-2 border-accent/50 shadow-[0_0_10px_rgba(255,156,0,0.2)]">
                 <span className="text-white font-display font-bold text-xl leading-none">{player.overall}</span>
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded bg-white/10 text-white text-[10px] font-bold border border-white/20">
-                    {player.position}
-                  </span>
-                  <span className="text-white font-bold text-lg">{player.name}</span>
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 rounded bg-white/10 text-white text-[10px] font-bold border border-white/20">
+                      {player.position}
+                    </span>
+                    <span className="text-white font-bold text-lg">{player.name}</span>
+                  </div>
+                  {player.traits && player.traits.length > 0 && (
+                    <div className="flex items-center gap-1 mt-1">
+                      {player.traits.map((trait: string, idx: number) => (
+                        <TraitBadge key={idx} trait={trait} />
+                      ))}
+                    </div>
+                  )}
                 </div>
-              </div>
             </div>
             
             <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto mt-2 sm:mt-0">
