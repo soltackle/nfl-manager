@@ -1,0 +1,97 @@
+{
+  "KISA_PAS_BASARILI": [
+    "Pocket darmadağın olmadan [TEAM] pasörü buttonhook'a gözü kapalı topu bıraktı! [YARDS] yarda, hassas cerrahi gibi bir hamle!",
+    "Tribünler titriyor! [TEAM] oyun kurucusu üçüncü alıcı açıktı, buldu! Out route'a tereyağı gibi işleyen bir pas — [YARDS] yarda kazanç!",
+    "[TEAM] shotgun'dan snap aldı, sol tarafa döndü ve checkdown'ı gördü! Koşucu topu kaptı, ilerliyor, [YARDS] yarda bitiriyor!",
+    "Savunma blitz göndermişti ama [TEAM] buna hazırdı! Hot route devreye girdi, hızlı release — [YARDS] yardalık zekice bir karar!",
+    "Kısa ama altın değerinde! [TEAM] oyun kurucusu 3. hakta drag route'daki alıcısını buldu! [YARDS] yarda, first down için yeterli!"
+  ],
+
+  "DERIN_BOMBA_BASARILI": [
+    "BOMBA! [TEAM] oyun kurucusu kanal gibi bir geçit buldu ve gözünü kırpmadan post route'a fırlattı! [YARDS] yarda, tam isabetle!",
+    "Ay ışığında bir ok gibi süzüldü o top! [TEAM]'in alıcısı iki defender arasından sıyrılıp havadan kaptı! [YARDS] yarda unutulmaz bir play!",
+    "Ses dalgaları tribünlerde çarpışıyor! [TEAM] oyun kurucusu scramble'dan çıkıp go route'a fişeği ateşledi! [YARDS] yarda — inanılması güç!",
+    "Tek ayak üzerinde, çizginin tam içinde yakaladı! [TEAM] alıcısı sideline'da mucize gösterdi! [YARDS] yardalık kaya gibi sağlam bir play!",
+    "Pocket'te çelik gibi direndi, savunma etrafında döndü ve son anda fırlattı! [YARDS] yarda HARIKA bir hedef [TEAM] için!"
+  ],
+
+  "ICERIDEN_SERT_KOSU": [
+    "İki lineman arasındaki boşluktan bir parmak genişliği bile yok ama [TEAM] koşucusu bir şekilde içeri daldı! [YARDS] yarda zorla kopardı!",
+    "[TEAM] fullback önde açıyor yolu, koşucu arkasından geliyor! Kask kaska, omuz omuza — ve [YARDS] yarda çıktı bu karanlık tünelden!",
+    "Güneş batarken saha kızıla boyandı, ama [TEAM] koşucusu için tek renk var: ileri! [YARDS] yarda, bir santim dahi olsa ileri!",
+    "[TEAM] hücum hattı kapı gibi açtı yolu ama savunma çabuk kapandı! [YARDS] yarda ancak kazanılabildi, bu trenches savaşı tam anlamıyla!",
+    "Saat ilerliyor, yağmur çiseliyor ve [TEAM] yine aynı oyunu oynuyor! Güce güç! Koşucu kafasını kaldırmadan ilerliyor — [YARDS] yarda!"
+  ],
+
+  "DISARIDAN_KOSU_BASARILI": [
+    "[TEAM] koşucusu sağ çizgiye saptı, defender önde bekliyordu ama juke o kadar keskin ki adam yerinde dondu! [YARDS] yarda tam gaz!",
+    "Toss play! [TEAM] sahayı bir yana kaydırdı, blokerlar yolu temizledi ve koşucu açık alana döküldü! [YARDS] yarda harika bir çalışma!",
+    "İzle şu ellerini, izle şu ayaklarını! [TEAM] koşucusu bir değil, iki defender'ı geçti ve [YARDS] yarda zihin açıcı bir play sergiledi!",
+    "Saha dışındaki kalabalık dahi tutamadı nefesini! [TEAM] koşucusu end around'dan döktü kendini ve [YARDS] yarda çıkardı bu oyundan!",
+    "Cornerback hazırdı ama [TEAM]'in hız roketi onu çoktan geçmişti bile! [YARDS] yarda — kimse tutamadı onu!"
+  ],
+
+  "INCOMPLETE_PASS": [
+    "Pocket hızla daralıyor! [TEAM] pasörü paniklemeden topu fırlattı ama o top hep yüksekte gidecekti. Incomplete pass.",
+    "[TEAM] deep route'a gitti ama savunma zone coverage'la tüm alanı kapatmıştı! Pas gidecek yer bulamadı, zemine iniyor. Incomplete.",
+    "İki alıcı için çizilmiş bir rota ama ikisi de kapalıydı! [TEAM] oyun kurucusu gecikti, sıkıştı ve top boşluğa gitti. Incomplete.",
+    "Sert bir blitz rush altında [TEAM] pasörünün kolu tam kalkamamıştı! Top sağa saparak sideline'ın dışına çıktı. Incomplete pass!",
+    "Throwaway kararı! Pocket çöküyordu, [TEAM] pasörü topu saha dışına attı. Akıllıca bir güvenlik tercihi ama yine de incomplete."
+  ],
+
+  "SACK": [
+    "Üçlü blitz baskısı! [TEAM] oyun kurucusunun sağ tarafı çöktü ve içeriden gelen defender dümdüz yere serdi! [YARDS] yarda kayıp! SACK!",
+    "Hem sağda hem solda kapı kapandı! [TEAM] pasörü scramble'a çalıştı ama şimdi zeminde yatıyor! [YARDS] yarda geri gitti! SACK!",
+    "Edge rusher rüzgar gibi köşeyi döndü! [TEAM] sağ tackle hiçbir şey yapamadı! Oyun kurucusu yere çakıldı! [YARDS] yarda kayıp! SACK!",
+    "Kar yağışı altında saha bembeyaz ama [TEAM] pasörünün hayali kara döndü! Defender omuzundan yakaladı ve savurdu! [YARDS] yarda kayıp! SACK!",
+    "İki saniye içinde pocket yok oldu! [TEAM] oyun kurucusu topu elinde tutmak zorunda kaldı... ve büyük bedel ödedi! [YARDS] yarda kayıp! SACK!"
+  ],
+
+  "INTERCEPTION": [
+    "[TEAM] red zone'da riske girdi! Pas atıldı... ama savunma linebacker'ı rotayı ezbere biliyordu sanki! Atladı, kaptı! INTERCEPTION!",
+    "Rüzgar bu kez [TEAM]'in aleyhine esti! Pas saptı, hedeflenen alıcıya gitmedi — karşı takımın safety'si kapıştı! INTERCEPTION!",
+    "Tüm saha dondu! [TEAM] pasörü presre aldandı, erken fırlattı topu... ve cornerback tam önünden geçerken kaptı! INTERCEPTION!",
+    "Bu maçın dönüm noktası olabilir! [TEAM] oyun kurucusu route'u yanlış okudu, alıcı iç tarafa keserken pas dış tarafa gitti! INTERCEPTION!",
+    "Taraftarlar şoku yaşıyor! [TEAM]'in pasörü endzone'a atış yaptı ama savunma hazırdı, konuşlanmıştı, bekliyordu! INTERCEPTION! Büyük kayıp!"
+  ],
+
+  "FUMBLE": [
+    "[TEAM] koşucusu ikinci hedefe koşarken defender tam bilekten yakaladı! Top havaya uçtu! FUMBLE! Ve kaos başlıyor!",
+    "Snap exchange bozuldu! [TEAM] merkezi topu düzgün aktaramadı, oyun kurucusu kaybetti tutmayı! FUMBLE! Yer yarılıyor sanki!",
+    "Hava soğuk, eller uyuşmuş! [TEAM] alıcısı yakaladıktan sonra topu tutamadı! FUMBLE! Top zeminde yuvarlanıyor!",
+    "[TEAM] koçu görmek istemedi bunu! Koşucu tek elinde taşırken linebacker tam kasığa vurdu! FUMBLE! Ve savunma fırsatı kaptı!",
+    "Hit öyle bir hit ki... [TEAM]'in oyun kurucusu havaya kalktı ve top da ondan önce zemine indi! FUMBLE! İnanılmaz güç!"
+  ],
+
+  "TOUCHDOWN": [
+    "BU NASIL BİR YAKALAYIŞ?! [TEAM] alıcısı tek bacağıyla çizgide, topu göğsüne bastırmış şekilde düşüyor! TOUCHDOWN!!! 6 sayı!",
+    "[TEAM] koşucusu son üç defender'ı devirdi, hiçbiri tutamadı onu! TOUCHDOWN!!! Stadyumun çatısı uçuyor! 6 sayı!",
+    "Her hafta bu sahaya çıkıyorlar işte bunun için! [TEAM] endzone'a girdi! TOUCHDOWNNNNN!!! Bu tarihi bir an! 6 sayı!",
+    "Gece çöküyor üzerimize ama saha aydınlıktan geçmiyor! [TEAM] pasörü scramble'dan çıkıp endzone'a koştu! TOUCHDOWN!!! 6 sayı!",
+    "Kalabalığın çığlığı gökyüzüne yükseliyor! [TEAM] topu son çizginin ötesine taşıdı! TOUCHDOWN!!! Herkese hayırlı olsun — 6 sayı!"
+  ],
+
+  "FIELD_GOAL_ISABETLI": [
+    "Özel takım sahada! [TEAM] vurucusu [YARDS] yarda için hazırlandı... snap, hold, vuruş... GOOD! DİREKLERİN ARASINDA! FIELD GOAL! 3 sayı!",
+    "Rüzgara rağmen [TEAM] vurucusu cesur bir kararla topa vurdu! [YARDS] yarda... top sallanıyor... ve GEÇİYOR! FIELD GOAL! 3 sayı!",
+    "Gecenin karanlığında saha ışıkları [TEAM] vurucusunu aydınlıyor... [YARDS] yardalık kritik deneme... GOOD! FIELD GOAL! 3 sayı!",
+    "[YARDS] yardalık deneme! [TEAM] vurucusu terlemeden yaklaştı topa... salladı! TOP GEÇİYOR! FIELD GOAL! 3 sayı!",
+    "Maçın kritik anında [TEAM] özel takımı sahada! [YARDS] yarda... snap temiz, vuruş güzel — GOOD! FIELD GOAL! 3 sayı!"
+  ],
+
+  "FIELD_GOAL_KACTI": [
+    "[TEAM] vurucusu [YARDS] yarda için hazırlandı ama bacağı kaymış olabilir mi? Top sol direğin dışına çıkıyor! NO GOOD! Field Goal kaçtı!",
+    "Snap biraz sola geldi, hold düzeltemedi! [TEAM]'in [YARDS] yardalık denemesi düzensiz gitti... NO GOOD! Kaçan field goal!",
+    "[YARDS] yarda bu hava şartlarında mı? [TEAM] vurucusu çok şey istedi kendinden, top kısa kaldı! NO GOOD! Field Goal yok!",
+    "[TEAM] vurucusu [YARDS] yardalık denemede ayağını erken kaldırdı! Top sağa saptı, direği dışarıdan geçti! NO GOOD! Kaçan şans!",
+    "Her şey hazırdı ama [TEAM] için kader yoktu! [YARDS] yardalık deneme direğin tam üzerinden atlayamadı! NO GOOD! Field Goal kaçtı!"
+  ],
+
+  "TURNOVER_ON_DOWNS": [
+    "Drama son hakkında! [TEAM] cesaret gösterdi ama savunma daha cesurdu! Çizgi geçilemiyor! Turnover on Downs! Top rakibinde!",
+    "Bütün kartlarını ortaya koydu [TEAM]! Ama savunma her hareketi okudu ve kapandı! Turnover on Downs! Büyük hayal kırıklığı!",
+    "First down için tek yarda! Tek YARDA! Ama [TEAM] koşucusu savunma duvarında eridi! Turnover on Downs! Acı son!",
+    "Saha suskunlaştı... [TEAM]'in hücum hattı itiyordu... savunma itiyordu... ve savunma kazandı! Turnover on Downs!",
+    "[TEAM] pasörü 4. Hakta derin rotayı denedi — riskli karardı, pas incomplete! Turnover on Downs! Top rakibine geçiyor!"
+  ]
+}

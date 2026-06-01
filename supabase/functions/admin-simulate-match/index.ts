@@ -6,6 +6,107 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+const SPIKER_METINLERI = {
+  "KISA_PAS_BASARILI": [
+    "Pocket darmadağın olmadan [TEAM] pasörü buttonhook'a gözü kapalı topu bıraktı! [YARDS] yarda, hassas cerrahi gibi bir hamle!",
+    "Tribünler titriyor! [TEAM] oyun kurucusu üçüncü alıcı açıktı, buldu! Out route'a tereyağı gibi işleyen bir pas — [YARDS] yarda kazanç!",
+    "[TEAM] shotgun'dan snap aldı, sol tarafa döndü ve checkdown'ı gördü! Koşucu topu kaptı, ilerliyor, [YARDS] yarda bitiriyor!",
+    "Savunma blitz göndermişti ama [TEAM] buna hazırdı! Hot route devreye girdi, hızlı release — [YARDS] yardalık zekice bir karar!",
+    "Kısa ama altın değerinde! [TEAM] oyun kurucusu 3. hakta drag route'daki alıcısını buldu! [YARDS] yarda, first down için yeterli!"
+  ],
+  "DERIN_BOMBA_BASARILI": [
+    "BOMBA! [TEAM] oyun kurucusu kanal gibi bir geçit buldu ve gözünü kırpmadan post route'a fırlattı! [YARDS] yarda, tam isabetle!",
+    "Ay ışığında bir ok gibi süzüldü o top! [TEAM]'in alıcısı iki defender arasından sıyrılıp havadan kaptı! [YARDS] yarda unutulmaz bir play!",
+    "Ses dalgaları tribünlerde çarpışıyor! [TEAM] oyun kurucusu scramble'dan çıkıp go route'a fişeği ateşledi! [YARDS] yarda — inanılması güç!",
+    "Tek ayak üzerinde, çizginin tam içinde yakaladı! [TEAM] alıcısı sideline'da mucize gösterdi! [YARDS] yardalık kaya gibi sağlam bir play!",
+    "Pocket'te çelik gibi direndi, savunma etrafında döndü ve son anda fırlattı! [YARDS] yarda HARIKA bir hedef [TEAM] için!"
+  ],
+  "ICERIDEN_SERT_KOSU": [
+    "İki lineman arasındaki boşluktan bir parmak genişliği bile yok ama [TEAM] koşucusu bir şekilde içeri daldı! [YARDS] yarda zorla kopardı!",
+    "[TEAM] fullback önde açıyor yolu, koşucu arkasından geliyor! Kask kaska, omuz omuza — ve [YARDS] yarda çıktı bu karanlık tünelden!",
+    "Güneş batarken saha kızıla boyandı, ama [TEAM] koşucusu için tek renk var: ileri! [YARDS] yarda, bir santim dahi olsa ileri!",
+    "[TEAM] hücum hattı kapı gibi açtı yolu ama savunma çabuk kapandı! [YARDS] yarda ancak kazanılabildi, bu trenches savaşı tam anlamıyla!",
+    "Saat ilerliyor, yağmur çiseliyor ve [TEAM] yine aynı oyunu oynuyor! Güce güç! Koşucu kafasını kaldırmadan ilerliyor — [YARDS] yarda!"
+  ],
+  "DISARIDAN_KOSU_BASARILI": [
+    "[TEAM] koşucusu sağ çizgiye saptı, defender önde bekliyordu ama juke o kadar keskin ki adam yerinde dondu! [YARDS] yarda tam gaz!",
+    "Toss play! [TEAM] sahayı bir yana kaydırdı, blokerlar yolu temizledi ve koşucu açık alana döküldü! [YARDS] yarda harika bir çalışma!",
+    "İzle şu ellerini, izle şu ayaklarını! [TEAM] koşucusu bir değil, iki defender'ı geçti ve [YARDS] yarda zihin açıcı bir play sergiledi!",
+    "Saha dışındaki kalabalık dahi tutamadı nefesini! [TEAM] koşucusu end around'dan döktü kendini ve [YARDS] yarda çıkardı bu oyundan!",
+    "Cornerback hazırdı ama [TEAM]'in hız roketi onu çoktan geçmişti bile! [YARDS] yarda — kimse tutamadı onu!"
+  ],
+  "INCOMPLETE_PASS": [
+    "Pocket hızla daralıyor! [TEAM] pasörü paniklemeden topu fırlattı ama o top hep yüksekte gidecekti. Incomplete pass.",
+    "[TEAM] deep route'a gitti ama savunma zone coverage'la tüm alanı kapatmıştı! Pas gidecek yer bulamadı, zemine iniyor. Incomplete.",
+    "İki alıcı için çizilmiş bir rota ama ikisi de kapalıydı! [TEAM] oyun kurucusu gecikti, sıkıştı ve top boşluğa gitti. Incomplete.",
+    "Sert bir blitz rush altında [TEAM] pasörünün kolu tam kalkamamıştı! Top sağa saparak sideline'ın dışına çıktı. Incomplete pass!",
+    "Throwaway kararı! Pocket çöküyordu, [TEAM] pasörü topu saha dışına attı. Akıllıca bir güvenlik tercihi ama yine de incomplete."
+  ],
+  "SACK": [
+    "Üçlü blitz baskısı! [TEAM] oyun kurucusunun sağ tarafı çöktü ve içeriden gelen defender dümdüz yere serdi! [YARDS] yarda kayıp! SACK!",
+    "Hem sağda hem solda kapı kapandı! [TEAM] pasörü scramble'a çalıştı ama şimdi zeminde yatıyor! [YARDS] yarda geri gitti! SACK!",
+    "Edge rusher rüzgar gibi köşeyi döndü! [TEAM] sağ tackle hiçbir şey yapamadı! Oyun kurucusu yere çakıldı! [YARDS] yarda kayıp! SACK!",
+    "Kar yağışı altında saha bembeyaz ama [TEAM] pasörünün hayali kara döndü! Defender omuzundan yakaladı ve savurdu! [YARDS] yarda kayıp! SACK!",
+    "İki saniye içinde pocket yok oldu! [TEAM] oyun kurucusu topu elinde tutmak zorunda kaldı... ve büyük bedel ödedi! [YARDS] yarda kayıp! SACK!"
+  ],
+  "INTERCEPTION": [
+    "[TEAM] red zone'da riske girdi! Pas atıldı... ama savunma linebacker'ı rotayı ezbere biliyordu sanki! Atladı, kaptı! INTERCEPTION!",
+    "Rüzgar bu kez [TEAM]'in aleyhine esti! Pas saptı, hedeflenen alıcıya gitmedi — karşı takımın safety'si kapıştı! INTERCEPTION!",
+    "Tüm saha dondu! [TEAM] pasörü presre aldandı, erken fırlattı topu... ve cornerback tam önünden geçerken kaptı! INTERCEPTION!",
+    "Bu maçın dönüm noktası olabilir! [TEAM] oyun kurucusu route'u yanlış okudu, alıcı iç tarafa keserken pas dış tarafa gitti! INTERCEPTION!",
+    "Taraftarlar şoku yaşıyor! [TEAM]'in pasörü endzone'a atış yaptı ama savunma hazırdı, konuşlanmıştı, bekliyordu! INTERCEPTION! Büyük kayıp!"
+  ],
+  "FUMBLE": [
+    "[TEAM] koşucusu ikinci hedefe koşarken defender tam bilekten yakaladı! Top havaya uçtu! FUMBLE! Ve kaos başlıyor!",
+    "Snap exchange bozuldu! [TEAM] merkezi topu düzgün aktaramadı, oyun kurucusu kaybetti tutmayı! FUMBLE! Yer yarılıyor sanki!",
+    "Hava soğuk, eller uyuşmuş! [TEAM] alıcısı yakaladıktan sonra topu tutamadı! FUMBLE! Top zeminde yuvarlanıyor!",
+    "[TEAM] koçu görmek istemedi bunu! Koşucu tek elinde taşırken linebacker tam kasığa vurdu! FUMBLE! Ve savunma fırsatı kaptı!",
+    "Hit öyle bir hit ki... [TEAM]'in oyun kurucusu havaya kalktı ve top da ondan önce zemine indi! FUMBLE! İnanılmaz güç!"
+  ],
+  "TOUCHDOWN": [
+    "BU NASIL BİR YAKALAYIŞ?! [TEAM] alıcısı tek bacağıyla çizgide, topu göğsüne bastırmış şekilde düşüyor! TOUCHDOWN!!! 6 sayı!",
+    "[TEAM] koşucusu son üç defender'ı devirdi, hiçbiri tutamadı onu! TOUCHDOWN!!! Stadyumun çatısı uçuyor! 6 sayı!",
+    "Her hafta bu sahaya çıkıyorlar işte bunun için! [TEAM] endzone'a girdi! TOUCHDOWNNNNN!!! Bu tarihi bir an! 6 sayı!",
+    "Gece çöküyor üzerimize ama saha aydınlıktan geçmiyor! [TEAM] pasörü scramble'dan çıkıp endzone'a koştu! TOUCHDOWN!!! 6 sayı!",
+    "Kalabalığın çığlığı gökyüzüne yükseliyor! [TEAM] topu son çizginin ötesine taşıdı! TOUCHDOWN!!! Herkese hayırlı olsun — 6 sayı!"
+  ],
+  "FIELD_GOAL_ISABETLI": [
+    "Özel takım sahada! [TEAM] vurucusu [YARDS] yarda için hazırlandı... snap, hold, vuruş... GOOD! DİREKLERİN ARASINDA! FIELD GOAL! 3 sayı!",
+    "Rüzgara rağmen [TEAM] vurucusu cesur bir kararla topa vurdu! [YARDS] yarda... top sallanıyor... ve GEÇİYOR! FIELD GOAL! 3 sayı!",
+    "Gecenin karanlığında saha ışıkları [TEAM] vurucusunu aydınlıyor... [YARDS] yardalık kritik deneme... GOOD! FIELD GOAL! 3 sayı!",
+    "[YARDS] yardalık deneme! [TEAM] vurucusu terlemeden yaklaştı topa... salladı! TOP GEÇİYOR! FIELD GOAL! 3 sayı!",
+    "Maçın kritik anında [TEAM] özel takımı sahada! [YARDS] yarda... snap temiz, vuruş güzel — GOOD! FIELD GOAL! 3 sayı!"
+  ],
+  "FIELD_GOAL_KACTI": [
+    "[TEAM] vurucusu [YARDS] yarda için hazırlandı ama bacağı kaymış olabilir mi? Top sol direğin dışına çıkıyor! NO GOOD! Field Goal kaçtı!",
+    "Snap biraz sola geldi, hold düzeltemedi! [TEAM]'in [YARDS] yardalık denemesi düzensiz gitti... NO GOOD! Kaçan field goal!",
+    "[YARDS] yarda bu hava şartlarında mı? [TEAM] vurucusu çok şey istedi kendinden, top kısa kaldı! NO GOOD! Field Goal yok!",
+    "[TEAM] vurucusu [YARDS] yardalık denemede ayağını erken kaldırdı! Top sağa saptı, direği dışarıdan geçti! NO GOOD! Kaçan şans!",
+    "Her şey hazırdı ama [TEAM] için kader yoktu! [YARDS] yardalık deneme direğin tam üzerinden atlayamadı! NO GOOD! Field Goal kaçtı!"
+  ],
+  "TURNOVER_ON_DOWNS": [
+    "Drama son hakkında! [TEAM] cesaret gösterdi ama savunma daha cesurdu! Çizgi geçilemiyor! Turnover on Downs! Top rakibinde!",
+    "Bütün kartlarını ortaya koydu [TEAM]! Ama savunma her hareketi okudu ve kapandı! Turnover on Downs! Büyük hayal kırıklığı!",
+    "First down için tek yarda! Tek YARDA! Ama [TEAM] koşucusu savunma duvarında eridi! Turnover on Downs! Acı son!",
+    "Saha suskunlaştı... [TEAM]'in hücum hattı itiyordu... savunma itiyordu... ve savunma kazandı! Turnover on Downs!",
+    "[TEAM] pasörü 4. Hakta derin rotayı denedi — riskli karardı, pas incomplete! Turnover on Downs! Top rakibine geçiyor!"
+  ],
+  "NO_GAIN": [
+    "Savunma hattı beton gibi! [TEAM] hücumu içeri daldı ama hiçbir şey çıkaramadı. 0 yarda kazanç.",
+    "[TEAM] için oyun anında bozuldu, line of scrimmage'da büyük bir yığılma var! Kazanç yok.",
+    "Pas atacak kimse yok! [TEAM] oyun kurucusu çizgiye doğru kaçtı ama hemen indirildi. Sadece 0 yarda.",
+    "Koşucu topu aldığı gibi karşısında üç defender buldu! [TEAM] milim bile ilerleyemiyor.",
+    "Harika bir savunma okuması! [TEAM]'in denediği trick play tamamen duvara çarptı. 0 yarda."
+  ]
+}
+
+const getRandomLog = (category: keyof typeof SPIKER_METINLERI, team: string, yards: number = 0) => {
+  const options = SPIKER_METINLERI[category]
+  if (!options) return ""
+  const selected = options[Math.floor(Math.random() * options.length)]
+  return selected.replace(/\[TEAM\]/g, team).replace(/\[YARDS\]/g, Math.abs(yards).toString())
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -162,9 +263,9 @@ serve(async (req) => {
             const fgProb = distanceToGoal < 40 ? 0.95 : distanceToGoal < 50 ? 0.75 : 0.40
             if (Math.random() < fgProb) {
               if (possession === 'home') homeScore += 3; else awayScore += 3;
-              addLog(timePrefix, `${teamName} FIELD GOAL (3 sayı) isabetli! Şut mesafesi: ${distanceToGoal} yarda.`, "fg", "fg_good", 100)
+              addLog(timePrefix, getRandomLog("FIELD_GOAL_ISABETLI", teamName, distanceToGoal), "fg", "fg_good", 100)
             } else {
-              addLog(timePrefix, `${teamName} FIELD GOAL kaçırdı!`, "fg", "fg_miss", 100)
+              addLog(timePrefix, getRandomLog("FIELD_GOAL_KACTI", teamName, distanceToGoal), "fg", "fg_miss", 100)
             }
             switchPossession(true)
             continue
@@ -177,44 +278,56 @@ serve(async (req) => {
           if (isTrailing) {
             offFocus = 'deep_bomb'
             currentPlayType = 'deep_bomb'
-            outcomeText += "🚨 SIGNATURE PLAY: Son bir umut, HAIL MARY deneniyor! "
+            outcomeText += "🚨 SIGNATURE PLAY! "
           }
         }
 
+        // BALANCED RNG LOGIC
         if (offFocus === 'deep_bomb') {
+          currentPlayType = 'deep_bomb'
           if (defFocus === 'pass_def') {
-            if (roll < 0.6) yardsGained = 0, outcomeText += "Derin pas denemesi, ancak savunma geride hazırlıklı, pas yere düştü.", eventOccurred = 'incomplete'
-            else if (roll < 0.8) isTurnover = true, outcomeText += "Derin pas, ancak INTERCEPTION! Savunma topu çaldı!", eventOccurred = 'interception'
-            else yardsGained = 30 + Math.floor(Math.random() * 20), outcomeText += `Mükemmel bir derin pas! Savunmaya rağmen ${yardsGained} yarda kazanıldı.`
+            if (roll < 0.70) yardsGained = 0, eventOccurred = 'incomplete', outcomeText += getRandomLog("INCOMPLETE_PASS", teamName)
+            else if (roll < 0.85) isTurnover = true, eventOccurred = 'interception', outcomeText += getRandomLog("INTERCEPTION", teamName)
+            else yardsGained = 20 + Math.floor(Math.random() * 20), outcomeText += getRandomLog("DERIN_BOMBA_BASARILI", teamName, yardsGained)
           } else if (defFocus === 'blitz') {
-            if (roll < 0.4) yardsGained = -7, outcomeText += "Derin pas için zaman kalmadı, SACK! Oyun kurucu devrildi.", eventOccurred = 'sack'
-            else yardsGained = 40 + Math.floor(Math.random() * 30), outcomeText += `Blitz'i cezalandırdılar! Derin pas boşta kaldı, devasa bir kazanç: ${yardsGained} yarda!`
+            if (roll < 0.50) yardsGained = -(5 + Math.floor(Math.random() * 5)), eventOccurred = 'sack', outcomeText += getRandomLog("SACK", teamName, yardsGained)
+            else yardsGained = 30 + Math.floor(Math.random() * 30), outcomeText += getRandomLog("DERIN_BOMBA_BASARILI", teamName, yardsGained)
           } else {
-            if (roll < 0.4) yardsGained = 0, outcomeText += "Derin pas denemesi başarısız, top dışarıda.", eventOccurred = 'incomplete'
-            else if (roll < 0.5) isTurnover = true, outcomeText += "Derin pas, INTERCEPTION!", eventOccurred = 'interception'
-            else yardsGained = 25 + Math.floor(Math.random() * 25), outcomeText += `Güzel bir uzun pas yakalayışı! ${yardsGained} yarda kazanç.`
+            // balanced defense
+            if (roll < 0.60) yardsGained = 0, eventOccurred = 'incomplete', outcomeText += getRandomLog("INCOMPLETE_PASS", teamName)
+            else if (roll < 0.75) isTurnover = true, eventOccurred = 'interception', outcomeText += getRandomLog("INTERCEPTION", teamName)
+            else yardsGained = 20 + Math.floor(Math.random() * 25), outcomeText += getRandomLog("DERIN_BOMBA_BASARILI", teamName, yardsGained)
           }
-        } else if (offFocus === 'power_run' || offFocus === 'outside_run') {
+        } 
+        else if (offFocus === 'power_run' || offFocus === 'outside_run') {
           currentPlayType = 'run'
-          const runType = offFocus === 'power_run' ? 'İçeriden sert koşu' : 'Dışarıdan hızlı koşu'
+          const isPower = offFocus === 'power_run'
           if (defFocus === 'stop_run') {
-            if (roll < 0.7) yardsGained = Math.floor(Math.random() * 3) - 1, outcomeText += `${runType}, ancak savunma duvar ördü! Sadece ${yardsGained} yarda.`
-            else yardsGained = 5 + Math.floor(Math.random() * 5), outcomeText += `${runType}, zorlu da olsa ${yardsGained} yarda kazanıldı.`
+            if (roll < 0.65) yardsGained = Math.floor(Math.random() * 2), outcomeText += yardsGained === 0 ? getRandomLog("NO_GAIN", teamName) : getRandomLog("ICERIDEN_SERT_KOSU", teamName, yardsGained)
+            else yardsGained = 2 + Math.floor(Math.random() * 4), outcomeText += isPower ? getRandomLog("ICERIDEN_SERT_KOSU", teamName, yardsGained) : getRandomLog("DISARIDAN_KOSU_BASARILI", teamName, yardsGained)
           } else if (defFocus === 'pass_def') {
-            yardsGained = 4 + Math.floor(Math.random() * 8), outcomeText += `${runType}, savunma pas beklediği için boşluk bulundu: ${yardsGained} yarda.`
+            yardsGained = 4 + Math.floor(Math.random() * 6), outcomeText += isPower ? getRandomLog("ICERIDEN_SERT_KOSU", teamName, yardsGained) : getRandomLog("DISARIDAN_KOSU_BASARILI", teamName, yardsGained)
           } else {
-            if (roll < 0.1) isTurnover = true, outcomeText += `${runType}, ancak FUMBLE! Topu düşürdüler ve savunma aldı!`, eventOccurred = 'fumble'
-            else yardsGained = 2 + Math.floor(Math.random() * 6), outcomeText += `${runType}, ${yardsGained} yarda kazanç.`
+            // balanced defense
+            if (roll < 0.20) yardsGained = 0, outcomeText += getRandomLog("NO_GAIN", teamName)
+            else if (roll < 0.25) isTurnover = true, eventOccurred = 'fumble', outcomeText += getRandomLog("FUMBLE", teamName)
+            else yardsGained = 3 + Math.floor(Math.random() * 5), outcomeText += isPower ? getRandomLog("ICERIDEN_SERT_KOSU", teamName, yardsGained) : getRandomLog("DISARIDAN_KOSU_BASARILI", teamName, yardsGained)
           }
-        } else {
+        } 
+        else {
+          // short_pass
           currentPlayType = 'short_pass'
           if (defFocus === 'blitz') {
-            yardsGained = 6 + Math.floor(Math.random() * 10), outcomeText += "Blitz'e karşı hızlı kısa pas! Savunma eksik yakalandı, " + yardsGained + " yarda kazanç."
+            if (roll < 0.3) yardsGained = 0, eventOccurred = 'incomplete', outcomeText += getRandomLog("INCOMPLETE_PASS", teamName)
+            else yardsGained = 8 + Math.floor(Math.random() * 10), outcomeText += getRandomLog("KISA_PAS_BASARILI", teamName, yardsGained)
           } else if (defFocus === 'pass_def') {
-            if (roll < 0.4) yardsGained = 0, outcomeText += "Kısa pas denemesi, savunma çok iyi kapattı, incomplete.", eventOccurred = 'incomplete'
-            else yardsGained = 3 + Math.floor(Math.random() * 4), outcomeText += `Zorlama kısa pas, sadece ${yardsGained} yarda.`
+            if (roll < 0.65) yardsGained = 0, eventOccurred = 'incomplete', outcomeText += getRandomLog("INCOMPLETE_PASS", teamName)
+            else if (roll < 0.75) isTurnover = true, eventOccurred = 'interception', outcomeText += getRandomLog("INTERCEPTION", teamName)
+            else yardsGained = 2 + Math.floor(Math.random() * 4), outcomeText += getRandomLog("KISA_PAS_BASARILI", teamName, yardsGained)
           } else {
-            yardsGained = 4 + Math.floor(Math.random() * 7), outcomeText += `Dengeli oyuna karşı rahat kısa pas, ${yardsGained} yarda kazanç.`
+            // balanced
+            if (roll < 0.40) yardsGained = 0, eventOccurred = 'incomplete', outcomeText += getRandomLog("INCOMPLETE_PASS", teamName)
+            else yardsGained = 4 + Math.floor(Math.random() * 6), outcomeText += getRandomLog("KISA_PAS_BASARILI", teamName, yardsGained)
           }
         }
 
@@ -244,7 +357,8 @@ serve(async (req) => {
 
         if (yardLine >= 100) {
           if (possession === 'home') homeScore += 7; else awayScore += 7;
-          addLog(timePrefix, `${outcomeText} VE TOUCHDOWN (7 sayı)!! Harika bir hücum.`, currentPlayType, 'touchdown', 100)
+          outcomeText = outcomeText + " " + getRandomLog("TOUCHDOWN", teamName)
+          addLog(timePrefix, outcomeText, currentPlayType, 'touchdown', 100)
           switchPossession(true)
           continue
         }
@@ -262,12 +376,13 @@ serve(async (req) => {
           down = 1
           distance = 10
           if (yardLine + distance > 100) distance = 100 - yardLine
-          addLog(timePrefix, `${outcomeText} - FIRST DOWN!`, currentPlayType, eventOccurred, yardLine)
+          addLog(timePrefix, `${outcomeText} (FIRST DOWN!)`, currentPlayType, eventOccurred, yardLine)
         } else {
           down++
           addLog(timePrefix, outcomeText, currentPlayType, eventOccurred, yardLine)
           if (down > 4) {
-            addLog(timePrefix, "4th Down başarısız! TURNOVER ON DOWNS. Top rakibe geçiyor.", 'turnover', 'turnover', yardLine)
+            outcomeText += " " + getRandomLog("TURNOVER_ON_DOWNS", teamName)
+            addLog(timePrefix, outcomeText, 'turnover', 'turnover', yardLine)
             switchPossession()
           }
         }
@@ -276,10 +391,10 @@ serve(async (req) => {
       if (homeScore === awayScore) {
         if (Math.random() < homePower / (homePower + awayPower)) {
           homeScore += 3
-          addLog("OT", "Uzatmalarda Ev Sahibi FG bularak maçı noktaladı!", "fg", "fg_good", 100)
+          addLog("OT", getRandomLog("FIELD_GOAL_ISABETLI", "Ev Sahibi", 30), "fg", "fg_good", 100)
         } else {
           awayScore += 3
-          addLog("OT", "Uzatmalarda Deplasman FG bularak maçı noktaladı!", "fg", "fg_good", 100)
+          addLog("OT", getRandomLog("FIELD_GOAL_ISABETLI", "Deplasman", 30), "fg", "fg_good", 100)
         }
       }
 
