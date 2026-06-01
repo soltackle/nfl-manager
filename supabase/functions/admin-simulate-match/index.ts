@@ -136,8 +136,8 @@ serve(async (req) => {
     for (const match of matches) {
       if (match.final_stats?.played) continue
 
-      const { data: homePlayers } = await supabaseAdmin.from('players').select('overall').eq('franchise_id', match.home_franchise_id)
-      const { data: awayPlayers } = await supabaseAdmin.from('players').select('overall').eq('franchise_id', match.away_franchise_id)
+      const { data: homePlayers } = await supabaseAdmin.from('players').select('overall, traits, position').eq('franchise_id', match.home_franchise_id)
+      const { data: awayPlayers } = await supabaseAdmin.from('players').select('overall, traits, position').eq('franchise_id', match.away_franchise_id)
       
       const getTeamPower = (players: any[]) => {
         if (!players || players.length === 0) return 50
@@ -147,6 +147,12 @@ serve(async (req) => {
 
       let homePower = getTeamPower(homePlayers)
       let awayPower = getTeamPower(awayPlayers)
+
+      const hasTrait = (team: 'home' | 'away', pos: string, trait: string) => {
+        const pList = team === 'home' ? homePlayers : awayPlayers
+        if (!pList) return false
+        return pList.some(p => p.position.includes(pos) && p.traits && p.traits.includes(trait))
+      }
 
       const { data: homeTacData } = await supabaseAdmin.from('tactics').select('slider_ayarlari').eq('franchise_id', match.home_franchise_id).single()
       const { data: awayTacData } = await supabaseAdmin.from('tactics').select('slider_ayarlari').eq('franchise_id', match.away_franchise_id).single()
@@ -282,20 +288,35 @@ serve(async (req) => {
           }
         }
 
+        const isHomeOffense = possession === 'home'
+        const offTeamStr = isHomeOffense ? 'home' : 'away'
+        const defTeamStr = isHomeOffense ? 'away' : 'home'
+
+        // Traits
+        const hasPocketPresence = hasTrait(offTeamStr, 'QB', 'Pocket Presence')
+        const hasYacMachine = hasTrait(offTeamStr, 'WR', 'YAC Machine')
+        const hasRoadGrader = hasTrait(offTeamStr, 'OL', 'Road Grader')
+        const hasPassProtector = hasTrait(offTeamStr, 'OL', 'Pass Protector')
+        const hasBallHawk = hasTrait(defTeamStr, 'DB', 'Ball Hawk')
+        const hasHitPower = hasTrait(defTeamStr, 'LB', 'Hit Power') || hasTrait(defTeamStr, 'DL', 'Hit Power')
+
         // BALANCED RNG LOGIC
         if (offFocus === 'deep_bomb') {
           currentPlayType = 'deep_bomb'
           if (defFocus === 'pass_def') {
+            const intChance = hasBallHawk ? 0.82 : 0.85
             if (roll < 0.70) yardsGained = 0, eventOccurred = 'incomplete', outcomeText += getRandomLog("INCOMPLETE_PASS", teamName)
-            else if (roll < 0.85) isTurnover = true, eventOccurred = 'interception', outcomeText += getRandomLog("INTERCEPTION", teamName)
+            else if (roll < intChance) isTurnover = true, eventOccurred = 'interception', outcomeText += getRandomLog("INTERCEPTION", teamName) + (hasBallHawk ? " (BALL HAWK!)" : "")
             else yardsGained = 20 + Math.floor(Math.random() * 20), outcomeText += getRandomLog("DERIN_BOMBA_BASARILI", teamName, yardsGained)
           } else if (defFocus === 'blitz') {
-            if (roll < 0.50) yardsGained = -(5 + Math.floor(Math.random() * 5)), eventOccurred = 'sack', outcomeText += getRandomLog("SACK", teamName, yardsGained)
+            const sackChance = hasPassProtector ? 0.40 : 0.50
+            if (roll < sackChance) yardsGained = -(5 + Math.floor(Math.random() * 5)), eventOccurred = 'sack', outcomeText += getRandomLog("SACK", teamName, yardsGained)
             else yardsGained = 30 + Math.floor(Math.random() * 30), outcomeText += getRandomLog("DERIN_BOMBA_BASARILI", teamName, yardsGained)
           } else {
             // balanced defense
+            const intChance = hasBallHawk ? 0.72 : 0.75
             if (roll < 0.60) yardsGained = 0, eventOccurred = 'incomplete', outcomeText += getRandomLog("INCOMPLETE_PASS", teamName)
-            else if (roll < 0.75) isTurnover = true, eventOccurred = 'interception', outcomeText += getRandomLog("INTERCEPTION", teamName)
+            else if (roll < intChance) isTurnover = true, eventOccurred = 'interception', outcomeText += getRandomLog("INTERCEPTION", teamName) + (hasBallHawk ? " (BALL HAWK!)" : "")
             else yardsGained = 20 + Math.floor(Math.random() * 25), outcomeText += getRandomLog("DERIN_BOMBA_BASARILI", teamName, yardsGained)
           }
         } 
@@ -309,9 +330,10 @@ serve(async (req) => {
             yardsGained = 4 + Math.floor(Math.random() * 6), outcomeText += isPower ? getRandomLog("ICERIDEN_SERT_KOSU", teamName, yardsGained) : getRandomLog("DISARIDAN_KOSU_BASARILI", teamName, yardsGained)
           } else {
             // balanced defense
+            const fumbleChance = hasHitPower ? 0.28 : 0.25
             if (roll < 0.20) yardsGained = 0, outcomeText += getRandomLog("NO_GAIN", teamName)
-            else if (roll < 0.25) isTurnover = true, eventOccurred = 'fumble', outcomeText += getRandomLog("FUMBLE", teamName)
-            else yardsGained = 3 + Math.floor(Math.random() * 5), outcomeText += isPower ? getRandomLog("ICERIDEN_SERT_KOSU", teamName, yardsGained) : getRandomLog("DISARIDAN_KOSU_BASARILI", teamName, yardsGained)
+            else if (roll < fumbleChance) isTurnover = true, eventOccurred = 'fumble', outcomeText += getRandomLog("FUMBLE", teamName) + (hasHitPower ? " (HIT POWER!)" : "")
+            else yardsGained = 3 + Math.floor(Math.random() * 5) + (isPower && hasRoadGrader ? 2 : 0), outcomeText += (isPower ? getRandomLog("ICERIDEN_SERT_KOSU", teamName, yardsGained) : getRandomLog("DISARIDAN_KOSU_BASARILI", teamName, yardsGained)) + (isPower && hasRoadGrader ? " (ROAD GRADER Block!)" : "")
           }
         } 
         else {
@@ -327,7 +349,12 @@ serve(async (req) => {
           } else {
             // balanced
             if (roll < 0.40) yardsGained = 0, eventOccurred = 'incomplete', outcomeText += getRandomLog("INCOMPLETE_PASS", teamName)
-            else yardsGained = 4 + Math.floor(Math.random() * 6), outcomeText += getRandomLog("KISA_PAS_BASARILI", teamName, yardsGained)
+            else yardsGained = 4 + Math.floor(Math.random() * 6) + (hasYacMachine ? 3 : 0), outcomeText += getRandomLog("KISA_PAS_BASARILI", teamName, yardsGained) + (hasYacMachine ? " (YAC MACHINE!)" : "")
+          }
+          if (eventOccurred === 'sack' && hasPocketPresence && Math.random() < 0.5) {
+             eventOccurred = 'incomplete'
+             yardsGained = 0
+             outcomeText = "Pocket daraldı ancak oyun kurucu (POCKET PRESENCE!) sayesinde sack olmaktan kurtulup topu fırlattı! Incomplete pass."
           }
         }
 

@@ -5,6 +5,7 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { Shield, ChevronRight } from 'lucide-react'
 import { useFranchiseStore } from '@/store/franchiseStore'
 import { supabase } from '@/lib/supabase'
+import { TraitBadge } from '@/components/ui/TraitBadge'
 
 const OFFENSE_POS = ['QB', 'RB', 'WR', 'TE', 'OL']
 const DEFENSE_POS = ['DE', 'LB', 'CB', 'S']
@@ -37,9 +38,7 @@ export function RosterPage() {
     const num = parseInt(hash, 16) || 0
     const age = 20 + (num % 15) // 20 to 34
     const form = 60 + (num % 40) // 60% to 99%
-    const traitsList = ['Kavrama (Clutch)', 'Hızlı (Speedster)', 'Lider', 'Güçlü', 'Dayanıklı']
-    const trait = traitsList[num % traitsList.length]
-    return { age, form, trait }
+    return { age, form }
   }
 
   // Split into Main and Practice
@@ -79,7 +78,8 @@ export function RosterPage() {
   }
 
   const renderPlayerCard = (player: any) => {
-    const { age, form, trait } = getPlayerDetails(player.id)
+    const { age, form } = getPlayerDetails(player.id)
+    const traits: string[] = player.traits || []
     return (
       <div 
         key={player.id} 
@@ -99,9 +99,11 @@ export function RosterPage() {
               <span className="text-[10px] bg-white/10 px-1 rounded text-white/50">{age} Yaş</span>
               <span className="text-[10px] bg-white/10 px-1 rounded text-accent">🔥 %{form}</span>
             </div>
-            <div className="flex items-center gap-2 mt-0.5">
-              <div className="text-green-400 text-xs font-bold">${(player.value / 1000000).toFixed(1)}M</div>
-              <div className="text-[9px] uppercase font-bold text-white/30 tracking-wider">• {trait}</div>
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
+              <div className="text-green-400 text-xs font-bold mr-2">${(player.value / 1000000).toFixed(1)}M</div>
+              {traits.map((trait, i) => (
+                <TraitBadge key={i} trait={trait} />
+              ))}
             </div>
           </div>
         </div>
