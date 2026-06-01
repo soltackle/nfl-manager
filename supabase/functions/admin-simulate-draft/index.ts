@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1"
+import { generateTraits, calculatePlayerValue } from "../_shared/playerUtils.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -63,12 +64,18 @@ serve(async (req) => {
       for (let i = 0; i < 22; i++) {
         const pos = positions[i % positions.length]
         const names = ['James', 'Williams', 'Johnson', 'Brown', 'Davis', 'Miller', 'Wilson', 'Moore', 'Taylor', 'Anderson', 'Thomas', 'Jackson', 'White', 'Harris', 'Martin', 'Thompson', 'Garcia', 'Martinez', 'Robinson', 'Clark', 'Rodriguez', 'Lewis']
+        const overall = 60 + Math.floor(Math.random() * 30)
+        const baseValue = 100000 + Math.floor(Math.random() * 900000)
+        const traits = generateTraits(overall, pos)
+        const finalValue = calculatePlayerValue(baseValue, traits.length)
+        
         playersToInsert.push({
           franchise_id: franchise.id,
           name: `${names[i]} ${pos}${Math.floor(Math.random() * 99)}`,
           position: pos,
-          overall: 60 + Math.floor(Math.random() * 30),
-          value: 100000 + Math.floor(Math.random() * 900000)
+          overall: overall,
+          value: finalValue,
+          traits: traits
         })
       }
 
