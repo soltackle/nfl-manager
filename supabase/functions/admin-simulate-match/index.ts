@@ -120,8 +120,18 @@ serve(async (req) => {
 
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) throw new Error('Missing Auth Header')
-    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(authHeader.replace('Bearer ', ''))
-    if (userError || !user) throw new Error('Invalid token')
+    
+    const token = authHeader.replace('Bearer ', '')
+    const isServiceRole = token === Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+
+    if (!isServiceRole) {
+      const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token)
+      if (userError || !user) throw new Error('Invalid token')
+
+      // Verify admin
+      const { data: dbUser } = await supabaseAdmin.from('users').select('role').eq('id', user.id).single()
+      if (!dbUser || dbUser.role !== 'admin') throw new Error('Unauthorized')
+    }
 
     const { league_id, week } = await req.json()
 
