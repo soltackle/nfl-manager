@@ -68,6 +68,13 @@ serve(async (req) => {
     // Deduct coins
     await supabaseAdmin.from('users').update({ amfutcoin: currentCoin - cost }).eq('id', user.id)
 
+    // Update Quests
+    const today = new Date().toISOString().split('T')[0]
+    const { data: quests } = await supabaseAdmin.from('user_quests').select('*').eq('user_id', user.id).single()
+    if (quests && quests.last_reset_date === today) {
+      await supabaseAdmin.from('user_quests').update({ shop_bought: (quests.shop_bought || 0) + 1 }).eq('user_id', user.id)
+    }
+
     return new Response(JSON.stringify({ success: true, message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,

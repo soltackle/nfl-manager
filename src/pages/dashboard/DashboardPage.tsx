@@ -2,10 +2,11 @@ import { useAuthStore } from '@/store/authStore'
 import { useFranchiseStore } from '@/store/franchiseStore'
 import { useMatch } from '@/hooks/useMatch'
 import { useStandings } from '@/hooks/useStandings'
-import { Shield, CloudRain, Info, ChevronRight, BarChart3, TrendingUp, TrendingDown, Minus, CheckCircle } from 'lucide-react'
+import { Shield, CloudRain, Info, ChevronRight, BarChart3, TrendingUp, TrendingDown, Minus, CheckCircle, Users, Trophy, ArrowRight, Zap, Circle, Gift } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { QuestsModal } from '@/components/dashboard/QuestsModal'
 
 export function DashboardPage() {
   const { user } = useAuthStore()
@@ -17,6 +18,8 @@ export function DashboardPage() {
   const [readyCount, setReadyCount] = useState(0)
   const [totalFranchises, setTotalFranchises] = useState(8)
   const [isReadying, setIsReadying] = useState(false)
+  const [showQuests, setShowQuests] = useState(false)
+  const [questsData, setQuestsData] = useState<any>(null)
 
   useEffect(() => {
     if (!franchise) return
@@ -38,6 +41,13 @@ export function DashboardPage() {
       }
     }
     checkLastPlayed()
+
+    // Fetch quest progress
+    const fetchQuests = async () => {
+        const { data: qData } = await supabase.functions.invoke('get-quests')
+        if (qData?.quests) setQuestsData(qData.quests)
+    }
+    fetchQuests()
   }, [franchise, navigate])
 
   // Ready State Effect
@@ -278,14 +288,20 @@ export function DashboardPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         
-        {/* Promo / Shop Ad */}
-        <div className="bg-gradient-to-r from-purple-600 to-indigo-800 rounded-xl p-4 flex flex-col justify-between cursor-pointer shadow-lg border border-purple-400/50">
-          <div className="flex justify-between items-start">
-            <div className="bg-white text-purple-800 font-black text-xl px-2 py-1 rounded shadow-lg italic">85+</div>
-            <div className="bg-green-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-white">!</div>
+        {/* Günlük Görevler */}
+        <div 
+          className="bg-gradient-to-r from-purple-600 to-indigo-800 rounded-xl p-4 flex items-center gap-4 cursor-pointer hover:brightness-110 transition shadow-lg md:col-span-1 border border-purple-400/50"
+          onClick={() => setShowQuests(true)}
+        >
+          <div className="bg-white/20 p-3 rounded-full">
+            <Gift className="w-8 h-8 text-white drop-shadow-md" />
           </div>
-          <div className="mt-4">
-            <div className="bg-black/30 text-white text-xs text-center font-bold py-1 rounded">0/3 GÖREV</div>
+          <div>
+            <div className="flex items-center gap-2">
+              <div className="text-white font-display font-black text-lg uppercase tracking-wider">GÜNLÜK GÖREVLER</div>
+              <div className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-white">YENİ</div>
+            </div>
+            <div className="text-white/80 text-xs font-bold uppercase mt-1">GÖREVLERİ YAP, COIN KAZAN</div>
           </div>
         </div>
 
@@ -316,6 +332,7 @@ export function DashboardPage() {
 
       </div>
 
+      {showQuests && <QuestsModal onClose={() => setShowQuests(false)} />}
     </div>
   )
 }

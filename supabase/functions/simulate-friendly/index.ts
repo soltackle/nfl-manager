@@ -74,8 +74,14 @@ serve(async (req) => {
       homeScore += 3
     }
 
-    // 6. Deduct 4 Coins
+    // 6. Deduct 4 Coins & Update Quests
     await supabaseAdmin.from('users').update({ amfutcoin: dbUser.amfutcoin - 4 }).eq('id', user.id)
+    
+    const today = new Date().toISOString().split('T')[0]
+    const { data: quests } = await supabaseAdmin.from('user_quests').select('*').eq('user_id', user.id).single()
+    if (quests && quests.last_reset_date === today) {
+      await supabaseAdmin.from('user_quests').update({ friendly_played: (quests.friendly_played || 0) + 1 }).eq('user_id', user.id)
+    }
 
     // 7. Add XP to home players
     if (homePlayers && homePlayers.length > 0) {
