@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom'
 import { TopNav } from '../ui/TopNav'
+import { GameHint } from '../ui/GameHint'
 
 export function Layout() {
   return (
@@ -11,6 +12,7 @@ export function Layout() {
           <Outlet />
         </div>
       </main>
+      <GameHint />
     </div>
   )
 }
