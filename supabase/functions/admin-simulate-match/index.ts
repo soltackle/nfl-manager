@@ -22,7 +22,12 @@ const SPIKER_METINLERI = {
     "Yüksek tempoda oynuyorlar! [TEAM] no-huddle hücumundan hemen sonra hızlı bir hitch rotasıyla [YARDS] yardayı cebe indirdi.",
     "Linebacker adımını yanlış atınca [TEAM] alıcısı boşluğu hemen doldurdu! Oyun kurucudan jilet gibi bir pas, [YARDS] yarda!",
     "İnanılmaz bir el-göz koordinasyonu! [TEAM] alıcısı seken topu son anda tuttu ve [YARDS] yardayı kurtardı!",
-    "Sahanın patronu [TEAM] oyun kurucusu! Savunmayı gözleriyle kandırıp topu ters taraftaki boşluğa gönderdi. [YARDS] yardalık zekâ gösterisi!"
+    "Sahanın patronu [TEAM] oyun kurucusu! Savunmayı gözleriyle kandırıp topu ters taraftaki boşluğa gönderdi. [YARDS] yardalık zekâ gösterisi!",
+    "Savunmanın ortasındaki o küçücük delik! [TEAM] pasörü iğne deliğinden geçirdi, [YARDS] yardalık lazer atışı!",
+    "Denge, zamanlama, kusursuzluk! [TEAM] receiver'ı dönüşünü yaptığı an top ellerindeydi! [YARDS] yarda cebe indi.",
+    "Hızlı ve ölümcül! [TEAM] oyun kurucusu blitz'i görünce anında kararını verdi, [YARDS] yardalık harika okuma!",
+    "Defansif back geç kaldı! [TEAM] slant rotasında adım avantajını aldı ve topu kapıp [YARDS] yarda götürdü.",
+    "Yüksek IQ gerektiren bir play! [TEAM] hücumu savunmanın zone'unu esnetti ve aradaki boşluğa [YARDS] yardalık pası kondurdu."
   ],
   "DERIN_BOMBA_BASARILI": [
     "BOMBA! [TEAM] oyun kurucusu kanal gibi bir geçit buldu ve gözünü kırpmadan post route'a fırlattı! [YARDS] yarda, tam isabetle!",
@@ -34,7 +39,12 @@ const SPIKER_METINLERI = {
     "Köşe yazarlarına malzeme çıktı! [TEAM] derinlerde öylesine bir boşluk buldu ki, bu pas [YARDS] yardalık bir şiir gibi yazıldı!",
     "Double coverage işe yaramadı! [TEAM] alıcısı havada asılı kaldı ve topu adeta söküp aldı! [YARDS] yardalık insanüstü bir çaba!",
     "Play action fake'i savunmayı dondurdu! [TEAM] pasörü arkaya sarkan receiver'ı gördü ve [YARDS] yardalık muazzam bir roket yolladı!",
-    "Sahada yıldırım düştü sanki! [TEAM] oyun kurucusunun kolu resmen alev alıyor, [YARDS] yardalık derin bir darbe vurdu!"
+    "Sahada yıldırım düştü sanki! [TEAM] oyun kurucusunun kolu resmen alev alıyor, [YARDS] yardalık derin bir darbe vurdu!",
+    "Tüm savunmayı üstüne çekip arkaya yolladı! [TEAM] pasörü havan topu gibi fırlattı, [YARDS] yardalık göz kamaştırıcı pas!",
+    "Savunmacı adım adım takip etti ama nafile! [TEAM] alıcısı havada uzanıp topu parmak uçlarıyla kaptı! [YARDS] yardalık mucize!",
+    "Oyun kurucunun bileği kırılacak sandık! [TEAM] pasörü tüm ağırlığını vererek [YARDS] yardalık devasa bir pas yolladı!",
+    "Sahanın diğer ucuna kargo teslimatı! [TEAM] alıcısı omuz üstünden bakarak topu yakaladı, [YARDS] yardalık destan yazıldı!",
+    "Bütün stadyum ayağa kalktı! Havada süzülen bu [YARDS] yardalık [TEAM] pası jeneriklere girecek cinsten!"
   ],
   "ICERIDEN_SERT_KOSU": [
     "İki lineman arasındaki boşluktan bir parmak genişliği bile yok ama [TEAM] koşucusu bir şekilde içeri daldı! [YARDS] yarda zorla kopardı!",
@@ -46,7 +56,12 @@ const SPIKER_METINLERI = {
     "İçerisi adeta bir cehennem ama [TEAM] koşucusu yanmayı göze alarak daldı! Kargaşanın içinden [YARDS] yarda çıkardı!",
     "[TEAM] hücum hattı karşı tarafı adeta paten sahasına çevirdi! Koşucu açılan otobandan [YARDS] yarda ilerledi!",
     "Çamur, ter ve kan! [TEAM] koşucusu head down (kafası eğik) girdi ve çarpışmaların arasından [YARDS] yardalık bir can suyu buldu!",
-    "Savunma duvar ördü sandı ama [TEAM] o duvarı balyozla yıktı geçti! Sadece güç, saf güç! [YARDS] yarda cebe girdi."
+    "Savunma duvar ördü sandı ama [TEAM] o duvarı balyozla yıktı geçti! Sadece güç, saf güç! [YARDS] yarda cebe girdi.",
+    "Bacakları durmak bilmiyor! [TEAM] koşucusu ilk temasta düşmedi, dönerek ilerledi ve [YARDS] yardayı koparıp aldı!",
+    "Offensive line'dan muazzam bir bloklama! Okyanus gibi yarıldı savunma, [TEAM] koşucusuna sadece yürümek kaldı, [YARDS] yarda!",
+    "Arkasından iki kişi asıldı ama nafile! [TEAM] koşucusu bir yük treni misali savunmacıları da peşinden [YARDS] yarda sürükledi!",
+    "Daha snap alındığı an kafa kafaya çarpışma! Ancak [TEAM] koşucusu dengeyi buldu ve [YARDS] yardalık zorlu bir koşu çıkardı.",
+    "Bu nasıl bir düşük ağırlık merkezi! [TEAM] koşucusu yere santimler kala doğrulup [YARDS] yarda daha gitmeyi başardı!"
   ],
   "DISARIDAN_KOSU_BASARILI": [
     "[TEAM] koşucusu sağ çizgiye saptı, defender önde bekliyordu ama juke o kadar keskin ki adam yerinde dondu! [YARDS] yarda tam gaz!",
@@ -58,7 +73,12 @@ const SPIKER_METINLERI = {
     "Sweep oyunu kusursuz işledi! [TEAM] hücum hattı köşeyi mühürledi ve koşucuya sadece çimlerde koşmak kaldı! [YARDS] yarda!",
     "Stiff arm! [TEAM] koşucusu savunmacıyı tek koluyla fırlatıp attı ve dışarıdan [YARDS] yardalık destansı bir depar attı!",
     "Bir spor araba gibi vites büyüttü! [TEAM] koşucusu açık alanı gördüğü an ivmelendi ve arkasında sadece toz bıraktı, [YARDS] yarda!",
-    "Sanki ayaklarında kanat var! [TEAM] koşucusu sideline'a paralel öyle bir aktı ki, [YARDS] yardalık harika bir izlenim bıraktı."
+    "Sanki ayaklarında kanat var! [TEAM] koşucusu sideline'a paralel öyle bir aktı ki, [YARDS] yardalık harika bir izlenim bıraktı.",
+    "Müthiş bir yön değiştirme! [TEAM] koşucusu frene basıp savunmacıyı ekarte etti ve dışarıdan [YARDS] yardayı aldı!",
+    "Dış hat koşularının şahikası! [TEAM] koşucusu bir dansçı edasıyla çizgide cambazlık yaparak [YARDS] yarda kaydetti!",
+    "O nasıl bir spin move! [TEAM] koşucusu kendi etrafında dönerek savunmacıyı şaşkına çevirdi, [YARDS] yarda kazanıldı!",
+    "Kamera bile takip etmekte zorlandı! [TEAM] koşucusunun dışarıdan başlattığı bu roket koşusu [YARDS] yarda kazandırdı!",
+    "Kenar blokları o kadar iyi ki! [TEAM] alıcıları koşucuya yol açtı, ve o da bu iyiliği [YARDS] yarda ile taçlandırdı."
   ],
   "INCOMPLETE_PASS": [
     "Pocket hızla daralıyor! [TEAM] pasörü paniklemeden topu fırlattı ama o top hep yüksekte gidecekti. Incomplete pass.",
@@ -70,7 +90,12 @@ const SPIKER_METINLERI = {
     "Mükemmel bir savunma hamlesi! [TEAM] alıcısı tam topu kavrarken cornerback elini araya sokup topu düşürttü! Incomplete!",
     "Fazla hızlı, fazla sert! [TEAM] pasörü mermi gibi attı ama alıcının ellerinden sekti. Incomplete pass.",
     "Denge kaybı! [TEAM] oyun kurucusu geri adım atarken tökezledi ve pas havada süzülerek hedefsiz kaldı. Incomplete.",
-    "Spike! [TEAM] zamanı durdurmak için topu yere vuruyor. Incomplete pass ama taktiksel bir hamle."
+    "Spike! [TEAM] zamanı durdurmak için topu yere vuruyor. Incomplete pass ama taktiksel bir hamle.",
+    "Çok geriye düştü! [TEAM] pası o kadar arkaya gitti ki alıcı kendini yere atsa bile yetişemedi. Incomplete.",
+    "Savunmanın fiziksel oyunu işe yarıyor! [TEAM] alıcısı rotadan savruldu ve pas boş bir yeşilliğe indi. Incomplete pass.",
+    "Hakemler bile topun nerede olduğuna şaşırdı! [TEAM] pasörü baskıdan kurtulup attı ama bu tamamen körleme bir pastı. Incomplete.",
+    "Şiddetli bir darbe! [TEAM] alıcısı tam topu kontrol edecekken yediği omuz darbesiyle top fırladı. Incomplete pass!",
+    "Oyun kurucu elinden topu geç çıkardı. [TEAM] alıcısı çoktan sideline dışına çıkmıştı bile. Incomplete."
   ],
   "SACK": [
     "Üçlü blitz baskısı! [TEAM] oyun kurucusunun sağ tarafı çöktü ve içeriden gelen defender dümdüz yere serdi! [YARDS] yarda kayıp! SACK!",
@@ -82,7 +107,12 @@ const SPIKER_METINLERI = {
     "Oyun kurucu neye uğradığını şaşırdı! [TEAM] offensive line'ı kağıt gibi yırtıldı ve [YARDS] yardalık SACK kaçınılmaz oldu!",
     "Coverage sack! Arkada kimse boşalmayınca [TEAM] oyun kurucusu beklemek zorunda kaldı ve sonunda yutuldu! [YARDS] yarda kayıp! SACK!",
     "Stadyum adeta kükrüyor! Savunmanın kalbi [TEAM] pasörünü merkezde ezip geçti! [YARDS] yarda geriye! SACK!",
-    "Kurtulma şansı sıfırdı! [TEAM] pasörü formadan çekilerek yere çalındı! [YARDS] yardalık bu SACK hücumun belini büktü!"
+    "Kurtulma şansı sıfırdı! [TEAM] pasörü formadan çekilerek yere çalındı! [YARDS] yardalık bu SACK hücumun belini büktü!",
+    "Nefes bile aldırmadılar! Top snap edildiği an defender [TEAM] pasörünün üstüne çöktü! [YARDS] yardalık SACK!",
+    "Yüksek perdeden bir savunma konseri! [TEAM] oyun kurucusunu iki kişi araya alıp adeta sandviç yaptı! [YARDS] yarda geriye SACK!",
+    "Kaçacak delik aradı ama bulamadı! [TEAM] oyun kurucusu sahada daireler çizerken yere serildi! [YARDS] yarda kayıp! SACK!",
+    "Büyük bir gürültü koptu sahada! [TEAM] pasörüne yandan öyle bir girdiler ki kaskı sarsıldı! [YARDS] yarda kayıp! SACK!",
+    "O-Line tamamen uyumuş! Hiçbir bloklama gelmeyince [TEAM] oyun kurucusu ava giden avcı gibi avlandı! SACK! [YARDS] yarda geriye."
   ],
   "INTERCEPTION": [
     "[TEAM] red zone'da riske girdi! Pas atıldı... ama savunma linebacker'ı rotayı ezbere biliyordu sanki! Atladı, kaptı! INTERCEPTION!",
@@ -94,7 +124,12 @@ const SPIKER_METINLERI = {
     "Gözlerine inanamıyor! [TEAM] oyun kurucusu hiç görmediği bir defender'ın kucağına adeta hediye paketi bıraktı! INTERCEPTION!",
     "Zamanlama hatası! [TEAM] pasörü topu erken çıkardı, savunmacı rotanın önüne geçip topu çaldı! İnanılmaz bir INTERCEPTION okuması!",
     "Büyük umutlarla atılan derin bir pas... ama gökyüzünde [TEAM] alıcısından çok savunmacı vardı! Uçarak aldı topu! INTERCEPTION!",
-    "Bu bir hırsızlık! [TEAM] pası alıcının tam kucağına iniyordu ki savunmacı aradan uzanıp topu söküp aldı! INTERCEPTION!"
+    "Bu bir hırsızlık! [TEAM] pası alıcının tam kucağına iniyordu ki savunmacı aradan uzanıp topu söküp aldı! INTERCEPTION!",
+    "Pasör adeta gözü kapalı attı! [TEAM] oyun kurucusunun o bölgede kendi adamı bile yoktu. Bedavadan bir INTERCEPTION!",
+    "Muazzam bir atletizm! Savunmacı havada tam bir tur atıp [TEAM] pasını kapıverdi! Stadyum ayakta! INTERCEPTION!",
+    "Baskı altında acele edilen bir karar! [TEAM] pası kavis alıp doğrudan savunmanın kucağına düştü. INTERCEPTION!",
+    "Kendi yarı sahasında büyük bir felaket! [TEAM] pası sekip havalandı, defansif tackle bile yakalayabilirdi bunu! INTERCEPTION!",
+    "Göz okuması harika! Safety [TEAM] pasörünün nereye bakacağını önceden sezdi ve rotayı kesti! İnanılmaz bir INTERCEPTION!"
   ],
   "FUMBLE": [
     "[TEAM] koşucusu ikinci hedefe koşarken defender tam bilekten yakaladı! Top havaya uçtu! FUMBLE! Ve kaos başlıyor!",
@@ -106,7 +141,12 @@ const SPIKER_METINLERI = {
     "Dengeyi kurmaya çalışırken topu unuttu! [TEAM] koşucusu yere düşmeden top elinden fırladı! FUMBLE karmaşası!",
     "Strip sack! Pocket içinde arkadan gelen defender [TEAM] pasörünün koluna vurdu, top boşta! FUMBLE! Herkes üzerine atlıyor!",
     "Top adeta canlı bir balık gibi kayıp gitti! [TEAM] alıcısı tam döndüğü an darbeyi yedi ve top sahipsiz! FUMBLE!",
-    "İnanılmaz bir an! [TEAM] hücumu ilerliyor derken kask kaska çarpışmada top fırladı! FUMBLE alarmı çalıyor!"
+    "İnanılmaz bir an! [TEAM] hücumu ilerliyor derken kask kaska çarpışmada top fırladı! FUMBLE alarmı çalıyor!",
+    "Elinden sabun gibi kaydı! [TEAM] koşucusu dönüş yaparken top çimlere düştü, panik yaşanıyor! FUMBLE!",
+    "Aradan uzanan o sinsi el! [TEAM] pasörü pocket'ta beklerken topu çaldırdı! Kör noktadan gelen FUMBLE!",
+    "Hücum tam hızlanmıştı ki takıldılar! [TEAM] koşucusunun koluna gelen şiddetli balyoz darbesiyle FUMBLE gerçekleşti!",
+    "Top adeta patladı! [TEAM] oyuncusuna aynı anda üç kişi girince top gökyüzüne fırladı! Dev bir FUMBLE!",
+    "Daha topu tutamadan düşürdü! [TEAM] hücumunda inanılmaz bir konsantrasyon kaybı. Yerlerde sürünüyorlar! FUMBLE!"
   ],
   "TOUCHDOWN": [
     "BU NASIL BİR YAKALAYIŞ?! [TEAM] alıcısı tek bacağıyla çizgide, topu göğsüne bastırmış şekilde düşüyor! TOUCHDOWN!!! 6 sayı!",
@@ -118,7 +158,12 @@ const SPIKER_METINLERI = {
     "Bomba patladı! [TEAM] derinlerden gelen bir füzeyle endzone'u buldu! TOUCHDOWN! Kutlamalar başladı bile!",
     "Çizgide adeta bir rugby maçı vardı ama [TEAM] topu milim milim iterek içeri sokmayı başardı! TOUCHDOWN! Saf inat!",
     "Geniş alanda tek başına kaldı! [TEAM] oyuncusu için bu bir antrenman koşusuna dönüştü! TOUCHDOWN! Tribünler çıldırıyor!",
-    "Mükemmel zamanlama, mükemmel pas, mükemmel koşu! [TEAM] bu oyunu ders kitaplarına sokacak! TOUCHDOWNNNN!!!"
+    "Mükemmel zamanlama, mükemmel pas, mükemmel koşu! [TEAM] bu oyunu ders kitaplarına sokacak! TOUCHDOWNNNN!!!",
+    "Geri dönüşün ateşi yakıldı! [TEAM] imkansız denilen yerden endzone'a sızdı! TOUCHDOWN! 6 sayı tabelada yanıyor!",
+    "Bütün hafta buna çalışmışlar belli! Kusursuz bir trick play ve [TEAM] için TOUCHDOWN! Şapkalar çıkıyor bu oyuna!",
+    "Araya giren savunmacıların üstünden atladı! [TEAM] oyuncusu adeta havada yürüyerek çizgiyi geçti! İnanılmaz bir TOUCHDOWN!",
+    "Açılan koridorda bir Formula aracı gibi süzüldü! [TEAM] endzone'u buldu! TOUCHDOWN! Seyirci kendinden geçiyor!",
+    "Son saniyeye kadar direndi ve çizgiyi kopardı! [TEAM] inatçı yapısıyla endzone'da! TOUCHDOWN! Ve 6 sayı geliyor!"
   ],
   "FIELD_GOAL_ISABETLI": [
     "Özel takım sahada! [TEAM] vurucusu [YARDS] yarda için hazırlandı... snap, hold, vuruş... GOOD! DİREKLERİN ARASINDA! FIELD GOAL! 3 sayı!",
@@ -130,7 +175,12 @@ const SPIKER_METINLERI = {
     "Baskı altında buz gibi soğukkanlı! [TEAM] vurucusu [YARDS] yardayı rahatlıkla çıkarıyor! FIELD GOAL, 3 sayı tabelada!",
     "Kusursuz mekanik! Snap, hold ve kick mükemmel uyum içinde! [TEAM] [YARDS] yardalık FIELD GOAL ile rahat nefes alıyor.",
     "Direği hafif yaladı ama içeri düştü! Şans [TEAM] takımından yana, [YARDS] yardalık FIELD GOAL iyi!",
-    "Büyük maçların büyük oyuncusu! [TEAM] kicker'ı [YARDS] yardadan affetmedi! FIELD GOAL, skor değişiyor!"
+    "Büyük maçların büyük oyuncusu! [TEAM] kicker'ı [YARDS] yardadan affetmedi! FIELD GOAL, skor değişiyor!",
+    "Buz adam devrede! [TEAM] vurucusu tribünlerin gürültüsüne aldırmadan [YARDS] yardadan skoru yazdı! FIELD GOAL! 3 sayı!",
+    "Atışın güzelliği jeneriklere girer! Top tam da hedeflendiği gibi ağları buluyor, [TEAM] için [YARDS] yardalık FIELD GOAL başarılı!",
+    "Mesafenin uzunluğu onu korkutmadı! [TEAM] vurucusu ayağının tüm gücüyle vurdu ve top filelere saplandı! FIELD GOAL! 3 puan!",
+    "Yere çok yakın uçtu ama direklerin arasından süzülmeyi başardı! [TEAM] [YARDS] yardalık kritik bir FIELD GOAL kaydediyor!",
+    "Her şey tek bir vuruşa kalmıştı ve [TEAM] vurucusu görevi layıkıyla yerine getirdi. [YARDS] yardadan FIELD GOAL başarılı!"
   ],
   "FIELD_GOAL_KACTI": [
     "[TEAM] vurucusu [YARDS] yarda için hazırlandı ama bacağı kaymış olabilir mi? Top sol direğin dışına çıkıyor! NO GOOD! Field Goal kaçtı!",
@@ -142,7 +192,12 @@ const SPIKER_METINLERI = {
     "Direk! Top büyük bir gürültüyle çatalı vurdu ve sahaya geri döndü! [TEAM] inanamıyor, [YARDS] yardalık deneme NO GOOD!",
     "Geniş, çok geniş! [TEAM] vurucusu topa çok altından girdi, hedeften tamamen saptı. [YARDS] yardalık atış kaçtı, NO GOOD!",
     "Rüzgar oyun oynadı! [TEAM] vurucusunun atışı mükemmel görünüyordu ama havada aniden yön değiştirdi! [YARDS] yarda NO GOOD!",
-    "Koçun yüzü düşüyor... [TEAM] için [YARDS] yardalık bu atış çok kritikti ama top sağdan dışarı süzüldü. NO GOOD!"
+    "Koçun yüzü düşüyor... [TEAM] için [YARDS] yardalık bu atış çok kritikti ama top sağdan dışarı süzüldü. NO GOOD!",
+    "Çimlere takıldı sanki! [TEAM] vurucusunun atışı çok cılız kaldı ve direklere varmadan düştü. NO GOOD! Kaçan FIELD GOAL!",
+    "Göz ucuyla baktı ve top o yana gitti! [TEAM] için çok ama çok uzak bir atış oldu. [YARDS] yardalık FIELD GOAL başarısız!",
+    "Tam bir felaket! Snap o kadar kötüydü ki [TEAM] vurucusu topa zor yetişti, haliyle atış sağa saptı. NO GOOD!",
+    "Çıt sesi duyuldu! Savunmadan bir parmak topa dokundu ve [TEAM] [YARDS] yardalık bu şansı harcadı! Kaçtı, NO GOOD!",
+    "Çok gerildi, fazla güç verdi! [TEAM] vurucusunun bu denemesi hedefi tamamen şaşırdı. FIELD GOAL NO GOOD!"
   ],
   "TURNOVER_ON_DOWNS": [
     "Drama son hakkında! [TEAM] cesaret gösterdi ama savunma daha cesurdu! Çizgi geçilemiyor! Turnover on Downs! Top rakibinde!",
@@ -154,7 +209,12 @@ const SPIKER_METINLERI = {
     "Kumar oynadılar ve kaybettiler! [TEAM] 4. hakta kendi sahasında çıkmayı denedi ama başarısız! Turnover on Downs!",
     "Fake punt denemesi! [TEAM] herkesi kandırmaya çalıştı ama savunmanın özel timi uyanıktı! İndirdiler! Turnover on Downs!",
     "Zaman daralırken umut bağladıkları 4. hak pası yere düştü! [TEAM] için yürüyüş burada bitiyor. Turnover on Downs!",
-    "Savunma koçu kenarda çıldırıyor! Adamları görevini eksiksiz yaptı ve [TEAM] hücumunu durdurdu! Turnover on Downs!"
+    "Savunma koçu kenarda çıldırıyor! Adamları görevini eksiksiz yaptı ve [TEAM] hücumunu durdurdu! Turnover on Downs!",
+    "Ne olursa olsun dediler ama olmadı! [TEAM] kendi sahasında 4. hakta tıkandı kaldı! Topu teslim ediyorlar, Turnover on Downs!",
+    "Sahanın ortasında bir etten duvar! [TEAM] hücumu defalarca çarptı ama yıkamadı. Turnover on Downs! Harika bir direniş!",
+    "Son saniye çabası yetersiz kaldı! [TEAM] dördüncü hakta derin bir rota denedi ancak pas incomplete. Turnover on Downs!",
+    "Bir oyun kurucu sneak'i denendi ama çizginin hakimi savunmaydı! [TEAM] geriye itildi! Turnover on Downs!",
+    "Sahada inanılmaz bir gerginlik vardı ve kaybeden [TEAM] oldu. Son şanslarını heba ettiler. Turnover on Downs!"
   ],
   "NO_GAIN": [
     "Savunma hattı beton gibi! [TEAM] hücumu içeri daldı ama hiçbir şey çıkaramadı. 0 yarda kazanç.",
@@ -166,7 +226,12 @@ const SPIKER_METINLERI = {
     "Tuğla duvara çarpmak gibi bir şeydi bu! [TEAM] hücumu şiddetle geri püskürtüldü. 0 yarda kazanç.",
     "Dışarı çıkmaya çalıştı ama kenar çizgisi ekstra bir savunmacı gibi kapandı! [TEAM] yerinde saydı.",
     "Hücum hattı tamamen çöktü! [TEAM] koşucusu backfield'dan çıkmayı dahi başaramadı. Sıfır numara.",
-    "Herkes kilitli, her yer kapalı! [TEAM] oyun kurucusu zorunlu olarak yere yattı. Sıfır yarda kazanç."
+    "Herkes kilitli, her yer kapalı! [TEAM] oyun kurucusu zorunlu olarak yere yattı. Sıfır yarda kazanç.",
+    "Kör bir noktadan gelen darbe! [TEAM] koşucusu topu alır almaz yere serildi. İlerleme tamamen sıfır.",
+    "Karşı takım savunması resmen kilit vurdu! [TEAM] bu duvarı tırmanamaz, kazanç yok, 0 yarda.",
+    "Bu oyun tasarımı baştan hatalıydı sanki! [TEAM] topu hareket dahi ettiremedi, sıfır kazançla yetinmek zorundalar.",
+    "Ahtapot gibi sardılar! [TEAM] oyuncusu top elindeyken adım atacak milimetre boşluk bulamadı. 0 yarda.",
+    "Bir anda etrafı sarıldı! [TEAM] hücumu başladığı çizgide eriyip bitti. Hiçbir ilerleme kaydedilemedi."
   ]
 }
 
