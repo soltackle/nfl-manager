@@ -23,6 +23,7 @@ import { CoachSelectionPage } from './pages/coach-selection/CoachSelectionPage'
 import { ProfilePage } from './pages/profile/ProfilePage'
 import { FriendliesPage } from './pages/friendlies/FriendliesPage'
 import { ShopPage } from './pages/shop/ShopPage'
+import { LeaderboardPage } from './pages/leaderboard/LeaderboardPage'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuthStore()
@@ -125,6 +126,7 @@ const router = createBrowserRouter([
           { path: 'club', element: <ClubPage /> },
           { path: 'friendlies', element: <FriendliesPage /> },
           { path: 'shop', element: <ShopPage /> },
+          { path: 'leaderboard', element: <LeaderboardPage /> },
         ]
       },
       { 

@@ -656,7 +656,7 @@ serve(async (req) => {
         risk: { basePay: 0, winBonus: 300000 }
       }
 
-      const { data: homeFranchiseFin } = await supabaseAdmin.from('franchises').select('club_fund, active_sponsor_id, active_boost').eq('id', match.home_franchise_id).single()
+      const { data: homeFranchiseFin } = await supabaseAdmin.from('franchises').select('club_fund, active_sponsor_id, active_boost, user_id').eq('id', match.home_franchise_id).single()
       if (homeFranchiseFin) {
         let sponsorPay = 0
         if (homeFranchiseFin.active_sponsor_id && SPONSORS[homeFranchiseFin.active_sponsor_id]) {
@@ -667,9 +667,22 @@ serve(async (req) => {
           club_fund: homeFranchiseFin.club_fund + homeRevenue + sponsorPay,
           active_boost: null // Clear boost after match
         }).eq('id', match.home_franchise_id)
+
+        // Update User Stats (Home)
+        if (homeFranchiseFin.user_id) {
+          const { data: u } = await supabaseAdmin.from('users').select('total_matches_played, total_matches_won, manager_xp').eq('id', homeFranchiseFin.user_id).single()
+          if (u) {
+            const isWin = homeScore > awayScore
+            await supabaseAdmin.from('users').update({
+              total_matches_played: (u.total_matches_played || 0) + 1,
+              total_matches_won: (u.total_matches_won || 0) + (isWin ? 1 : 0),
+              manager_xp: (u.manager_xp || 0) + (isWin ? 50 : 10)
+            }).eq('id', homeFranchiseFin.user_id)
+          }
+        }
       }
 
-      const { data: awayFranchiseFin } = await supabaseAdmin.from('franchises').select('club_fund, active_sponsor_id, active_boost').eq('id', match.away_franchise_id).single()
+      const { data: awayFranchiseFin } = await supabaseAdmin.from('franchises').select('club_fund, active_sponsor_id, active_boost, user_id').eq('id', match.away_franchise_id).single()
       if (awayFranchiseFin) {
         let sponsorPay = 0
         if (awayFranchiseFin.active_sponsor_id && SPONSORS[awayFranchiseFin.active_sponsor_id]) {
@@ -680,6 +693,19 @@ serve(async (req) => {
           club_fund: awayFranchiseFin.club_fund + 80000 + sponsorPay,
           active_boost: null // Clear boost after match
         }).eq('id', match.away_franchise_id)
+
+        // Update User Stats (Away)
+        if (awayFranchiseFin.user_id) {
+          const { data: u } = await supabaseAdmin.from('users').select('total_matches_played, total_matches_won, manager_xp').eq('id', awayFranchiseFin.user_id).single()
+          if (u) {
+            const isWin = awayScore > homeScore
+            await supabaseAdmin.from('users').update({
+              total_matches_played: (u.total_matches_played || 0) + 1,
+              total_matches_won: (u.total_matches_won || 0) + (isWin ? 1 : 0),
+              manager_xp: (u.manager_xp || 0) + (isWin ? 50 : 10)
+            }).eq('id', awayFranchiseFin.user_id)
+          }
+        }
       }
     }
 

@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { Shield, Plus, Zap, AlertTriangle, CheckCircle2, Server, Play, FastForward, Activity, Trophy } from 'lucide-react'
+import { Shield, Plus, Zap, AlertTriangle, CheckCircle2, Server, Play, FastForward, Activity, Trophy, Users, Globe } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useFranchiseStore } from '@/store/franchiseStore'
 
@@ -10,6 +10,25 @@ export function AdminDashboard() {
   const [isSimulating, setIsSimulating] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
   const [leagueName, setLeagueName] = useState('')
+
+  // System Stats State
+  const [stats, setStats] = useState({ users: 0, leagues: 0, matches: 0, loading: true })
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      const { count: userCount } = await supabase.from('users').select('*', { count: 'exact', head: true })
+      const { count: leagueCount } = await supabase.from('leagues').select('*', { count: 'exact', head: true })
+      const { count: matchCount } = await supabase.from('matches').select('*', { count: 'exact', head: true }).eq('final_stats->>played', 'true')
+      
+      setStats({
+        users: userCount || 0,
+        leagues: leagueCount || 0,
+        matches: matchCount || 0,
+        loading: false
+      })
+    }
+    fetchStats()
+  }, [])
 
   const handleCreateLeague = async () => {
     setIsCreating(true)
@@ -201,14 +220,44 @@ export function AdminDashboard() {
   }
 
   return (
-    <div className="space-y-6 pt-4 max-w-5xl mx-auto">
+    <div className="space-y-6 pt-4 pb-20">
       
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-8 bg-[#00152b]/80 p-4 rounded-xl border border-red-500/30">
+      <div className="bg-[#00152b] border border-[#005c99] rounded-xl p-6 shadow-xl flex items-center gap-4">
         <Shield className="h-10 w-10 text-red-500" />
         <div>
-          <h1 className="text-2xl font-display font-bold text-white tracking-wider">ADMIN KONTROL MERKEZİ</h1>
-          <p className="text-red-400 text-sm font-bold">Yüksek Yetki Seviyesi Aktif</p>
+          <h1 className="text-2xl font-black text-white uppercase tracking-wider">DEV ADMIN PANELİ</h1>
+          <p className="text-white/60 text-sm">Sunucu kontrolleri, simülasyon araçları ve hata ayıklama menüsü.</p>
+        </div>
+      </div>
+
+      {/* System Stats Dashboard */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-[#001f40] border border-[#004b93] rounded-xl p-6 shadow-lg flex items-center justify-between">
+          <div>
+            <div className="text-white/60 text-xs font-bold uppercase tracking-widest mb-1">Toplam Üye</div>
+            <div className="text-3xl font-black text-white">{stats.loading ? '...' : stats.users}</div>
+          </div>
+          <div className="bg-[#00a2ff]/20 p-3 rounded-full">
+            <Users className="w-8 h-8 text-[#00a2ff]" />
+          </div>
+        </div>
+        <div className="bg-[#001f40] border border-[#004b93] rounded-xl p-6 shadow-lg flex items-center justify-between">
+          <div>
+            <div className="text-white/60 text-xs font-bold uppercase tracking-widest mb-1">Kurulan Ligler</div>
+            <div className="text-3xl font-black text-white">{stats.loading ? '...' : stats.leagues}</div>
+          </div>
+          <div className="bg-yellow-500/20 p-3 rounded-full">
+            <Globe className="w-8 h-8 text-yellow-500" />
+          </div>
+        </div>
+        <div className="bg-[#001f40] border border-[#004b93] rounded-xl p-6 shadow-lg flex items-center justify-between">
+          <div>
+            <div className="text-white/60 text-xs font-bold uppercase tracking-widest mb-1">Oynanan Maç</div>
+            <div className="text-3xl font-black text-white">{stats.loading ? '...' : stats.matches}</div>
+          </div>
+          <div className="bg-green-500/20 p-3 rounded-full">
+            <Activity className="w-8 h-8 text-green-500" />
+          </div>
         </div>
       </div>
 

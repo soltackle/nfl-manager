@@ -91,6 +91,7 @@ export function TopNav() {
           <NavTab to="/club" label="KULÜP" />
           <NavTab to="/market" label="TRANSFER" />
           <NavTab to="/shop" label="MAĞAZA" />
+          <NavTab to="/leaderboard" label="LİDERLİK" />
         </div>
       </div>
     </div>
