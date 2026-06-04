@@ -184,8 +184,13 @@ export function MatchResultPage() {
             } catch (e) {
               console.log('Audio catch:', e)
             }
-            if (isHome) tempHomeScore += 7
-            if (isAway) tempAwayScore += 7
+            // Determine points: 6 (missed PAT or failed 2pt), 7 (normal), 8 (2-point success)
+            let tdPoints = 7
+            if (text.includes('2-POINT BAŞARILI')) tdPoints = 8
+            else if (text.includes('2-POINT BAŞARISIZ') || text.includes('Ekstra Puan KAÇTI')) tdPoints = 6
+            
+            if (isHome) tempHomeScore += tdPoints
+            if (isAway) tempAwayScore += tdPoints
           } else if (text.includes('FIELD GOAL')) {
             if (isHome) tempHomeScore += 3
             if (isAway) tempAwayScore += 3
@@ -355,10 +360,73 @@ export function MatchResultPage() {
         </div>
       </div>
       
-      {/* Finished State Action */}
+      {/* Match Stats Summary */}
       {playbackState === 'finished' && (
-        <div className="mt-8 text-center animate-in fade-in zoom-in duration-500">
-          <p className="text-white/50 font-bold uppercase tracking-widest text-sm mb-4">KARŞILAŞMA SONA ERDİ</p>
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <div className="bg-gradient-to-r from-[#00254c] to-[#00152b] rounded-xl border border-[#005c99]/50 p-6 mt-4">
+            <h2 className="text-sm font-display font-bold text-accent uppercase mb-6 flex items-center gap-2">
+              <Trophy className="w-4 h-4" /> Maç İstatistikleri
+            </h2>
+            {(() => {
+              const allLogs = data?.logs || []
+              const homeTDs = allLogs.filter((l: any) => l.possession === 'home' && l.event === 'touchdown').length
+              const awayTDs = allLogs.filter((l: any) => l.possession === 'away' && l.event === 'touchdown').length
+              const homeINTs = allLogs.filter((l: any) => l.possession === 'home' && l.event === 'interception').length
+              const awayINTs = allLogs.filter((l: any) => l.possession === 'away' && l.event === 'interception').length
+              const homeFumbles = allLogs.filter((l: any) => l.possession === 'home' && l.event === 'fumble').length
+              const awayFumbles = allLogs.filter((l: any) => l.possession === 'away' && l.event === 'fumble').length
+              const homeSacks = allLogs.filter((l: any) => l.possession === 'home' && l.event === 'sack').length
+              const awaySacks = allLogs.filter((l: any) => l.possession === 'away' && l.event === 'sack').length
+              const homeFG = allLogs.filter((l: any) => l.possession === 'home' && l.event === 'fg_good').length
+              const awayFG = allLogs.filter((l: any) => l.possession === 'away' && l.event === 'fg_good').length
+              const twoPointPlays = allLogs.filter((l: any) => l.text?.includes('2-POINT')).length
+              const coachPredictions = allLogs.filter((l: any) => l.text?.includes('TAHMİN') || l.text?.includes('Okuma')).length
+
+              const statRows = [
+                { label: 'Touchdown', home: homeTDs, away: awayTDs, color: 'text-yellow-400' },
+                { label: 'Field Goal', home: homeFG, away: awayFG, color: 'text-green-400' },
+                { label: 'Interception', home: homeINTs, away: awayINTs, color: 'text-red-400' },
+                { label: 'Fumble', home: homeFumbles, away: awayFumbles, color: 'text-red-400' },
+                { label: 'Sack', home: homeSacks, away: awaySacks, color: 'text-purple-400' },
+              ]
+
+              return (
+                <>
+                  <div className="grid grid-cols-3 gap-2 text-center mb-2">
+                    <div className="text-xs font-bold text-white/50 uppercase">{(match as any).home_franchise?.team_name}</div>
+                    <div className="text-[10px] font-bold text-white/30 uppercase">İSTATİSTİK</div>
+                    <div className="text-xs font-bold text-white/50 uppercase">{(match as any).away_franchise?.team_name}</div>
+                  </div>
+                  {statRows.map(row => (
+                    <div key={row.label} className="grid grid-cols-3 gap-2 items-center py-2 border-b border-white/5">
+                      <div className={`text-center font-display font-black text-xl ${row.home > row.away ? row.color : 'text-white/40'}`}>{row.home}</div>
+                      <div className="text-center text-xs font-bold text-white/50 uppercase">{row.label}</div>
+                      <div className={`text-center font-display font-black text-xl ${row.away > row.home ? row.color : 'text-white/40'}`}>{row.away}</div>
+                    </div>
+                  ))}
+                  {(twoPointPlays > 0 || coachPredictions > 0) && (
+                    <div className="flex justify-center gap-4 mt-4">
+                      {twoPointPlays > 0 && (
+                        <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg px-3 py-2 text-center">
+                          <div className="text-yellow-400 font-display font-black text-lg">{twoPointPlays}</div>
+                          <div className="text-[9px] text-white/40 font-bold uppercase">2-Point Denemesi</div>
+                        </div>
+                      )}
+                      {coachPredictions > 0 && (
+                        <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg px-3 py-2 text-center">
+                          <div className="text-blue-400 font-display font-black text-lg">{coachPredictions}</div>
+                          <div className="text-[9px] text-white/40 font-bold uppercase">Koç Tahmini</div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </>
+              )
+            })()}
+          </div>
+          <div className="mt-6 text-center">
+            <p className="text-white/50 font-bold uppercase tracking-widest text-sm mb-4">KARŞILAŞMA SONA ERDİ</p>
+          </div>
         </div>
       )}
     </div>
