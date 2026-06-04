@@ -65,14 +65,26 @@ serve(async (req) => {
         await supabaseAdmin.from('franchises').update({ is_ready: false }).eq('league_id', league_id)
 
         // Invoke match engine
-        // We invoke it without awaiting so the user gets a fast response, or we await it.
-        // Let's await it so the response message reflects it.
-        const res = await supabaseAdmin.functions.invoke('admin-simulate-match', {
-          body: { league_id, week }
+        const functionUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/admin-simulate-match`
+        const res = await fetch(functionUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ league_id, week })
         })
 
-        if (res.error) throw new Error("Simulate edge error: " + (res.error.message || 'Unknown'))
-        if (res.data && res.data.error) throw new Error("Simulate error: " + res.data.error)
+        const text = await res.text()
+        let data: any = {}
+        try { data = JSON.parse(text) } catch (e) {}
+
+        if (!res.ok) {
+          throw new Error(`Simulate edge error (${res.status}): ` + (data.error || text || 'Unknown'))
+        }
+        if (data.error) {
+          throw new Error("Simulate error: " + data.error)
+        }
         
         return new Response(JSON.stringify({ success: true, message: `Tüm takım menajerleri hazır! Hafta ${week} maçları oynandı!`, matchPlayed: true }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
