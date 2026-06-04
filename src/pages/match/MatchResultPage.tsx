@@ -154,6 +154,12 @@ export function MatchResultPage() {
   )
 
   useEffect(() => {
+    if (id) {
+      localStorage.setItem('lastViewedMatchId', id)
+    }
+  }, [id])
+
+  useEffect(() => {
     if (playbackState === 'playing' && data?.logs) {
       const totalLogs = data.logs.length
       if (totalLogs === 0) {

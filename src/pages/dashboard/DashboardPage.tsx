@@ -4,6 +4,8 @@ import { useMatch } from '@/hooks/useMatch'
 import { useStandings } from '@/hooks/useStandings'
 import { Shield, CloudRain, Info, ChevronRight, BarChart3, TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
+import { supabase } from '@/lib/supabase'
 
 export function DashboardPage() {
   const { user } = useAuthStore()
@@ -11,6 +13,28 @@ export function DashboardPage() {
   const { match, isLoading: isMatchLoading } = useMatch()
   const { standings } = useStandings()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!franchise) return
+    const checkLastPlayed = async () => {
+      const { data } = await supabase
+        .from('matches')
+        .select('id')
+        .or(`home_franchise_id.eq.${franchise.id},away_franchise_id.eq.${franchise.id}`)
+        .not('final_stats->played', 'is', null)
+        .order('week', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      
+      if (data && data.id) {
+        const lastViewed = localStorage.getItem('lastViewedMatchId')
+        if (lastViewed !== data.id) {
+          navigate(`/match/${data.id}`)
+        }
+      }
+    }
+    checkLastPlayed()
+  }, [franchise, navigate])
 
   return (
     <div className="space-y-4 pt-4">
