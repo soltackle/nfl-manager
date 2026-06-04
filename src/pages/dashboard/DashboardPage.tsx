@@ -72,6 +72,7 @@ export function DashboardPage() {
         body: { franchise_id: franchise.id, league_id: league.id }
       })
       if (error) throw error
+      if (data?.error) throw new Error(data.error)
       if (data?.matchPlayed) {
         alert(data.message)
         window.location.reload()

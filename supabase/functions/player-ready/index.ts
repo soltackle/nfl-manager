@@ -72,7 +72,8 @@ serve(async (req) => {
           body: { league_id, week }
         })
 
-        if (res.error) throw new Error("Simulate error: " + (res.error.message || 'Unknown'))
+        if (res.error) throw new Error("Simulate edge error: " + (res.error.message || 'Unknown'))
+        if (res.data && res.data.error) throw new Error("Simulate error: " + res.data.error)
         
         return new Response(JSON.stringify({ success: true, message: `Tüm takım menajerleri hazır! Hafta ${week} maçları oynandı!`, matchPlayed: true }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -95,7 +96,7 @@ serve(async (req) => {
   } catch (error: any) {
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 400,
+      status: 200,
     })
   }
 })
