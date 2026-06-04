@@ -1,13 +1,15 @@
 import { useAuthStore } from '@/store/authStore'
 import { useFranchiseStore } from '@/store/franchiseStore'
 import { useMatch } from '@/hooks/useMatch'
-import { Shield, CloudRain, Info, ChevronRight } from 'lucide-react'
+import { useStandings } from '@/hooks/useStandings'
+import { Shield, CloudRain, Info, ChevronRight, BarChart3, TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 export function DashboardPage() {
   const { user } = useAuthStore()
   const { franchise } = useFranchiseStore()
   const { match, isLoading: isMatchLoading } = useMatch()
+  const { standings } = useStandings()
   const navigate = useNavigate()
 
   return (
@@ -104,6 +106,67 @@ export function DashboardPage() {
         </div>
 
       </div>
+
+      {/* Mini Standings Widget */}
+      {standings.length > 0 && (
+        <div className="bg-gradient-to-b from-[#00152b] to-[#001021] rounded-xl border border-[#005c99]/50 overflow-hidden shadow-xl cursor-pointer hover:border-accent/30 transition-colors" onClick={() => navigate('/matches')}>
+          <div className="flex items-center justify-between px-4 py-3 bg-[#00254c] border-b border-[#005c99]">
+            <div className="flex items-center gap-2">
+              <BarChart3 className="w-4 h-4 text-accent" />
+              <span className="font-display font-bold text-sm text-white uppercase tracking-wider">Puan Tablosu</span>
+            </div>
+            <ChevronRight className="w-4 h-4 text-white/30" />
+          </div>
+          <div>
+            {standings.slice(0, 4).map((row, idx) => {
+              const rank = idx + 1
+              const streakLetter = row.streak.slice(-1)
+              let streakColor = 'text-white/40'
+              let StreakIcon = Minus
+              if (streakLetter === 'W') { streakColor = 'text-green-400'; StreakIcon = TrendingUp }
+              else if (streakLetter === 'L') { streakColor = 'text-red-400'; StreakIcon = TrendingDown }
+
+              return (
+                <div key={row.franchise_id} className={`flex items-center justify-between px-4 py-2.5 border-b border-white/5 ${row.isUser ? 'bg-accent/10 border-l-4 border-l-accent' : ''}`}>
+                  <div className="flex items-center gap-3">
+                    <span className={`font-display font-black text-lg w-6 text-center ${rank === 1 ? 'text-yellow-400' : 'text-white/40'}`}>{rank}</span>
+                    <Shield className={`w-4 h-4 ${row.isUser ? 'text-accent' : 'text-white/20'}`} fill="currentColor" />
+                    <span className={`font-bold text-sm ${row.isUser ? 'text-accent' : 'text-white'}`}>{row.team_name}</span>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className="text-xs font-bold text-white/60">{row.wins}G-{row.losses}M</span>
+                    <div className={`flex items-center gap-1 ${streakColor}`}>
+                      <StreakIcon className="w-3 h-3" />
+                      <span className="text-[10px] font-bold">{row.streak}</span>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+            {/* Show user's position if not in top 4 */}
+            {(() => {
+              const userIdx = standings.findIndex(r => r.isUser)
+              if (userIdx >= 4) {
+                const row = standings[userIdx]
+                return (
+                  <>
+                    <div className="text-center text-white/20 text-xs py-1">···</div>
+                    <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/5 bg-accent/10 border-l-4 border-l-accent">
+                      <div className="flex items-center gap-3">
+                        <span className="font-display font-black text-lg w-6 text-center text-white/40">{userIdx + 1}</span>
+                        <Shield className="w-4 h-4 text-accent" fill="currentColor" />
+                        <span className="font-bold text-sm text-accent">{row.team_name}</span>
+                      </div>
+                      <span className="text-xs font-bold text-white/60">{row.wins}G-{row.losses}M</span>
+                    </div>
+                  </>
+                )
+              }
+              return null
+            })()}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         
