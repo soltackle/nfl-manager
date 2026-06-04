@@ -290,7 +290,7 @@ export function DashboardPage() {
         </div>
 
         {/* Dostluk Maçları */}
-        <div className="bg-gradient-to-br from-[#003366] to-[#001f40] border border-[#004b93] rounded-xl p-4 flex items-center gap-4 cursor-pointer hover:brightness-110 transition shadow-lg md:col-span-1">
+        <div className="bg-gradient-to-br from-[#003366] to-[#001f40] border border-[#004b93] rounded-xl p-4 flex items-center gap-4 cursor-pointer hover:brightness-110 transition shadow-lg md:col-span-1" onClick={() => navigate('/friendlies')}>
           <div className="flex justify-center w-12">
             <div className="w-0 h-0 border-l-[15px] border-l-transparent border-r-[15px] border-r-transparent border-t-[20px] border-t-yellow-400 drop-shadow-[0_0_5px_rgba(250,204,21,0.8)]"></div>
           </div>
