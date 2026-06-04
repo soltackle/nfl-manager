@@ -12,23 +12,21 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
-    )
-
-    const { data: { user }, error: authErr } = await supabaseClient.auth.getUser()
-    if (authErr) throw new Error("player-ready AuthError: " + authErr.message)
-    if (!user) throw new Error("player-ready Unauthorized: No User")
-
-    const { franchise_id, league_id } = await req.json()
-    if (!franchise_id || !league_id) throw new Error("franchise_id and league_id required")
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) throw new Error("Missing Authorization header")
+    const token = authHeader.replace('Bearer ', '')
 
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
+
+    const { data: { user }, error: authErr } = await supabaseAdmin.auth.getUser(token)
+    if (authErr) throw new Error("player-ready AuthError: " + authErr.message)
+    if (!user) throw new Error("player-ready Unauthorized: No User")
+
+    const { franchise_id, league_id } = await req.json()
+    if (!franchise_id || !league_id) throw new Error("franchise_id and league_id required")
 
     // Ensure franchise belongs to user
     const { data: fCheck } = await supabaseAdmin.from('franchises').select('id').eq('id', franchise_id).eq('user_id', user.id).single()
