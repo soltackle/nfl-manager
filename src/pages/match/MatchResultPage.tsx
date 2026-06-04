@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import useSWR from 'swr'
 import { supabase } from '@/lib/supabase'
@@ -127,6 +127,11 @@ export function MatchResultPage() {
   const [currentHomeScore, setCurrentHomeScore] = useState(0)
   const [currentAwayScore, setCurrentAwayScore] = useState(0)
   const [currentLog, setCurrentLog] = useState<any>(null)
+  const [playbackSpeed, setPlaybackSpeed] = useState<number>(1)
+  
+  const currentIndexRef = useRef(0)
+  const tempHomeScoreRef = useRef(0)
+  const tempAwayScoreRef = useRef(0)
   
   const fetcher = async () => {
     if (!id) return null
@@ -169,13 +174,9 @@ export function MatchResultPage() {
         return
       }
 
-      let currentIndex = 0
-      let tempHomeScore = 0
-      let tempAwayScore = 0
-
       const interval = setInterval(() => {
-        if (currentIndex < totalLogs) {
-          const log = data.logs[currentIndex]
+        if (currentIndexRef.current < totalLogs) {
+          const log = data.logs[currentIndexRef.current]
           setVisibleLogs(prev => [...prev, log])
           setCurrentLog(log)
           
@@ -195,33 +196,33 @@ export function MatchResultPage() {
             if (text.includes('2-POINT BAŞARILI')) tdPoints = 8
             else if (text.includes('2-POINT BAŞARISIZ') || text.includes('Ekstra Puan KAÇTI')) tdPoints = 6
             
-            if (isHome) tempHomeScore += tdPoints
-            if (isAway) tempAwayScore += tdPoints
+            if (isHome) tempHomeScoreRef.current += tdPoints
+            if (isAway) tempAwayScoreRef.current += tdPoints
           } else if (text.includes('FIELD GOAL')) {
-            if (isHome) tempHomeScore += 3
-            if (isAway) tempAwayScore += 3
+            if (isHome) tempHomeScoreRef.current += 3
+            if (isAway) tempAwayScoreRef.current += 3
           } else if (text.includes('Skor:')) {
             const matchHome = text.match(/Ev Sahibi takım sayıları buluyor\. Skor: (\d+)/)
-            if (matchHome) tempHomeScore = parseInt(matchHome[1])
+            if (matchHome) tempHomeScoreRef.current = parseInt(matchHome[1])
             const matchAway = text.match(/Deplasman takımı cevap veriyor\. Skor: (\d+)/)
-            if (matchAway) tempAwayScore = parseInt(matchAway[1])
+            if (matchAway) tempAwayScoreRef.current = parseInt(matchAway[1])
           }
           
-          setCurrentHomeScore(tempHomeScore)
-          setCurrentAwayScore(tempAwayScore)
+          setCurrentHomeScore(tempHomeScoreRef.current)
+          setCurrentAwayScore(tempAwayScoreRef.current)
 
-          currentIndex++
+          currentIndexRef.current++
         } else {
           clearInterval(interval)
           setPlaybackState('finished')
           setCurrentHomeScore(data.match.home_score)
           setCurrentAwayScore(data.match.away_score)
         }
-      }, 2000) // 2.0 seconds per log so we can see the full animation!
+      }, 2000 / playbackSpeed)
 
       return () => clearInterval(interval)
     }
-  }, [playbackState, data])
+  }, [playbackState, data, playbackSpeed])
 
   if (isLoading) return (
     <div className="space-y-4 pt-4 max-w-4xl mx-auto px-4">
@@ -273,7 +274,7 @@ export function MatchResultPage() {
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20"></div>
         
         <div className="relative z-10 flex flex-col items-center mb-4">
-          <div className="bg-[#00254c] border border-white/20 rounded-full px-6 py-1 mb-4 shadow-lg flex items-center gap-2">
+          <div className="bg-[#00254c] border border-white/20 rounded-full px-6 py-1 mb-2 shadow-lg flex items-center gap-2">
             {playbackState === 'finished' ? (
               <Trophy className="w-4 h-4 text-yellow-400" />
             ) : (
@@ -283,6 +284,25 @@ export function MatchResultPage() {
               {playbackState === 'finished' ? `HAFTA ${match.week} SONUCU` : 'MAÇ OYNANIYOR...'}
             </span>
           </div>
+
+          {playbackState === 'playing' && (
+            <div className="flex items-center gap-2 bg-black/40 border border-white/10 rounded-full px-3 py-1 mt-2">
+              <span className="text-white/50 text-[10px] font-bold uppercase tracking-widest">HIZ:</span>
+              {[1, 2, 4].map(speed => (
+                <button
+                  key={speed}
+                  onClick={() => setPlaybackSpeed(speed)}
+                  className={`w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center text-xs font-bold transition ${
+                    playbackSpeed === speed 
+                      ? 'bg-accent text-black' 
+                      : 'bg-white/10 text-white/70 hover:bg-white/20'
+                  }`}
+                >
+                  {speed}x
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="relative z-10 flex items-center justify-between max-w-2xl mx-auto">
