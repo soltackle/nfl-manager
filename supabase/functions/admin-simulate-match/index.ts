@@ -160,8 +160,14 @@ serve(async (req) => {
         return sorted.reduce((sum, p) => sum + p.overall, 0) / sorted.length
       }
 
-      let homePower = getTeamPower(homePlayers)
-      let awayPower = getTeamPower(awayPlayers)
+      const { data: homeFranchise } = await supabaseAdmin.from('franchises').select('id, active_boost').eq('id', match.home_franchise_id).single()
+      const { data: awayFranchise } = await supabaseAdmin.from('franchises').select('id, active_boost').eq('id', match.away_franchise_id).single()
+      
+      let homePower = getTeamPower(homePlayers || [])
+      let awayPower = getTeamPower(awayPlayers || [])
+
+      if (homeFranchise?.active_boost === 'power_boost') homePower += 5
+      if (awayFranchise?.active_boost === 'power_boost') awayPower += 5
 
       const hasTrait = (team: 'home' | 'away', pos: string, trait: string) => {
         const pList = team === 'home' ? homePlayers : awayPlayers
@@ -650,24 +656,30 @@ serve(async (req) => {
         risk: { basePay: 0, winBonus: 300000 }
       }
 
-      const { data: homeFranchise } = await supabaseAdmin.from('franchises').select('club_fund, active_sponsor_id').eq('id', match.home_franchise_id).single()
-      if (homeFranchise) {
+      const { data: homeFranchiseFin } = await supabaseAdmin.from('franchises').select('club_fund, active_sponsor_id, active_boost').eq('id', match.home_franchise_id).single()
+      if (homeFranchiseFin) {
         let sponsorPay = 0
-        if (homeFranchise.active_sponsor_id && SPONSORS[homeFranchise.active_sponsor_id]) {
-          const sp = SPONSORS[homeFranchise.active_sponsor_id]
+        if (homeFranchiseFin.active_sponsor_id && SPONSORS[homeFranchiseFin.active_sponsor_id]) {
+          const sp = SPONSORS[homeFranchiseFin.active_sponsor_id]
           sponsorPay = sp.basePay + (homeScore > awayScore ? sp.winBonus : 0)
         }
-        await supabaseAdmin.from('franchises').update({ club_fund: homeFranchise.club_fund + homeRevenue + sponsorPay }).eq('id', match.home_franchise_id)
+        await supabaseAdmin.from('franchises').update({ 
+          club_fund: homeFranchiseFin.club_fund + homeRevenue + sponsorPay,
+          active_boost: null // Clear boost after match
+        }).eq('id', match.home_franchise_id)
       }
 
-      const { data: awayFranchise } = await supabaseAdmin.from('franchises').select('club_fund, active_sponsor_id').eq('id', match.away_franchise_id).single()
-      if (awayFranchise) {
+      const { data: awayFranchiseFin } = await supabaseAdmin.from('franchises').select('club_fund, active_sponsor_id, active_boost').eq('id', match.away_franchise_id).single()
+      if (awayFranchiseFin) {
         let sponsorPay = 0
-        if (awayFranchise.active_sponsor_id && SPONSORS[awayFranchise.active_sponsor_id]) {
-          const sp = SPONSORS[awayFranchise.active_sponsor_id]
+        if (awayFranchiseFin.active_sponsor_id && SPONSORS[awayFranchiseFin.active_sponsor_id]) {
+          const sp = SPONSORS[awayFranchiseFin.active_sponsor_id]
           sponsorPay = sp.basePay + (awayScore > homeScore ? sp.winBonus : 0)
         }
-        await supabaseAdmin.from('franchises').update({ club_fund: awayFranchise.club_fund + 80000 + sponsorPay }).eq('id', match.away_franchise_id)
+        await supabaseAdmin.from('franchises').update({ 
+          club_fund: awayFranchiseFin.club_fund + 80000 + sponsorPay,
+          active_boost: null // Clear boost after match
+        }).eq('id', match.away_franchise_id)
       }
     }
 

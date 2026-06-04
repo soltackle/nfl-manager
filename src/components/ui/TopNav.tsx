@@ -37,7 +37,7 @@ export function TopNav() {
             <div className="bg-accent rounded-full p-1 mr-2 shadow-inner">
               <Coins className="h-4 w-4 text-white" />
             </div>
-            <span className="font-bold text-sm text-yellow-400">217</span>
+            <span className="font-bold text-sm text-yellow-400">{profile?.amfutcoin || 0}</span>
           </div>
 
           <div className="flex items-center bg-[#00152b] rounded-full p-1 pr-4 border border-[#004b93]">
@@ -90,6 +90,7 @@ export function TopNav() {
           <NavTab to="/matches" label="MAÇLAR" />
           <NavTab to="/club" label="KULÜP" />
           <NavTab to="/market" label="TRANSFER" />
+          <NavTab to="/shop" label="MAĞAZA" />
         </div>
       </div>
     </div>
