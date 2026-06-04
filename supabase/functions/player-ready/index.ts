@@ -18,8 +18,9 @@ serve(async (req) => {
       { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
     )
 
-    const { data: { user } } = await supabaseClient.auth.getUser()
-    if (!user) throw new Error("Unauthorized")
+    const { data: { user }, error: authErr } = await supabaseClient.auth.getUser()
+    if (authErr) throw new Error("player-ready AuthError: " + authErr.message)
+    if (!user) throw new Error("player-ready Unauthorized: No User")
 
     const { franchise_id, league_id } = await req.json()
     if (!franchise_id || !league_id) throw new Error("franchise_id and league_id required")

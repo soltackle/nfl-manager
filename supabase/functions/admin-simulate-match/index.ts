@@ -126,11 +126,12 @@ serve(async (req) => {
 
     if (!isServiceRole) {
       const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token)
-      if (userError || !user) throw new Error('Invalid token')
+      if (userError) throw new Error('admin-simulate-match AuthError: ' + userError.message)
+      if (!user) throw new Error('admin-simulate-match Invalid token: No User')
 
       // Verify admin
       const { data: dbUser } = await supabaseAdmin.from('users').select('role').eq('id', user.id).single()
-      if (!dbUser || dbUser.role !== 'admin') throw new Error('Unauthorized')
+      if (!dbUser || dbUser.role !== 'admin') throw new Error('admin-simulate-match Unauthorized: Not an admin')
     }
 
     const { league_id, week } = await req.json()
