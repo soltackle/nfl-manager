@@ -63,6 +63,9 @@ export function TopNav() {
             <div className="relative">
               <UserCircle className="h-8 w-8 text-white" />
               <div className="absolute right-0 top-full mt-2 w-48 bg-[#00152b] border border-[#004b93] rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 overflow-hidden">
+                <NavLink to="/profile" className="block px-4 py-3 text-sm text-white font-bold hover:bg-[#003366] transition-colors border-b border-[#004b93]">
+                  👤 Profil
+                </NavLink>
                 <NavLink to="/slots" className="block px-4 py-3 text-sm text-white font-bold hover:bg-[#003366] transition-colors border-b border-[#004b93]">
                   🔄 Kariyer Değiştir
                 </NavLink>
