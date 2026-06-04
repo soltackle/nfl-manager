@@ -2,17 +2,21 @@ import { useAuthStore } from '@/store/authStore'
 import { useFranchiseStore } from '@/store/franchiseStore'
 import { useMatch } from '@/hooks/useMatch'
 import { useStandings } from '@/hooks/useStandings'
-import { Shield, CloudRain, Info, ChevronRight, BarChart3, TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { Shield, CloudRain, Info, ChevronRight, BarChart3, TrendingUp, TrendingDown, Minus, CheckCircle } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 
 export function DashboardPage() {
   const { user } = useAuthStore()
-  const { franchise } = useFranchiseStore()
+  const { franchise, league } = useFranchiseStore()
   const { match, isLoading: isMatchLoading } = useMatch()
   const { standings } = useStandings()
   const navigate = useNavigate()
+
+  const [readyCount, setReadyCount] = useState(0)
+  const [totalFranchises, setTotalFranchises] = useState(8)
+  const [isReadying, setIsReadying] = useState(false)
 
   useEffect(() => {
     if (!franchise) return
@@ -35,6 +39,49 @@ export function DashboardPage() {
     }
     checkLastPlayed()
   }, [franchise, navigate])
+
+  // Ready State Effect
+  useEffect(() => {
+    if (!league) return
+
+    const fetchReadyState = async () => {
+      const { data } = await supabase.from('franchises').select('is_ready').eq('league_id', league.id)
+      if (data) {
+        setTotalFranchises(data.length)
+        setReadyCount(data.filter(f => f.is_ready).length)
+      }
+    }
+    fetchReadyState()
+
+    const channel = supabase.channel('public:franchises')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'franchises', filter: `league_id=eq.${league.id}` }, () => {
+        fetchReadyState()
+      })
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [league])
+
+  const handleSetReady = async () => {
+    if (!franchise || !league) return
+    setIsReadying(true)
+    try {
+      const { data, error } = await supabase.functions.invoke('player-ready', {
+        body: { franchise_id: franchise.id, league_id: league.id }
+      })
+      if (error) throw error
+      if (data?.matchPlayed) {
+        alert(data.message)
+        window.location.reload()
+      }
+    } catch (err: any) {
+      alert("Hata: " + err.message)
+    } finally {
+      setIsReadying(false)
+    }
+  }
 
   return (
     <div className="space-y-4 pt-4">
@@ -96,6 +143,42 @@ export function DashboardPage() {
           </div>
         )}
       </div>
+
+      {/* Ready Button Section */}
+      {match && (
+        <div className="bg-[#00152b] border border-[#005c99] rounded-xl p-4 flex flex-col items-center justify-center text-center">
+          <div className="mb-4">
+            <h3 className="text-white font-display font-bold uppercase tracking-widest text-lg">MAÇA HAZIRLIK</h3>
+            <p className="text-white/50 text-sm">Tüm menajerler hazır olduğunda maç otomatik olarak oynanır.</p>
+          </div>
+          
+          <div className="flex items-center gap-4 w-full md:w-auto">
+            <div className="bg-[#00254c] border border-[#005c99] px-6 py-3 rounded-xl flex flex-col items-center min-w-[120px]">
+              <span className="text-accent text-2xl font-display font-black">{readyCount} / {totalFranchises}</span>
+              <span className="text-white/50 text-[10px] font-bold uppercase tracking-wider">Hazır</span>
+            </div>
+            
+            <button 
+              onClick={handleSetReady}
+              disabled={franchise?.is_ready || isReadying}
+              className={`flex-1 md:w-64 py-4 px-6 rounded-xl font-display font-black text-lg tracking-widest uppercase transition-all flex items-center justify-center gap-2 ${
+                franchise?.is_ready 
+                  ? 'bg-green-500/20 text-green-400 border border-green-500 cursor-not-allowed' 
+                  : 'bg-accent text-[#001021] hover:bg-white hover:text-[#001021] hover:shadow-[0_0_20px_rgba(255,156,0,0.4)]'
+              }`}
+            >
+              {franchise?.is_ready ? (
+                <><CheckCircle className="w-5 h-5" /> HAZIRSINIZ</>
+              ) : (
+                isReadying ? 'BEKLEYİN...' : 'HAZIRIM'
+              )}
+            </button>
+          </div>
+          {franchise?.is_ready && (
+            <p className="text-accent text-xs font-bold mt-4 uppercase animate-pulse">Diğer menajerlerin hazır olması bekleniyor...</p>
+          )}
+        </div>
+      )}
 
       {/* 2. OSM Quick Actions Layout */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

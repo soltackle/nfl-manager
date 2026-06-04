@@ -33,6 +33,7 @@ export interface Franchise {
   league_id: string
   user_id: string
   active_sponsor_id?: string | null
+  is_ready?: boolean
 }
 
 export interface Player {
