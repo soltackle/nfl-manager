@@ -264,6 +264,44 @@ serve(async (req) => {
         let offFocus = (offPlaybook as any)[situationKey] || 'short_pass'
         let defFocus = (defPlaybook as any)[situationKey] || 'balanced'
 
+        // CLOCK MANAGEMENT OVERRIDES
+        const offClockMgmt = offTac.clock_mgmt || {}
+        const defClockMgmt = defTac.clock_mgmt || {}
+        const myScore = possession === 'home' ? homeScore : awayScore
+        const theirScore = possession === 'home' ? awayScore : homeScore
+        const scoreDiff = myScore - theirScore
+        const isLate = playInQuarter >= 20 // son 5 oyun = ~son 2 dakika
+        const isVeryLate = playInQuarter >= 22 // son 3 oyun
+
+        // 2-MINUTE DRILL: Gerideyken, son dakikalarda hücum override
+        if (isLate && scoreDiff < 0 && (quarter === 2 || quarter === 4)) {
+          const drillMode = offClockMgmt.two_min_drill || 'hurry_pass'
+          if (drillMode === 'hurry_pass') offFocus = 'short_pass'
+          else if (drillMode === 'deep_shots') offFocus = 'deep_bomb'
+          // balanced_hurry keeps the playbook choice
+        }
+
+        // 4-MINUTE OFFENSE: Öndeyken, son çeyrekte saat eritme override
+        if (quarter === 4 && scoreDiff > 0 && isLate) {
+          const fourMinMode = offClockMgmt.four_min_offense || 'grind_run'
+          if (fourMinMode === 'grind_run') offFocus = 'power_run'
+          else if (fourMinMode === 'safe_mix') {
+            offFocus = Math.random() < 0.7 ? 'power_run' : 'short_pass'
+          }
+          // keep_scoring keeps the playbook choice
+        }
+
+        // TIMEOUT STRATEGY EFFECTS
+        const defTimeoutStrat = defClockMgmt.timeout_strategy || 'save_late'
+        if (defTimeoutStrat === 'ice_kicker' && isVeryLate && quarter === 4) {
+          // Increases pressure on the offense in final moments
+          currentDefPower += 2
+        }
+        if (defTimeoutStrat === 'stop_momentum' && scoreDiff < -7) {
+          // If the defense is getting blown out, they call timeout to regroup
+          currentDefPower += 3
+        }
+
         const offCoaches = possession === 'home' ? homeCoaches : awayCoaches
         const defCoaches = possession === 'home' ? awayCoaches : homeCoaches
         
@@ -482,8 +520,52 @@ serve(async (req) => {
         yardLine += yardsGained
 
         if (yardLine >= 100) {
-          if (possession === 'home') homeScore += 7; else awayScore += 7;
-          outcomeText = outcomeText + " " + getRandomLog("TOUCHDOWN", teamName)
+          // TOUCHDOWN!
+          const scoringTeam = possession
+          const scoringTac = possession === 'home' ? homeTac : awayTac
+          const clockMgmtData = scoringTac.clock_mgmt || {}
+          const twoPointChart = clockMgmtData.two_point_chart || {}
+          
+          // Determine score difference BEFORE this TD
+          const scorerScore = scoringTeam === 'home' ? homeScore : awayScore
+          const opponentScore = scoringTeam === 'home' ? awayScore : homeScore
+          const diff = scorerScore - opponentScore // negative = behind
+
+          // Decide: Extra Point (1) or 2-Point Conversion
+          let goForTwo = false
+          if (diff <= -14) goForTwo = twoPointChart.down_14 === 'go2'
+          else if (diff <= -11) goForTwo = twoPointChart.down_11 === 'go2'
+          else if (diff <= -8) goForTwo = twoPointChart.down_8 === 'go2'
+          else if (diff <= -5) goForTwo = twoPointChart.down_5 === 'go2'
+          else if (diff < 0) goForTwo = twoPointChart.down_2 === 'go2'
+          else if (diff <= 7) goForTwo = twoPointChart.up_1 === 'go2'
+          else goForTwo = twoPointChart.up_any === 'go2'
+
+          let tdPoints = 6
+          let patText = ''
+
+          if (goForTwo) {
+            // 2-Point Conversion: ~45% success
+            if (Math.random() < 0.45) {
+              tdPoints = 8
+              patText = ' [2-POINT BAŞARILI!]'
+            } else {
+              tdPoints = 6
+              patText = ' [2-POINT BAŞARISIZ]'
+            }
+          } else {
+            // Extra Point Kick: ~95% success
+            if (Math.random() < 0.95) {
+              tdPoints = 7
+              patText = ''
+            } else {
+              tdPoints = 6
+              patText = ' [Ekstra Puan KAÇTI!]'
+            }
+          }
+
+          if (possession === 'home') homeScore += tdPoints; else awayScore += tdPoints;
+          outcomeText = outcomeText + " " + getRandomLog("TOUCHDOWN", teamName) + patText
           addLog(timePrefix, outcomeText, currentPlayType, 'touchdown', 100)
           switchPossession(true)
           continue

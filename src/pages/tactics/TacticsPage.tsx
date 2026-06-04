@@ -28,6 +28,21 @@ export function TacticsPage() {
     targeted_mismatch: ''
   })
 
+  const [clockMgmt, setClockMgmt] = useState({
+    two_min_drill: 'hurry_pass',
+    four_min_offense: 'grind_run',
+    two_point_chart: {
+      down_14: 'kick',
+      down_11: 'kick',
+      down_8: 'go2',
+      down_5: 'go2',
+      down_2: 'go2',
+      up_1: 'kick',
+      up_any: 'kick'
+    },
+    timeout_strategy: 'save_late'
+  })
+
   const [playbook, setPlaybook] = useState({
     offense: {
       first_down: 'play_action',
@@ -68,6 +83,9 @@ export function TacticsPage() {
       if ((tactics.slider_ayarlari as any)?.playbook) {
         setPlaybook((tactics.slider_ayarlari as any).playbook)
       }
+      if ((tactics.slider_ayarlari as any)?.clock_mgmt) {
+        setClockMgmt(prev => ({ ...prev, ...(tactics.slider_ayarlari as any).clock_mgmt }))
+      }
     }
   }, [tactics])
 
@@ -91,7 +109,7 @@ export function TacticsPage() {
     if (!franchise) return
     setIsSaving(true)
     
-    const finalSliders = { ...sliders, fourth_downs: fourthDowns, playbook }
+    const finalSliders = { ...sliders, fourth_downs: fourthDowns, playbook, clock_mgmt: clockMgmt }
 
     try {
       if (tactics?.id === 'new') {
@@ -441,6 +459,151 @@ export function TacticsPage() {
           </div>
         </div>
 
+      </div>
+
+      {/* Clock Management Section */}
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* 2-Minute Drill */}
+        <div className="bg-gradient-to-r from-[#00254c] to-[#00152b] p-5 rounded-xl border border-[#004b93]/50">
+          <h2 className="text-sm font-display font-bold text-accent uppercase mb-4 flex items-center gap-2">
+            <Clock className="w-4 h-4 text-red-400" /> 2-Minute Drill (Son 2 Dakika Hücumu)
+          </h2>
+          <p className="text-[10px] text-white/50 mb-4">Devre veya maç sonuna yaklaşırken gerideyseniz, süreyi durdurarak hızlıca skor üretme stratejisi.</p>
+          <div className="space-y-2">
+            {[
+              { id: 'hurry_pass', label: 'Hızlı Pas Atağı', desc: 'Kenarlara çık, süreyi durdur, agresif pas at' },
+              { id: 'balanced_hurry', label: 'Dengeli Hızlı Hücum', desc: 'Koşu-pas karışımı ama tempo yüksek' },
+              { id: 'deep_shots', label: 'Derin Şutlar', desc: 'Her oyunda uzun pas dene, ya hep ya hiç' },
+            ].map(opt => (
+              <button
+                key={opt.id}
+                onClick={() => setClockMgmt({...clockMgmt, two_min_drill: opt.id})}
+                className={`w-full text-left p-3 rounded-lg border transition-all ${
+                  clockMgmt.two_min_drill === opt.id
+                    ? 'bg-red-500/20 border-red-500/50 text-white'
+                    : 'bg-[#001021] border-white/5 text-white/60 hover:border-white/20'
+                }`}
+              >
+                <div className="text-xs font-bold uppercase">{opt.label}</div>
+                <div className="text-[10px] text-white/40 mt-0.5">{opt.desc}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 4-Minute Offense */}
+        <div className="bg-gradient-to-r from-[#00254c] to-[#00152b] p-5 rounded-xl border border-[#004b93]/50">
+          <h2 className="text-sm font-display font-bold text-accent uppercase mb-4 flex items-center gap-2">
+            <Clock className="w-4 h-4 text-green-400" /> 4-Minute Offense (Saat Eritme)
+          </h2>
+          <p className="text-[10px] text-white/50 mb-4">Maçın sonlarında öndeyseniz, süreyi eritmek için kullanılacak strateji.</p>
+          <div className="space-y-2">
+            {[
+              { id: 'grind_run', label: 'Ağır Koşu Zinciri', desc: 'Sadece koşu, kenarlara çıkma, süreyi erit' },
+              { id: 'safe_mix', label: 'Güvenli Karışım', desc: 'Koşu ağırlıklı, ara sıra kısa güvenli pas' },
+              { id: 'keep_scoring', label: 'Skor Peşinde Kal', desc: 'Önde olsak bile agresif kal, farkı aç' },
+            ].map(opt => (
+              <button
+                key={opt.id}
+                onClick={() => setClockMgmt({...clockMgmt, four_min_offense: opt.id})}
+                className={`w-full text-left p-3 rounded-lg border transition-all ${
+                  clockMgmt.four_min_offense === opt.id
+                    ? 'bg-green-500/20 border-green-500/50 text-white'
+                    : 'bg-[#001021] border-white/5 text-white/60 hover:border-white/20'
+                }`}
+              >
+                <div className="text-xs font-bold uppercase">{opt.label}</div>
+                <div className="text-[10px] text-white/40 mt-0.5">{opt.desc}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* 2-Point Conversion Chart */}
+      <div className="bg-gradient-to-r from-[#00254c] to-[#00152b] p-5 rounded-xl border border-[#004b93]/50">
+        <h2 className="text-sm font-display font-bold text-accent uppercase mb-4 flex items-center gap-2">
+          <Target className="w-4 h-4 text-yellow-400" /> 2-Point Conversion Tablosu
+        </h2>
+        <p className="text-[10px] text-white/50 mb-4">
+          TD sonrası ekstra puan vuruşu (1 sayı, %95 başarı) mı yoksa 2 sayılık oyun (%45 başarı) mu denenmeli? Skor farkına göre belirleyin.
+        </p>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-white/20">
+                <th className="py-2 px-3 text-xs text-white/50 uppercase font-bold">Skor Durumu</th>
+                <th className="py-2 px-3 text-xs text-yellow-400 uppercase font-bold text-center">Karar</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                { key: 'down_14', label: '14+ sayı gerideyken' },
+                { key: 'down_11', label: '11-13 sayı gerideyken' },
+                { key: 'down_8', label: '8-10 sayı gerideyken' },
+                { key: 'down_5', label: '5-7 sayı gerideyken' },
+                { key: 'down_2', label: '1-4 sayı gerideyken' },
+                { key: 'up_1', label: '1-7 sayı öndeyken' },
+                { key: 'up_any', label: '8+ sayı öndeyken' },
+              ].map((row, idx) => (
+                <tr key={row.key} className={`border-b border-white/5 ${idx % 2 === 0 ? 'bg-white/5' : ''}`}>
+                  <td className="py-2 px-3 text-xs font-bold text-white uppercase">{row.label}</td>
+                  <td className="py-2 px-3">
+                    <div className="flex gap-2 justify-center">
+                      {[{ val: 'kick', label: 'EKSTRA PUAN (1)' }, { val: 'go2', label: '2-POINT' }].map(opt => (
+                        <button
+                          key={opt.val}
+                          onClick={() => setClockMgmt({
+                            ...clockMgmt,
+                            two_point_chart: { ...clockMgmt.two_point_chart, [row.key]: opt.val }
+                          })}
+                          className={`px-3 py-1.5 rounded text-[10px] font-bold uppercase transition-colors ${
+                            (clockMgmt.two_point_chart as any)[row.key] === opt.val
+                              ? opt.val === 'go2' ? 'bg-yellow-500 text-[#001021] border border-yellow-400' : 'bg-accent text-[#001021] border border-accent'
+                              : 'bg-black/40 text-white/50 border border-white/10 hover:border-white/30 hover:text-white'
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Timeout Strategy */}
+      <div className="bg-gradient-to-r from-[#00254c] to-[#00152b] p-5 rounded-xl border border-[#004b93]/50">
+        <h2 className="text-sm font-display font-bold text-accent uppercase mb-4 flex items-center gap-2">
+          <Clock className="w-4 h-4 text-purple-400" /> Mola (Timeout) Stratejisi
+        </h2>
+        <p className="text-[10px] text-white/50 mb-4">
+          Her yarıda 3 mola hakkınız var. Motor bunları ne zaman kullansın?
+        </p>
+        <div className="space-y-2">
+          {[
+            { id: 'save_late', label: 'Son Dakikalara Sakla', desc: 'Molaları 4. çeyrekte kritik anlarda kullan (önerilen)' },
+            { id: 'ice_kicker', label: 'Vuruşçuyu Dondur (Ice the Kicker)', desc: 'Rakip FG denemeden hemen önce mola al, vuruşçunun konsantrasyonunu boz' },
+            { id: 'stop_momentum', label: 'Momentum Kır', desc: 'Rakip art arda skor üretince hemen mola al, ritmi boz' },
+            { id: 'aggressive_clock', label: 'Agresif Saat Yönetimi', desc: 'Savunmadayken rakibin saatini durdurmak için erken mola kullan' },
+          ].map(opt => (
+            <button
+              key={opt.id}
+              onClick={() => setClockMgmt({...clockMgmt, timeout_strategy: opt.id})}
+              className={`w-full text-left p-3 rounded-lg border transition-all ${
+                clockMgmt.timeout_strategy === opt.id
+                  ? 'bg-purple-500/20 border-purple-500/50 text-white'
+                  : 'bg-[#001021] border-white/5 text-white/60 hover:border-white/20'
+              }`}
+            >
+              <div className="text-xs font-bold uppercase">{opt.label}</div>
+              <div className="text-[10px] text-white/40 mt-0.5">{opt.desc}</div>
+            </button>
+          ))}
+        </div>
       </div>
 
       <button onClick={handleSave} disabled={isSaving} className="w-full osm-button bg-green-600 hover:bg-green-500 mt-8 py-4 text-lg">

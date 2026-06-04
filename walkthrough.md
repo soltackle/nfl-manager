@@ -1,25 +1,25 @@
-# Koçluk Sistemi ve Taktiksel Savaş Güncellemesi 🏈
+# Durumsal Taktik Matrisi (Play Call Sheet) Güncellemesi 🏈
 
-Yeni eklenen **Savunma ve Hücum Koçu (Coordinator)** mekanikleri sayesinde takım stratejisi derinleştirilmiş ve uçuk skorlu maçların önüne geçilmesi için dengeleme (balancing) yapılmıştır.
+Taktik sayfası ve maç motoru baştan aşağı yenilenerek, menajerlere tam anlamıyla bir "Head Coach" gibi **Durumsal Kararlar** verebilme yetkisi eklendi.
 
 ## 🛠️ Neler Yapıldı?
 
-1. **Veritabanı Güncellemesi (`coaches` tablosu):**
-   - Oyuna özel `coaches` tablosu eklendi ve Supabase'e push edildi.
-   - Koçlar `offensive` ve `defensive` olarak ikiye ayrıldı.
-   - Her koçun bir `prediction_rating`'i (Tahmin/Oyun Okuma gücü) ve rastgele `traits`'leri bulunuyor.
+1. **Arayüz (TacticsPage) Güncellemesi:**
+   - Eski statik "Hücum/Savunma Odağı" butonları kaldırıldı.
+   - Yerine devasa bir **Durumsal Oyun Planı (Play Call Sheet)** tablosu eklendi.
+   - Menajerler artık 8 farklı saha konumu ve hak/mesafe durumu için ayrı ayrı strateji (Örn: 3. Hak Kısa -> Ağır Koşu, Kırmızı Bölge -> Kısa Pas) atayabiliyor.
 
-2. **Koç Seçim Ekranı (Post-Draft UI):**
-   - Kullanıcıların Draftı bitirdikten sonra (veya lig aktif olduğunda ancak koçları yoksa) yönelecekleri özel bir `/coach-selection` sayfası geliştirildi.
-   - İsteğiniz doğrultusunda 20'şer adet özgün Hücum ve Savunma trait havuzu (Air Raid Master, Blitz Master vb.) oluşturuldu. 
-   - Arayüzde rastgele 3 Hücum, 3 Savunma koçu sunuluyor, yönetici bunlardan birer tane seçerek sözleşme imzalıyor.
+2. **Senaryo Havuzu Genişletildi:**
+   - **Hücum:** Power Run (Ağır Koşu), Outside Run (Dış Koşu), Play-Action (Sürpriz Pas), Short Pass (Kısa Pas), Screen Pass, Deep Bomb (Derin Bomba), QB Scramble.
+   - **Savunma:** Stop Run (Koşu Savunması), Pass Def (Alan Savunması), Man Coverage (Adam Adama), Blitz (Baskı), Dime/Prevent (Uzun Pas Koruma), Red Zone Wall, Goal Line Stand.
 
-3. **Maç Motoru Güncellemesi (`admin-simulate-match` Edge Function):**
-   - Maç motoru artık hücum (offense) ve savunma (defense) koçlarının güçlerini okuyor.
-   - **Taktik Çarpışmaları (Mismatch):** 
-     - Örneğin hücum "Deep Bomb" (Derin Bomba) atarken, savunma "Blitz" (Baskı) yaparsa bu hücum için büyük bir avantajdır.
-     - **Tahmin Sistemi (Prediction):** Bu avantaj anında Savunma koçu devreye girer. Zar atılır. Eğer koç başarılı bir şekilde rakibi okursa (OVR'sine bağlı olarak), Blitz iptal edilir, savunma doğru dizilişe geçer ve hücumun avantajı elinden alınır. Hatta spiker metinlerinde *"Koç X hazırlıksız yakalandı!"* veya *"Koç X ekran pası çağırdı - BAŞARILI TAHMİN!"* şeklinde spiker geri bildirimleri eklenmiştir.
+3. **Maç Motoru Zekası (`admin-simulate-match`):**
+   - Maç motoruna **Durum Analizörü (Situation Analyzer)** eklendi.
+   - Her 'Down' öncesinde, motor o anki durumu analiz ediyor (Yard Line kaçta? 3. Hak mı? Mesafe 7'den büyük mü?)
+   - Bu duruma göre menajerin matrisine (Playbook) bakarak o anki oyun odağını çekiyor.
+   - Yalnızca "Dime Savunması" gibi özel taktikler, durumsal maç motorunda doğru atakları sert şekilde cezalandırırken yanlış atakta (örneğin pas beklerken koşu yemek) paramparça oluyor.
+   - Spiker logları yeni taktiklerin tamamını tanıyarak, *"Screen pası Blitz'i cezalandırdı!"* veya *"Dime Savunması ezildi!"* gibi renkli geri bildirimler veriyor.
 
 ## 🧪 Nasıl Test Edilir?
-- Veritabanındaki tüm lig verileri temizlenmişti, bu sayede sıfırdan bir lig oluşturup draftı bitirdiğinizde sistem otomatik olarak sizi **"Koç Ekibini Kur"** sayfasına yönlendirecektir.
-- Oradan koçlarınızı seçip ardından Maç Simülasyonu çalıştırdığınızda (Admin Panel üzerinden), oluşacak spiker loglarında koçlarınızın oyunu nasıl okuduğuna dair metinler göreceksiniz.
+- Takımınızın **"Taktik Tahtası"** sayfasına girdiğinizde yeni tabloyu görüp doldurabilirsiniz. "Kaydet"e bastığınızda bu devasa matris veritabanına sorunsuz kaydedilecektir.
+- Test simülasyonu çalıştırdığınızda (Admin Panel üzerinden) maç motorunun tam da belirlediğiniz anlarda (Örn: Goal Line) belirlediğiniz stratejiye geçtiğini spiker üzerinden (Örn: "[DC Reid koşuyu sezdi, kutuyu doldurdu...]") görebileceksiniz.
