@@ -121,8 +121,9 @@ serve(async (req) => {
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) throw new Error('Missing Auth Header')
     
+    const internalSecret = req.headers.get('X-Internal-Secret')
+    const isServiceRole = internalSecret === Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') && internalSecret !== null
     const token = authHeader.replace('Bearer ', '')
-    const isServiceRole = token === Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
     if (!isServiceRole) {
       const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token)

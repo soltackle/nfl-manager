@@ -64,12 +64,12 @@ serve(async (req) => {
         // Reset readiness
         await supabaseAdmin.from('franchises').update({ is_ready: false }).eq('league_id', league_id)
 
-        // Invoke match engine
         const functionUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/admin-simulate-match`
         const res = await fetch(functionUrl, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+            'Authorization': authHeader, // User's valid JWT to pass the gateway
+            'X-Internal-Secret': Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '',
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({ league_id, week })
