@@ -1,12 +1,20 @@
 import { useState } from 'react'
 import { useClub } from '@/hooks/useClub'
 import { useFranchiseStore } from '@/store/franchiseStore'
-import { Building2, TrendingUp, Users, Activity, Lock } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
+import { Building2, TrendingUp, Users, Activity, Lock, Briefcase, CheckCircle2 } from 'lucide-react'
+
+export const SPONSORS = [
+  { id: 'safe', name: 'Global Sigorta', desc: 'Güvenli liman. Yüksek garanti gelir, düşük başarı primi.', basePay: 500000, winBonus: 50000, color: 'from-blue-600 to-blue-800' },
+  { id: 'perf', name: 'RTRT Enerji', desc: 'Performans odaklı. Düşük garanti gelir, yüksek galibiyet primi.', basePay: 200000, winBonus: 150000, color: 'from-orange-500 to-red-600' },
+  { id: 'risk', name: 'Apex Yatırım', desc: 'Ya hep ya hiç! Garanti gelir yok, muazzam galibiyet primi.', basePay: 0, winBonus: 300000, color: 'from-purple-600 to-indigo-800' },
+]
 
 export function ClubPage() {
   const { stadium, upgradeStadium } = useClub()
-  const { franchise } = useFranchiseStore()
+  const { franchise, initialize } = useFranchiseStore()
   const [isUpgrading, setIsUpgrading] = useState(false)
+  const [isSelectingSponsor, setIsSelectingSponsor] = useState(false)
 
   const handleUpgrade = async (type: 'turf' | 'capacity' | 'practice') => {
     setIsUpgrading(true)
@@ -20,9 +28,24 @@ export function ClubPage() {
     }
   }
 
+  const handleSelectSponsor = async (sponsorId: string) => {
+    if (!franchise) return
+    setIsSelectingSponsor(true)
+    try {
+      const { error } = await supabase.from('franchises').update({ active_sponsor_id: sponsorId }).eq('id', franchise.id)
+      if (error) throw error
+      await initialize(franchise.user_id)
+      alert('Sponsor başarıyla seçildi! Anlaşma sezon sonuna kadar geçerli.')
+    } catch (err: any) {
+      alert('Hata: ' + err.message)
+    } finally {
+      setIsSelectingSponsor(false)
+    }
+  }
+
   const costs = [1000000, 2500000, 4000000]
 
-  const formatMoney = (val: number) => `$${(val / 1000000).toFixed(1)}M`
+  const formatMoney = (val: number) => `$${(val / 1000).toLocaleString()}k`
 
   const UpgradeCard = ({ 
     title, 
@@ -145,6 +168,54 @@ export function ClubPage() {
           icon={Activity}
           bonuses={['Antrenman Verimi: +%10', 'Antrenman Verimi: +%25', 'Antrenman Verimi: +%50']}
         />
+      </div>
+
+      {/* Sponsors Section */}
+      <div className="mt-12">
+        <div className="flex items-center gap-3 mb-6">
+          <Briefcase className="w-8 h-8 text-accent" />
+          <h2 className="text-2xl font-display font-black text-white uppercase tracking-wider">Kulüp Sponsoru</h2>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {SPONSORS.map((sponsor) => {
+            const isActive = franchise?.active_sponsor_id === sponsor.id
+            return (
+              <div key={sponsor.id} className={`bg-gradient-to-br ${sponsor.color} rounded-xl p-6 relative overflow-hidden shadow-xl transition-transform hover:-translate-y-1 ${isActive ? 'ring-4 ring-accent' : 'opacity-80 hover:opacity-100'}`}>
+                {isActive && (
+                  <div className="absolute top-4 right-4 bg-accent text-[#001021] px-3 py-1 rounded-full font-bold text-xs uppercase flex items-center gap-1 shadow-lg">
+                    <CheckCircle2 className="w-4 h-4" /> Aktif
+                  </div>
+                )}
+                
+                <h3 className="font-display font-black text-2xl text-white uppercase tracking-widest mb-2 mt-2">{sponsor.name}</h3>
+                <p className="text-white/80 text-sm font-bold h-12">{sponsor.desc}</p>
+                
+                <div className="bg-black/30 rounded-lg p-4 mt-6 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-bold text-white/60 uppercase">Garanti Gelir (Maç Başı)</span>
+                    <span className="font-display font-bold text-white text-lg">{formatMoney(sponsor.basePay)}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-bold text-white/60 uppercase">Galibiyet Primi</span>
+                    <span className="font-display font-bold text-accent text-lg">+{formatMoney(sponsor.winBonus)}</span>
+                  </div>
+                </div>
+
+                {!isActive && (
+                  <button 
+                    onClick={() => handleSelectSponsor(sponsor.id)}
+                    disabled={isSelectingSponsor}
+                    className="w-full mt-6 bg-white hover:bg-gray-100 text-[#001021] font-display font-black uppercase py-3 rounded shadow-lg transition-colors"
+                  >
+                    {isSelectingSponsor ? 'Anlaşılıyor...' : 'Sponsorluk Anlaşması İmzala'}
+                  </button>
+                )}
+              </div>
+            )
+          })}
+        </div>
+        <p className="text-center text-white/40 text-xs mt-4 font-bold uppercase">* Sponsorluk anlaşmaları sezon boyunca değiştirilemez. Kulüp geliri her maç sonu otomatik yatar.</p>
       </div>
     </div>
   )

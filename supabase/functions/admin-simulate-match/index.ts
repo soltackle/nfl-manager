@@ -632,14 +632,30 @@ serve(async (req) => {
       const homeWinFactor = homeScore > awayScore ? 1.0 : 0.6
       const homeRevenue = Math.floor(400000 * gateMult * homeWinFactor)
       
-      const { data: homeFranchise } = await supabaseAdmin.from('franchises').select('club_fund').eq('id', match.home_franchise_id).single()
-      if (homeFranchise) {
-        await supabaseAdmin.from('franchises').update({ club_fund: homeFranchise.club_fund + homeRevenue }).eq('id', match.home_franchise_id)
+      const SPONSORS: Record<string, { basePay: number, winBonus: number }> = {
+        safe: { basePay: 500000, winBonus: 50000 },
+        perf: { basePay: 200000, winBonus: 150000 },
+        risk: { basePay: 0, winBonus: 300000 }
       }
 
-      const { data: awayFranchise } = await supabaseAdmin.from('franchises').select('club_fund').eq('id', match.away_franchise_id).single()
+      const { data: homeFranchise } = await supabaseAdmin.from('franchises').select('club_fund, active_sponsor_id').eq('id', match.home_franchise_id).single()
+      if (homeFranchise) {
+        let sponsorPay = 0
+        if (homeFranchise.active_sponsor_id && SPONSORS[homeFranchise.active_sponsor_id]) {
+          const sp = SPONSORS[homeFranchise.active_sponsor_id]
+          sponsorPay = sp.basePay + (homeScore > awayScore ? sp.winBonus : 0)
+        }
+        await supabaseAdmin.from('franchises').update({ club_fund: homeFranchise.club_fund + homeRevenue + sponsorPay }).eq('id', match.home_franchise_id)
+      }
+
+      const { data: awayFranchise } = await supabaseAdmin.from('franchises').select('club_fund, active_sponsor_id').eq('id', match.away_franchise_id).single()
       if (awayFranchise) {
-        await supabaseAdmin.from('franchises').update({ club_fund: awayFranchise.club_fund + 80000 }).eq('id', match.away_franchise_id)
+        let sponsorPay = 0
+        if (awayFranchise.active_sponsor_id && SPONSORS[awayFranchise.active_sponsor_id]) {
+          const sp = SPONSORS[awayFranchise.active_sponsor_id]
+          sponsorPay = sp.basePay + (awayScore > homeScore ? sp.winBonus : 0)
+        }
+        await supabaseAdmin.from('franchises').update({ club_fund: awayFranchise.club_fund + 80000 + sponsorPay }).eq('id', match.away_franchise_id)
       }
     }
 

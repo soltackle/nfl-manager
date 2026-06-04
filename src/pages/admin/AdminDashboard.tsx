@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { Shield, Plus, Zap, AlertTriangle, CheckCircle2, Server, Play, FastForward, Activity } from 'lucide-react'
+import { Shield, Plus, Zap, AlertTriangle, CheckCircle2, Server, Play, FastForward, Activity, Trophy } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useFranchiseStore } from '@/store/franchiseStore'
 
@@ -184,6 +184,22 @@ export function AdminDashboard() {
     }
   }
 
+  const handleEndSeason = async () => {
+    if (!league) return alert("Aktif bir ligde değilsiniz!")
+    if (!confirm('DİKKAT: Tüm maçlar silinecek, şampiyonlara ödül verilecek ve lig DRAFT (YENİ SEZON) aşamasına geçecektir. Onaylıyor musunuz?')) return
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-end-season', {
+        body: { league_id: league.id }
+      })
+      if (error) throw error
+      alert('Sezon başarıyla bitirildi! Yeni sezon için Draft aşamasına geçildi.')
+      window.location.reload()
+    } catch (err: any) {
+      alert('Sezon Bitirme Hatası: ' + err.message)
+    }
+  }
+
   return (
     <div className="space-y-6 pt-4 max-w-5xl mx-auto">
       
@@ -260,7 +276,15 @@ export function AdminDashboard() {
                 <Play className="h-4 w-4 mr-2 text-green-400" />
                 {isSimulating ? 'Simüle Ediliyor...' : 'BU HAFTAYI ŞİMDİ OYNAT'}
               </Button>
-              <Button variant="outline" className="w-full justify-start text-white border-red-500/50 hover:bg-red-500/20 hover:text-white">
+              <Button 
+                variant="outline" 
+                className="w-full justify-start text-white border-yellow-500/50 hover:bg-yellow-500/20 hover:text-white"
+                onClick={handleEndSeason}
+              >
+                <Trophy className="h-4 w-4 mr-2 text-yellow-400" />
+                SEZONU BİTİR VE YENİ SEZONA GEÇ
+              </Button>
+              <Button variant="outline" className="w-full justify-start text-white border-red-500/50 hover:bg-red-500/20 hover:text-white mt-4">
                 <Activity className="h-4 w-4 mr-2 text-red-400" />
                 SADECE MAÇ MOTORUNU ÇALIŞTIR (Debug)
               </Button>

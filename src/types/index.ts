@@ -32,6 +32,7 @@ export interface Franchise {
   morale: number
   league_id: string
   user_id: string
+  active_sponsor_id?: string | null
 }
 
 export interface Player {
