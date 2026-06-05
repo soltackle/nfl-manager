@@ -15,26 +15,28 @@ export function AdminDashboard() {
   const [stats, setStats] = useState({ users: 0, googleUsers: 0, leagues: 0, matches: 0, loading: true })
   const [leaguesList, setLeaguesList] = useState<any[]>([])
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const { data, error } = await supabase.functions.invoke('admin-get-stats')
-        if (error) throw error
-        
-        setStats({
-          users: data.users || 0,
-          googleUsers: data.googleUsers || 0,
-          online: 1 + Math.floor(Math.random() * 3), // Simüle edilmiş online sayısı
-          leagues: data.leagues || 0,
-          matches: data.matches || 0,
-          loading: false
-        })
-        setLeaguesList(data.leaguesList || [])
-      } catch (err) {
-        console.error('Stats fetching error:', err)
-        setStats(prev => ({ ...prev, loading: false }))
-      }
+  const fetchStats = async () => {
+    try {
+      setStats(prev => ({ ...prev, loading: true }))
+      const { data, error } = await supabase.functions.invoke('admin-get-stats')
+      if (error) throw error
+      
+      setStats({
+        users: data.users || 0,
+        googleUsers: data.googleUsers || 0,
+        online: 1 + Math.floor(Math.random() * 3), // Simüle edilmiş online sayısı
+        leagues: data.leagues || 0,
+        matches: data.matches || 0,
+        loading: false
+      })
+      setLeaguesList(data.leaguesList || [])
+    } catch (err) {
+      console.error('Stats fetching error:', err)
+      setStats(prev => ({ ...prev, loading: false }))
     }
+  }
+
+  useEffect(() => {
     fetchStats()
   }, [])
 
