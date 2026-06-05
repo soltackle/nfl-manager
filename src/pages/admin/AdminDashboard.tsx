@@ -422,7 +422,7 @@ export function AdminDashboard() {
                 </li>
               </ul>
               <div className="mt-4 flex gap-2">
-                <Button size="sm" variant="outline" className="border-[#005c99] text-white">Yenile</Button>
+                <Button size="sm" variant="outline" onClick={fetchStats} className="border-[#005c99] text-white">Yenile</Button>
                 <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white">Acil Durdurma</Button>
               </div>
             </CardContent>
