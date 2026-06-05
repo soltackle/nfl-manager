@@ -36,7 +36,7 @@ serve(async (req) => {
 
     // Determine roles (human vs bot)
     const userIds = franchises.map(f => f.user_id)
-    const { data: profiles } = await supabaseAdmin.from('profiles').select('id, role').in('id', userIds)
+    const { data: profiles } = await supabaseAdmin.from('users').select('id, role').in('id', userIds)
     const roleMap = new Map()
     profiles?.forEach(p => roleMap.set(p.id, p.role))
 
@@ -134,11 +134,13 @@ serve(async (req) => {
     }
 
     if (playersToInsert.length > 0) {
-      await supabaseAdmin.from('players').insert(playersToInsert)
+      const { error: insertError } = await supabaseAdmin.from('players').insert(playersToInsert)
+      if (insertError) throw new Error('Player insert failed: ' + insertError.message)
     }
 
     // Update league status to draft
-    await supabaseAdmin.from('leagues').update({ status: 'draft' }).eq('id', league_id)
+    const { error: updateError } = await supabaseAdmin.from('leagues').update({ status: 'draft' }).eq('id', league_id)
+    if (updateError) throw new Error('League update failed: ' + updateError.message)
 
     // Check if ALL human managers are actually done (if there are NO human managers!)
     const humanFranchises = franchises.filter(f => roleMap.get(f.user_id) !== 'bot')

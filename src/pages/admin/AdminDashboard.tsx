@@ -218,6 +218,34 @@ export function AdminDashboard() {
     }
   }
 
+  const handleClearAllMySlots = async () => {
+    if (!confirm('DİKKAT: Size ait tüm kariyer slotları (takımlarınız ve oyuncular) KALICI OLARAK silinecektir. Onaylıyor musunuz?')) return
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      
+      const { data: franchises } = await supabase.from('franchises').select('id').eq('user_id', user.id)
+      
+      if (!franchises || franchises.length === 0) {
+        alert('Silinecek aktif bir kariyer slotunuz bulunmuyor.')
+        return
+      }
+
+      let successCount = 0
+      for (const f of franchises) {
+        const { error } = await supabase.functions.invoke('test-cleanup', {
+          body: { franchise_id: f.id, delete_league: true }
+        })
+        if (!error) successCount++
+      }
+      
+      alert(`${successCount} adet kariyer slotunuz başarıyla temizlendi! Yönlendiriliyorsunuz...`)
+      window.location.href = '/slots'
+    } catch (err: any) {
+      alert('Hata: ' + err.message)
+    }
+  }
+
   const handleSimulateMatch = async () => {
     if (!league) return alert("Aktif bir ligde değilsiniz!")
     const weekInput = prompt("Hangi haftayı simüle etmek istiyorsunuz? (Sayı girin)", "1")
@@ -358,6 +386,13 @@ export function AdminDashboard() {
               onClick={handleDeleteLeague}
             >
               🗑️ LİGİ TAMAMEN SİL (Kalıcı İşlem)
+            </Button>
+
+            <Button 
+              className="w-full justify-start border border-orange-500 bg-orange-500/10 hover:bg-orange-500 hover:text-white text-orange-400 mt-2"
+              onClick={handleClearAllMySlots}
+            >
+              🧹 TÜM SLOTLARIMI SIFIRLA (Hesabımı Temizle)
             </Button>
           </CardContent>
         </Card>

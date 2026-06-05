@@ -36,7 +36,7 @@ serve(async (req) => {
 
       // Check if proposing to a bot
       const { data: receiver } = await supabaseAdmin.from('franchises').select('id, user_id').eq('id', receiver_franchise_id).single()
-      const { data: profile } = await supabaseAdmin.from('profiles').select('role').eq('id', receiver?.user_id).single()
+      const { data: profile } = await supabaseAdmin.from('users').select('role').eq('id', receiver?.user_id).single()
 
       if (profile?.role === 'bot') {
         // AI Bot Logic to evaluate trade
