@@ -140,20 +140,20 @@ serve(async (req) => {
 
     // Update franchise budget and ready state
     await supabaseAdmin.from('franchises')
-      .update({ budget: franchise.budget - totalCost, is_ready: true })
+      .update({ budget: franchise.budget - totalCost, is_ready: false })
       .eq('id', franchise.id)
 
-    // Check if ALL human franchises in the league are ready
-    const { data: allFranchises } = await supabaseAdmin.from('franchises').select('id, is_ready, user_id').eq('league_id', league_id)
+    // Check if ALL human franchises in the league have finished team creation (by checking if they spent budget)
+    const { data: allFranchises } = await supabaseAdmin.from('franchises').select('id, budget, user_id').eq('league_id', league_id)
     const { data: profiles } = await supabaseAdmin.from('users').select('id, role').in('id', allFranchises.map(f => f.user_id))
     
     const roleMap = new Map()
     profiles?.forEach(p => roleMap.set(p.id, p.role))
     
     const humans = allFranchises.filter(f => roleMap.get(f.user_id) !== 'bot')
-    const allHumansReady = humans.every(f => f.is_ready)
+    const allHumansDoneTeamCreation = humans.every(f => f.budget < 100000000)
 
-    if (allHumansReady) {
+    if (allHumansDoneTeamCreation) {
       await supabaseAdmin.from('leagues').update({ status: 'active' }).eq('id', league_id)
       await supabaseAdmin.rpc('generate_fixtures', { p_league_id: league_id })
     }
