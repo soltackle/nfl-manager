@@ -208,7 +208,19 @@ export function TeamCreationPage() {
     }
   }
 
-  if (loading) return <Layout><div className="p-8 text-center">Yükleniyor...</div></Layout>
+  if (loading) {
+    return (
+      <Layout>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <h2 className="text-2xl font-black text-white tracking-widest uppercase">Kadro Havuzunuz Hazırlanıyor...</h2>
+            <p className="text-slate-400 mt-2">Scout ekibimiz sizin için uygun oyuncuları listeliyor</p>
+          </div>
+        </div>
+      </Layout>
+    )
+  }
   if (!franchise) return null
 
   const totalCost = cart.reduce((sum, p) => sum + p.value, 0)
