@@ -31,8 +31,8 @@ serve(async (req) => {
       throw new Error('Missing required fields')
     }
 
-    if (selected_player_ids.length !== 11) {
-      throw new Error('You must select exactly 11 players')
+    if (!selected_player_ids || selected_player_ids.length !== 12) {
+      throw new Error(`Tam olarak 12 oyuncu seçmelisin. (Seçilen: ${selected_player_ids?.length || 0})`)
     }
 
     // Verify franchise belongs to user
@@ -54,12 +54,12 @@ serve(async (req) => {
       .eq('target_user_id', user.id)
       .eq('status', 'personal_pool')
 
-    if (!players || players.length !== 11) {
+    if (!players || players.length !== 12) {
       throw new Error('Invalid players selected')
     }
 
     // Validate positions
-    const posCounts = { QB: 0, RB: 0, WR: 0, TE: 0, OL: 0, DL: 0, DE: 0, LB: 0, CB: 0, S: 0, K: 0 }
+    const posCounts = { QB: 0, RB: 0, WR: 0, TE: 0, OL: 0, DL: 0, DE: 0, LB: 0, CB: 0, S: 0, K: 0, P: 0 }
     players.forEach(p => {
       if (posCounts[p.position] !== undefined) posCounts[p.position]++
     })
@@ -77,13 +77,9 @@ serve(async (req) => {
       posCounts.LB !== 1 || 
       posCounts.CB !== 1 || 
       posCounts.S !== 1 || 
-      posCounts.K !== 1
+      posCounts.K !== 1 ||
+      posCounts.P !== 1
     ) {
-      // The user asked to allow playing out of position with a -5 OVR penalty.
-      // But for validation, if we allow out of position, they can just pick anyone.
-      // So we don't strict block it here, we just apply the penalty on the frontend/backend during matches.
-      // Actually, wait! The user approved: "1 olsun ama sadee 11 mevki yok diye biliyorum bu ilk 11 oluşturma sayfasında kaç tane oyunu yerleşitirmemiz gerekiyor onu söyle"
-      // They accepted Option 1 (Strict requirements) BUT with a caveat about out-of-position penalties?
       // Wait, Option 1 was "11 mevki için katı kurallar olsun". The penalty was for the NEXT question.
       // Let's enforce strict positions for now to make sure they buy a balanced team.
       // But if they re-order them later out of position, they get penalized.
@@ -103,11 +99,11 @@ serve(async (req) => {
       .update({ status: 'roster', franchise_id: franchise.id, target_user_id: null })
       .in('id', selected_player_ids)
 
-    // Generate 19 Backup Players to reach exactly 30 players (OVR 65-70)
-    const backupReq = ['QB', 'RB', 'RB', 'WR', 'WR', 'WR', 'TE', 'TE', 'OL', 'OL', 'OL', 'DE', 'DE', 'LB', 'LB', 'CB', 'CB', 'S', 'K']
+    // Generate 18 Backup Players to reach exactly 30 players (OVR 65-70)
+    const backupReq = ['QB', 'RB', 'WR', 'WR', 'WR', 'TE', 'TE', 'OL', 'OL', 'OL', 'DE', 'DE', 'LB', 'LB', 'CB', 'CB', 'S', 'K']
     
-    const firstNames = ['John', 'Michael', 'David', 'James', 'Robert', 'William', 'Joseph', 'Richard', 'Thomas', 'Charles', 'Daniel', 'Matthew', 'Anthony', 'Mark', 'Donald', 'Steven', 'Paul', 'Andrew', 'Joshua', 'Kenneth', 'Kevin', 'Brian', 'George', 'Timothy', 'Ronald', 'Edward', 'Jason', 'Jeffrey', 'Ryan', 'Jacob', 'Gary', 'Nicholas', 'Eric', 'Jonathan', 'Stephen', 'Larry', 'Justin', 'Scott', 'Brandon', 'Benjamin'];
-    const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin', 'Lee', 'Perez', 'Thompson', 'White', 'Harris', 'Sanchez', 'Clark', 'Ramirez', 'Lewis', 'Robinson', 'Walker', 'Young', 'Allen', 'King', 'Wright', 'Scott', 'Torres', 'Nguyen', 'Hill', 'Flores'];
+    const { data: nameRows } = await supabaseAdmin.from('player_names').select('first_name, last_name')
+    const hasNames = nameRows && nameRows.length > 0
 
     const backupsToInsert = backupReq.map(pos => {
       const overall = Math.floor(Math.random() * 6) + 65 // 65-70
@@ -115,14 +111,17 @@ serve(async (req) => {
       const traits = generateTraits(overall, pos)
       const finalValue = calculatePlayerValue(baseValue, traits.length)
       
-      const randomFirstName = firstNames[Math.floor(Math.random() * firstNames.length)]
-      const randomLastName = lastNames[Math.floor(Math.random() * lastNames.length)]
+      let finalName = `Backup ${pos}`
+      if (hasNames) {
+        const randName = nameRows[Math.floor(Math.random() * nameRows.length)]
+        finalName = `${randName.first_name} ${randName.last_name}`
+      }
       
       return {
         league_id,
         franchise_id: franchise.id,
         status: 'roster',
-        name: `${randomFirstName} ${randomLastName}`,
+        name: finalName,
         position: pos,
         overall,
         value: finalValue,

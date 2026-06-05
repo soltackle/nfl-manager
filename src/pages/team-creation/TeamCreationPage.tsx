@@ -11,7 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { DollarSign, ShieldAlert, CheckCircle2, UserPlus, Info, Wand2 } from 'lucide-react'
 
 const REQUIRED_POSITIONS = {
-  QB: 1, RB: 1, WR: 2, TE: 1, OL: 1, DL: 1, LB: 1, CB: 1, S: 1, K: 1
+  QB: 1, RB: 1, WR: 2, TE: 1, OL: 1, DL: 1, LB: 1, CB: 1, S: 1, K: 1, P: 1
 }
 
 export function TeamCreationPage() {
@@ -69,8 +69,8 @@ export function TeamCreationPage() {
   }
 
   const addToCart = (player: Player) => {
-    if (cart.length >= 11) {
-      alert('En fazla 11 oyuncu seçebilirsin.')
+    if (cart.length >= 12) {
+      alert('En fazla 12 oyuncu seçebilirsin.')
       return
     }
     
@@ -91,7 +91,7 @@ export function TeamCreationPage() {
   }
 
   const getPositionCounts = () => {
-    const counts: Record<string, number> = { QB: 0, RB: 0, WR: 0, TE: 0, OL: 0, DL: 0, LB: 0, CB: 0, S: 0, K: 0 }
+    const counts: Record<string, number> = { QB: 0, RB: 0, WR: 0, TE: 0, OL: 0, DL: 0, LB: 0, CB: 0, S: 0, K: 0, P: 0 }
     cart.forEach(p => {
       if (p.position === 'DE') counts['DL']++
       else if (counts[p.position] !== undefined) counts[p.position]++
@@ -116,7 +116,7 @@ export function TeamCreationPage() {
     if (!franchise) return
     
     const allAvailable = [...poolPlayers, ...cart]
-    const required = ['QB', 'RB', 'WR', 'WR', 'TE', 'OL', 'DL', 'LB', 'CB', 'S', 'K']
+    const required = ['QB', 'RB', 'WR', 'WR', 'TE', 'OL', 'DL', 'LB', 'CB', 'S', 'K', 'P']
     
     let bestTeam: Player[] = []
     let bestOverall = 0
@@ -145,7 +145,7 @@ export function TeamCreationPage() {
         }
       }
       
-      if (isValid && currentTeam.length === 11) {
+      if (isValid && currentTeam.length === 12) {
         const totalOverall = currentTeam.reduce((sum, p) => sum + p.overall, 0)
         if (totalOverall > bestOverall) {
           bestOverall = totalOverall
@@ -170,7 +170,7 @@ export function TeamCreationPage() {
         }
       }
       
-      if (currentTeam.length === 11 && currentBudget >= 0) {
+      if (currentTeam.length === 12 && currentBudget >= 0) {
         bestTeam = currentTeam
       } else {
         alert('Uygun bütçeyle otomatik takım kurulamadı. Lütfen manuel seçiniz.')

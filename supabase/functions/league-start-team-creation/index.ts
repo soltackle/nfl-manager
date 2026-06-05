@@ -40,6 +40,16 @@ serve(async (req) => {
     const roleMap = new Map()
     profiles?.forEach(p => roleMap.set(p.id, p.role))
 
+    const { data: nameRows } = await supabaseAdmin.from('player_names').select('first_name, last_name')
+    const hasNames = nameRows && nameRows.length > 0
+    const getRandomName = (pos: string, isStar: boolean) => {
+      if (hasNames) {
+        const randName = nameRows[Math.floor(Math.random() * nameRows.length)]
+        return `${randName.first_name} ${randName.last_name}`
+      }
+      return `${isStar ? 'Star' : 'Pro'} ${pos} ${Math.floor(Math.random() * 1000)}`
+    }
+
     const playersToInsert = []
 
     for (const franchise of franchises) {
@@ -57,7 +67,8 @@ serve(async (req) => {
           { pos: 'LB', count: 3, starChance: 0.2 },
           { pos: 'CB', count: 2, starChance: 0.2 },
           { pos: 'S',  count: 2, starChance: 0.2 },
-          { pos: 'K',  count: 1, starChance: 0.1 }
+          { pos: 'K',  count: 1, starChance: 0.1 },
+          { pos: 'P',  count: 1, starChance: 0.1 }
         ]
 
         
@@ -80,7 +91,7 @@ serve(async (req) => {
               league_id: league_id,
               franchise_id: franchise.id, // Direct to roster
               status: 'roster',
-              name: `${prefix} ${req.pos} ${Math.floor(Math.random() * 1000)}`,
+              name: getRandomName(req.pos, isStar),
               position: req.pos,
               overall: overall,
               value: finalValue,
@@ -104,7 +115,8 @@ serve(async (req) => {
           { pos: 'LB', count: 4, starChance: 0.2 },
           { pos: 'CB', count: 4, starChance: 0.2 },
           { pos: 'S',  count: 4, starChance: 0.2 },
-          { pos: 'K',  count: 3, starChance: 0.1 }
+          { pos: 'K',  count: 3, starChance: 0.1 },
+          { pos: 'P',  count: 3, starChance: 0.1 }
         ]
         
         for (const req of poolReq) {
@@ -123,7 +135,7 @@ serve(async (req) => {
               franchise_id: null,
               target_user_id: franchise.user_id, // Assigned to this specific user's personal pool
               status: 'personal_pool',
-              name: `${prefix} ${req.pos} ${Math.floor(Math.random() * 1000)}`,
+              name: getRandomName(req.pos, isStar),
               position: req.pos,
               overall: overall,
               value: finalValue,

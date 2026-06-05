@@ -13,6 +13,7 @@ const TRAIT_POOL: Record<string, string[]> = {
   CB: ['Shutdown Corner', 'Ball Hawk', 'Press Coverage', 'Zone Specialist', 'Return Specialist', 'Acrobat'],
   S:  ['Hard Hitter', 'Center Fielder', 'Box Safety', 'Ball Hawk', 'Defensive Captain', 'Hit Power'],
   K:  ['Big Leg', 'Clutch', 'Accuracy', 'Kickoff Specialist'],
+  P:  ['Coffin Corner', 'Hang Time', 'Big Leg', 'Clutch', 'Accuracy'],
 };
 
 export function generateTraits(overall: number, position: string): string[] {
