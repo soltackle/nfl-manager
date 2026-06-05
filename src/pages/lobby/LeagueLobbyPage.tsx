@@ -25,6 +25,11 @@ export function LeagueLobbyPage() {
   useEffect(() => {
     if (!league || !franchise) return
     
+    if (league.status === 'team_creation') {
+      navigate('/team-creation')
+      return
+    }
+
     // Fetch members initially
     fetchMembers()
 
@@ -43,8 +48,8 @@ export function LeagueLobbyPage() {
         (payload) => {
           // If status changes to draft, redirect
           setLeague(payload.new as any)
-          if (payload.new.status === 'draft') {
-            navigate('/draft')
+          if (payload.new.status === 'team_creation') {
+            navigate('/team-creation')
           }
         }
       )

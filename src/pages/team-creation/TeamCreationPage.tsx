@@ -125,7 +125,7 @@ export function TeamCreationPage() {
       if (error) throw new Error(error.message)
       if (data?.error) throw new Error(data.error)
 
-      navigate(`/league/${franchise.league_id}`)
+      navigate('/dashboard')
     } catch (err: any) {
       alert(err.message)
       setSubmitting(false)

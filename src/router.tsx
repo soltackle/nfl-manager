@@ -94,12 +94,14 @@ const router = createBrowserRouter([
       { index: true, element: <Navigate to="/slots" replace /> },
       { path: 'slots', element: <SlotsPage /> },
       
-      // Setup and Lobby are standalone screens
+      // Setup is standalone and doesn't require activeFranchiseId
+      { path: 'setup', element: <FranchiseSetupPage /> },
+
+      // Lobby and Team Creation require activeFranchiseId
       {
         path: '',
         element: <FranchiseRoute><Outlet /></FranchiseRoute>,
         children: [
-          { path: 'setup', element: <FranchiseSetupPage /> },
           { path: 'lobby', element: <LeagueLobbyPage /> },
           { path: 'team-creation', element: <TeamCreationPage /> },
           { path: 'coach-selection', element: <CoachSelectionPage /> },

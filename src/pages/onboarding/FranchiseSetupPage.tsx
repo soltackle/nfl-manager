@@ -9,7 +9,7 @@ const COLORS = ['🔴⚪', '🔵🟡', '🟢⚫', '🟣🟡', '🔵⚪', '🟠�
 
 export function FranchiseSetupPage() {
   const { user } = useAuthStore()
-  const { setActiveFranchise } = useFranchiseStore()
+  const { setActiveFranchise, initialize } = useFranchiseStore()
   const navigate = useNavigate()
 
   const [city, setCity] = useState('İstanbul')
@@ -29,6 +29,10 @@ export function FranchiseSetupPage() {
 
       if (error) throw error
       if (data?.error) throw new Error(data.error)
+
+      if (user) {
+        await initialize(user.id)
+      }
 
       // Set the newly created franchise as active
       await setActiveFranchise(data.franchise.id)
