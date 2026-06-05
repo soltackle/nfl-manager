@@ -313,7 +313,7 @@ export function TeamCreationPage() {
           <div className="lg:col-span-1">
             <div className="bg-slate-800 rounded-xl border border-slate-700 p-6 sticky top-8">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-white">Kadro Sepeti ({cart.length}/11)</h2>
+                <h2 className="text-xl font-bold text-white">Kadro Sepeti ({cart.length}/12)</h2>
                 <button
                   onClick={handleAutoFill}
                   className="flex items-center gap-1.5 bg-amber-500/20 hover:bg-amber-500/40 text-amber-400 border border-amber-500/30 px-3 py-1.5 rounded text-xs font-bold transition-all uppercase tracking-wider"
@@ -379,11 +379,11 @@ export function TeamCreationPage() {
 
               <button
                 onClick={handleSubmit}
-                disabled={submitting || validationErrors.length > 0 || cart.length !== 11}
+                disabled={submitting || validationErrors.length > 0 || cart.length !== 12}
                 className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
               >
                 {submitting ? 'Onaylanıyor...' : 'Takımı Onayla ve Lige Başla'}
-                {!submitting && cart.length === 11 && validationErrors.length === 0 && <CheckCircle2 className="w-5 h-5" />}
+                {!submitting && cart.length === 12 && validationErrors.length === 0 && <CheckCircle2 className="w-5 h-5" />}
               </button>
             </div>
           </div>
