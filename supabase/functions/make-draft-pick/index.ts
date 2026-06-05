@@ -23,7 +23,7 @@ serve(async (req) => {
     const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(authHeader.replace('Bearer ', ''))
     if (userError || !user) throw new Error('Invalid token')
 
-    const { franchise_id, session_id, player_id } = await req.json()
+    const { franchise_id, session_id, player_id, is_timeout } = await req.json()
 
     // 1. Verify franchise belongs to user (or is bot logic bypassing it)
     const { data: franchise, error: fErr } = await supabaseAdmin
@@ -93,7 +93,13 @@ serve(async (req) => {
       const ownerRole = userRoleMap.get(franchiseObj.user_id)
 
       if (isHumanRequest && franchiseObj.user_id !== user.id && ownerRole !== 'bot') {
-        throw new Error('Unauthorized franchise')
+        if (!is_timeout) {
+          throw new Error('Unauthorized franchise')
+        } else {
+          // If it's a timeout, we treat it like a bot auto-pick
+          isHumanRequest = false
+          currentPlayerId = null
+        }
       }
 
       // 2. Bot Algorithm

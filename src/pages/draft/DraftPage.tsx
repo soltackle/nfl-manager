@@ -48,19 +48,42 @@ export function DraftPage() {
     }
   }
 
+  const handleForceTimeout = async () => {
+    if (isPicking || !draftSession?.current_pick_franchise_id) return
+    setIsPicking(true)
+    try {
+      await supabase.functions.invoke('make-draft-pick', {
+        body: { 
+          franchise_id: draftSession.current_pick_franchise_id, 
+          session_id: draftSession.id, 
+          player_id: null,
+          is_timeout: true
+        }
+      })
+    } catch (e) {
+      console.error("Force timeout error", e)
+    } finally {
+      setIsPicking(false)
+    }
+  }
+
   // Timer logic
   useEffect(() => {
-    if (!draftSession || draftSession.current_pick_franchise_id !== franchise?.id) {
-      setTimeLeft(10)
-      return
-    }
+    if (!draftSession) return
+
+    // Initialize timer to 4 seconds for every pick
+    setTimeLeft(4)
     
     const interval = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 1) {
           // Auto-pick when time expires
           if (!isPicking) {
-            handlePick(null)
+            if (draftSession.current_pick_franchise_id === franchise?.id) {
+              handlePick(null) // My turn, standard auto-pick
+            } else {
+              handleForceTimeout() // Someone else's turn, force timeout
+            }
           }
           return 0
         }
