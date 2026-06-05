@@ -11,7 +11,6 @@ export function LeagueLobbyPage() {
   const navigate = useNavigate()
 
   const [members, setMembers] = useState<any[]>([])
-  const [members, setMembers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
   const [actionLoading, setActionLoading] = useState(false)
