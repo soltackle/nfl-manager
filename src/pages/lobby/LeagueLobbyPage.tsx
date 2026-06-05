@@ -4,6 +4,7 @@ import { useAuthStore } from '@/store/authStore'
 import { useFranchiseStore } from '@/store/franchiseStore'
 import { supabase } from '@/lib/supabase'
 import { Users, Clock, ShieldAlert, Copy, Check, Cpu } from 'lucide-react'
+import { LoadingScreen } from '@/components/ui/LoadingScreen'
 
 export function LeagueLobbyPage() {
   const { user } = useAuthStore()
@@ -178,6 +179,10 @@ export function LeagueLobbyPage() {
 
   if (!league || !franchise) return null
 
+  if (members.length === 8 && league.status === 'waiting') {
+    return <LoadingScreen title="Takım Kurma Aşaması Başlıyor..." />
+  }
+
   const isDraftCountdown = members.length === 8 && league?.draft_start_time != null
 
   const formatTime = (ms: number | null) => {
@@ -226,10 +231,6 @@ export function LeagueLobbyPage() {
               </button>
             )}
 
-            {members.length === 8 && league.status === 'waiting' && (
-              <div className="bg-green-600/20 text-green-400 font-bold py-3 px-6 rounded-lg text-lg tracking-widest border border-green-500/50">
-                TAKIM KURMA AŞAMASI BAŞLIYOR...
-              </div>
             )}
           </div>
         </div>
