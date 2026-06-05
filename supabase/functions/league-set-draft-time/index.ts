@@ -1,39 +1,61 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { corsHeaders, handleCors } from "../_shared/cors.ts";
-import { verifyJWT } from "../_shared/auth.ts";
-import { adminClient } from "../_shared/supabase.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0"
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
 
 serve(async (req) => {
-  const corsResponse = handleCors(req);
-  if (corsResponse) return corsResponse;
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
 
   try {
-    const user = await verifyJWT(req);
-    let resultData = null;
-    
-    if (req.method === 'POST') {
-      const body = await req.json();
-      const { league_id, draft_time } = body;
-      
-      const { data, error } = await adminClient
-        .from('leagues')
-        .update({ draft_time })
-        .eq('id', league_id)
-        .select()
-        .single();
-        
-      if (error) throw error;
-      resultData = data;
-    }
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
 
-    return new Response(JSON.stringify({ success: true, data: resultData }), {
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) throw new Error('Missing Auth Header')
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(authHeader.replace('Bearer ', ''))
+    if (userError || !user) throw new Error('Invalid token')
+
+    const { league_id, minutes } = await req.json()
+    if (!league_id || minutes === undefined) throw new Error('league_id and minutes required')
+
+    // Verify league ownership
+    const { data: league, error: lErr } = await supabaseAdmin
+      .from('leagues')
+      .select('id, owner_user_id, status')
+      .eq('id', league_id)
+      .single()
+
+    if (lErr || !league) throw new Error('League not found')
+    if (league.owner_user_id !== user.id) throw new Error('Only the commissioner can set draft time')
+    if (league.status !== 'waiting') throw new Error('League is no longer waiting for players')
+
+    const targetTime = new Date(Date.now() + minutes * 60000)
+
+    const { data, error } = await supabaseAdmin
+      .from('leagues')
+      .update({ draft_start_time: targetTime.toISOString() })
+      .eq('id', league_id)
+      .select()
+      .single()
+      
+    if (error) throw error
+
+    return new Response(JSON.stringify({ success: true, draft_start_time: targetTime.toISOString() }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  } catch (err: any) {
-    const status = err.message === "unauthorized" ? 401 : 400;
-    return new Response(JSON.stringify({ error: err.message }), {
-      status,
+      status: 200
+    })
+
+  } catch (error: any) {
+    return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+      status: 400
+    })
   }
-});
+})
