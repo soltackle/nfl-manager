@@ -6,7 +6,7 @@ import { useFranchiseStore } from '../../store/franchiseStore'
 import type { Player, Franchise } from '../../types'
 import { Layout } from '../../components/layout/Layout'
 import { motion, AnimatePresence } from 'framer-motion'
-import { DollarSign, ShieldAlert, CheckCircle2, UserPlus, Info } from 'lucide-react'
+import { DollarSign, ShieldAlert, CheckCircle2, UserPlus, Info, Wand2 } from 'lucide-react'
 
 const REQUIRED_POSITIONS = {
   QB: 1, RB: 1, WR: 2, TE: 1, OL: 1, DL: 1, LB: 1, CB: 1, S: 1, K: 1
@@ -108,6 +108,76 @@ export function TeamCreationPage() {
     })
     
     return errors
+  }
+
+  const handleAutoFill = () => {
+    if (!franchise) return
+    
+    const allAvailable = [...poolPlayers, ...cart]
+    const required = ['QB', 'RB', 'WR', 'WR', 'TE', 'OL', 'DL', 'LB', 'CB', 'S', 'K']
+    
+    let bestTeam: Player[] = []
+    let bestOverall = 0
+    
+    for (let attempt = 0; attempt < 500; attempt++) {
+      let currentTeam: Player[] = []
+      let currentBudget = franchise.budget
+      let isValid = true
+      
+      const shuffled = [...allAvailable].sort(() => 0.5 - Math.random())
+      
+      for (const pos of required) {
+        const playerIndex = shuffled.findIndex(p => 
+          (p.position === pos || (pos === 'DL' && p.position === 'DE')) && 
+          p.value <= currentBudget &&
+          !currentTeam.find(t => t.id === p.id)
+        )
+        
+        if (playerIndex !== -1) {
+          const player = shuffled[playerIndex]
+          currentTeam.push(player)
+          currentBudget -= player.value
+        } else {
+          isValid = false
+          break
+        }
+      }
+      
+      if (isValid && currentTeam.length === 11) {
+        const totalOverall = currentTeam.reduce((sum, p) => sum + p.overall, 0)
+        if (totalOverall > bestOverall) {
+          bestOverall = totalOverall
+          bestTeam = currentTeam
+        }
+      }
+    }
+    
+    if (bestTeam.length === 0) {
+      let currentTeam: Player[] = []
+      let currentBudget = franchise.budget
+      const sortedByPrice = [...allAvailable].sort((a, b) => a.value - b.value)
+      
+      for (const pos of required) {
+        const player = sortedByPrice.find(p => 
+          (p.position === pos || (pos === 'DL' && p.position === 'DE')) && 
+          !currentTeam.find(t => t.id === p.id)
+        )
+        if (player) {
+          currentTeam.push(player)
+          currentBudget -= player.value
+        }
+      }
+      
+      if (currentTeam.length === 11 && currentBudget >= 0) {
+        bestTeam = currentTeam
+      } else {
+        alert('Uygun bütçeyle otomatik takım kurulamadı. Lütfen manuel seçiniz.')
+        return
+      }
+    }
+    
+    setCart(bestTeam)
+    setPoolPlayers(allAvailable.filter(p => !bestTeam.find(t => t.id === p.id)).sort((a,b) => b.overall - a.overall))
   }
 
   const handleSubmit = async () => {
@@ -233,7 +303,16 @@ export function TeamCreationPage() {
           {/* Cart */}
           <div className="lg:col-span-1">
             <div className="bg-slate-800 rounded-xl border border-slate-700 p-6 sticky top-8">
-              <h2 className="text-xl font-bold text-white mb-4">Kadro Sepeti ({cart.length}/11)</h2>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold text-white">Kadro Sepeti ({cart.length}/11)</h2>
+                <button
+                  onClick={handleAutoFill}
+                  className="flex items-center gap-1.5 bg-amber-500/20 hover:bg-amber-500/40 text-amber-400 border border-amber-500/30 px-3 py-1.5 rounded text-xs font-bold transition-all uppercase tracking-wider"
+                >
+                  <Wand2 className="w-3 h-3" />
+                  Otomatik Doldur
+                </button>
+              </div>
               
               <div className="space-y-4 mb-6">
                 <div className="grid grid-cols-2 gap-2 text-sm">
