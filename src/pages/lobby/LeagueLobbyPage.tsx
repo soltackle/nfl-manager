@@ -192,6 +192,17 @@ export function LeagueLobbyPage() {
         {/* Bot Fill Action Area */}
         <div className="mt-8 pt-6 border-t border-white/10 text-center">
           <div className="flex flex-col gap-4 max-w-md mx-auto">
+            {members.length < 8 && user?.email === 'soltackle0@gmail.com' && (
+              <button 
+                onClick={handleFillBots}
+                disabled={actionLoading}
+                className="font-bold py-3 px-6 rounded-lg text-sm transition flex items-center justify-center gap-2 bg-[#004b93] hover:bg-[#005c99] text-white cursor-pointer"
+              >
+                <Cpu className="w-4 h-4" /> 
+                TEST BOTLARLA DOLDUR (Sadece soltackle)
+              </button>
+            )}
+
             {members.length === 8 && league.status === 'waiting' && (
               <div className="bg-green-600/20 text-green-400 font-bold py-3 px-6 rounded-lg text-lg tracking-widest border border-green-500/50">
                 TAKIM KURMA AŞAMASI BAŞLIYOR...
