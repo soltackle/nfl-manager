@@ -44,7 +44,7 @@ serve(async (req) => {
     // 1. Create League
     const { data: league, error: lErr } = await supabaseAdmin.from('leagues').insert({
       name: name.trim(),
-      match_time_utc: '18:00:00',
+      match_time_utc: '14:00:00',
       is_public: is_public !== false,
       owner_user_id: user.id,
       status: 'waiting',

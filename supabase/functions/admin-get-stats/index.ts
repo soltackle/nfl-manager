@@ -32,6 +32,9 @@ serve(async (req) => {
     const { count: leaguesCount } = await supabaseAdmin.from('leagues').select('*', { count: 'exact', head: true })
     const { count: matchesCount } = await supabaseAdmin.from('matches').select('*', { count: 'exact', head: true }).eq('final_stats->>played', 'true')
     
+    // One-time fix for existing leagues
+    await supabaseAdmin.from('leagues').update({ match_time_utc: '14:00:00' }).neq('status', 'finished')
+
     // Get all leagues to display in the admin panel
     const { data: leaguesList, error: lqErr } = await supabaseAdmin.from('leagues').select('id, name, status, created_at, franchises(count)').order('created_at', { ascending: false })
     if (lqErr) throw lqErr
