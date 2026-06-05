@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0"
+import { generateTraits, calculatePlayerValue } from "../_shared/playerUtils.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -45,6 +46,59 @@ serve(async (req) => {
       
     if (!franchises || franchises.length < 8) {
       throw new Error('League is not full yet. Fill empty slots with bots first.')
+    }
+
+    // Check if Draft Pool exists
+    const { data: existingPool } = await supabaseAdmin
+      .from('players')
+      .select('id')
+      .is('franchise_id', null)
+      .limit(1)
+
+    // Generate Draft Pool (Free Agents) if none exist
+    if (!existingPool || existingPool.length === 0) {
+      const draftPlayers = []
+      // We want to guarantee Star QBs and enough players for everyone
+      const poolRequirements = [
+        { pos: 'QB', count: 12, starChance: 0.3 }, // High chance for star QBs
+        { pos: 'RB', count: 16, starChance: 0.2 },
+        { pos: 'WR', count: 20, starChance: 0.2 },
+        { pos: 'TE', count: 12, starChance: 0.2 },
+        { pos: 'OL', count: 24, starChance: 0.1 },
+        { pos: 'DE', count: 16, starChance: 0.2 },
+        { pos: 'LB', count: 16, starChance: 0.2 },
+        { pos: 'CB', count: 16, starChance: 0.2 },
+        { pos: 'S', count: 12, starChance: 0.2 },
+        { pos: 'K', count: 8, starChance: 0.1 }
+      ]
+
+      for (const req of poolRequirements) {
+        for (let i = 0; i < req.count; i++) {
+          const isStar = Math.random() < req.starChance
+          // Stars: 85-95 OVR, Normals: 72-84 OVR
+          const overall = isStar 
+            ? Math.floor(Math.random() * 11) + 85 
+            : Math.floor(Math.random() * 13) + 72
+            
+          const baseValue = overall * 150000
+          const traits = generateTraits(overall, req.pos)
+          const finalValue = calculatePlayerValue(baseValue, traits.length)
+          
+          let prefix = isStar ? 'Star' : 'Pro'
+          if (overall >= 90) prefix = 'Elite'
+
+          draftPlayers.push({
+            franchise_id: null, // Draft Pool
+            name: `${prefix} ${req.pos} ${Math.floor(Math.random() * 1000)}`,
+            position: req.pos,
+            overall: overall,
+            value: finalValue,
+            traits: traits
+          })
+        }
+      }
+
+      await supabaseAdmin.from('players').insert(draftPlayers)
     }
 
     // Set league status to draft
