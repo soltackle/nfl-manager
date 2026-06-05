@@ -60,6 +60,13 @@ export function LeagueLobbyPage() {
     }
   }, [league?.id])
 
+  // Automatically start team creation when lobby is full (8 members)
+  useEffect(() => {
+    if (members.length === 8 && league?.status === 'waiting' && !actionLoading) {
+      handleStartDraft()
+    }
+  }, [members.length, league?.status])
+
   const fetchMembers = async () => {
     if (!league) return
     const { data } = await supabase
