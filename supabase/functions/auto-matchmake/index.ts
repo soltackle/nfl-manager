@@ -64,7 +64,8 @@ serve(async (req) => {
         status: 'waiting',
         is_public: true,
         owner_user_id: user.id, // The first user is technically the "owner" or "host"
-        matchmaking_start_time: new Date().toISOString()
+        matchmaking_start_time: new Date().toISOString(),
+        match_time_utc: '20:00:00'
       }).select().single()
 
       if (lErr) throw lErr
@@ -103,7 +104,7 @@ serve(async (req) => {
   } catch (error: any) {
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 400,
+      status: 200,
     })
   }
 })

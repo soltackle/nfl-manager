@@ -13,6 +13,7 @@ const REQUIRED_POSITIONS = {
 
 export function TeamCreationPage() {
   const { user } = useAuthStore()
+  const { activeFranchiseId } = useFranchiseStore()
   const navigate = useNavigate()
   const [franchise, setFranchise] = useState<Franchise | null>(null)
   const [poolPlayers, setPoolPlayers] = useState<Player[]>([])
@@ -39,7 +40,11 @@ export function TeamCreationPage() {
         return
       }
 
-      const activeFranchise = franchises[0] // Simplify for now
+      const activeFranchise = franchises.find(f => f.id === activeFranchiseId)
+      if (!activeFranchise) {
+        navigate('/')
+        return
+      }
       setFranchise(activeFranchise)
 
       // 2. Get Personal Pool Players
