@@ -106,21 +106,13 @@ export function AdminDashboard() {
         sessionId = newSession.id
       }
 
-      // Check if global draft pool is getting low
-      const { data: poolPlayers } = await supabase
-        .from('players')
-        .select('id')
-        .is('franchise_id', null)
-        .limit(100)
-
-      if (!poolPlayers || poolPlayers.length < 100) {
-        // Create a massive draft pool of realistic American football players
+      // Always generate a fresh batch of elite draft pool players for this draft
+      {
         const positions = ['QB', 'RB', 'WR', 'TE', 'OL', 'DE', 'LB', 'CB', 'S', 'K']
         const firstNames = ['Tom', 'Patrick', 'Aaron', 'Lamar', 'Josh', 'Joe', 'Justin', 'Jalen', 'Trevor', 'Matthew', 'Russell', 'Kyler', 'Dak', 'Jared', 'Kirk', 'Tua', 'Brock', 'Caleb', 'Jayden', 'Drake', 'Tyreek', 'Justin', 'JaMarr', 'CeeDee', 'A.J.', 'Davante', 'Stefon', 'Cooper', 'Deebo', 'Christian', 'Derrick', 'Saquon', 'Jonathan', 'Breece', 'Bijan', 'Jahmyr', 'Travis', 'George', 'Mark', 'Sam', 'T.J.', 'Myles', 'Micah', 'Nick', 'Maxx', 'Chris', 'Aaron', 'Fred', 'Roquan', 'Sauce', 'Patrick', 'Jalen', 'Minkah', 'Derwin', 'Justin']
         const lastNames = ['Brady', 'Mahomes', 'Rodgers', 'Jackson', 'Allen', 'Burrow', 'Herbert', 'Hurts', 'Lawrence', 'Stafford', 'Wilson', 'Murray', 'Prescott', 'Goff', 'Cousins', 'Tagovailoa', 'Purdy', 'Williams', 'Daniels', 'Maye', 'Hill', 'Jefferson', 'Chase', 'Lamb', 'Brown', 'Adams', 'Diggs', 'Kupp', 'Samuel', 'McCaffrey', 'Henry', 'Barkley', 'Taylor', 'Hall', 'Robinson', 'Gibbs', 'Kelce', 'Kittle', 'Andrews', 'LaPorta', 'Watt', 'Garrett', 'Parsons', 'Bosa', 'Crosby', 'Jones', 'Donald', 'Warner', 'Smith', 'Gardner', 'Surtain', 'Ramsey', 'Fitzpatrick', 'James', 'Simmons']
         
         const poolInsert = []
-        // Generate players FOR EACH position to ensure balance
         for (const pos of positions) {
           // 2 Elite (90-95)
           for (let i = 0; i < 2; i++) {
