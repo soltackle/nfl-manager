@@ -12,7 +12,8 @@ export function AdminDashboard() {
   const [leagueName, setLeagueName] = useState('')
 
   // System Stats State
-  const [stats, setStats] = useState({ users: 0, leagues: 0, matches: 0, loading: true })
+  const [stats, setStats] = useState({ users: 0, googleUsers: 0, leagues: 0, matches: 0, loading: true })
+  const [leaguesList, setLeaguesList] = useState<any[]>([])
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -28,6 +29,7 @@ export function AdminDashboard() {
           matches: data.matches || 0,
           loading: false
         })
+        setLeaguesList(data.leaguesList || [])
       } catch (err) {
         console.error('Stats fetching error:', err)
         setStats(prev => ({ ...prev, loading: false }))
@@ -426,8 +428,78 @@ export function AdminDashboard() {
             </CardContent>
           </Card>
         </div>
-
       </div>
+
+      {/* TÜM LİGLER TABLOSU */}
+      <Card className="bg-[#00152b] border-[#004b93] mt-6 shadow-xl">
+        <CardHeader className="border-b border-[#004b93]/50 pb-4">
+          <CardTitle className="text-white flex items-center gap-2 font-display uppercase tracking-wider text-lg">
+            <Globe className="h-5 w-5 text-[#00a2ff]" />
+            Sistemdeki Tüm Ligler
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left text-gray-300">
+              <thead className="text-xs uppercase bg-[#001f40] text-gray-400 border-b border-[#004b93]">
+                <tr>
+                  <th className="px-4 py-3 rounded-tl-lg">Lig Adı</th>
+                  <th className="px-4 py-3">Durum</th>
+                  <th className="px-4 py-3">Hafta</th>
+                  <th className="px-4 py-3">Oluşturulma</th>
+                  <th className="px-4 py-3 text-right rounded-tr-lg">İşlemler</th>
+                </tr>
+              </thead>
+              <tbody>
+                {leaguesList.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+                      Sistemde hiç lig bulunmuyor.
+                    </td>
+                  </tr>
+                ) : (
+                  leaguesList.map((lg) => (
+                    <tr key={lg.id} className="border-b border-[#001f40] hover:bg-[#00254c] transition-colors">
+                      <td className="px-4 py-4 font-bold text-white flex items-center gap-2">
+                        {league?.id === lg.id && <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.8)]" title="Aktif Lig"></div>}
+                        {lg.name}
+                      </td>
+                      <td className="px-4 py-4">
+                        <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${
+                          lg.status === 'draft' ? 'bg-purple-500/20 text-purple-400' :
+                          lg.status === 'active' ? 'bg-green-500/20 text-green-400' :
+                          'bg-gray-500/20 text-gray-400'
+                        }`}>
+                          {lg.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 font-mono">Hafta {lg.current_week}</td>
+                      <td className="px-4 py-4 text-xs text-gray-400">
+                        {new Date(lg.created_at).toLocaleDateString('tr-TR')}
+                      </td>
+                      <td className="px-4 py-4 text-right">
+                        {league?.id !== lg.id && (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => {
+                              useFranchiseStore.getState().setLeague(lg)
+                              alert(lg.name + ' ligi panele yüklendi!')
+                            }}
+                            className="h-8 border-[#005c99] text-[#00a2ff] hover:bg-[#005c99] hover:text-white"
+                          >
+                            Panele Yükle
+                          </Button>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

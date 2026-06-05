@@ -31,6 +31,9 @@ serve(async (req) => {
     const { count: usersCount } = await supabaseAdmin.from('users').select('*', { count: 'exact', head: true })
     const { count: leaguesCount } = await supabaseAdmin.from('leagues').select('*', { count: 'exact', head: true })
     const { count: matchesCount } = await supabaseAdmin.from('matches').select('*', { count: 'exact', head: true }).eq('final_stats->>played', 'true')
+    
+    // Get all leagues to display in the admin panel
+    const { data: leaguesList } = await supabaseAdmin.from('leagues').select('id, name, status, current_week, created_at').order('created_at', { ascending: false })
 
     // To get Google users, we can list users from auth admin API
     const { data: authUsers } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 })
@@ -47,6 +50,7 @@ serve(async (req) => {
         users: usersCount || 0,
         googleUsers: googleUsersCount || 0,
         leagues: leaguesCount || 0,
+        leaguesList: leaguesList || [],
         matches: matchesCount || 0
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
