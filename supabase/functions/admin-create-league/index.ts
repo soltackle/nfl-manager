@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0"
-import { generateTraits, calculatePlayerValue } from "../_shared/playerUtils.ts"
+import { generateTraits, calculatePlayerValue, calculateBaseValue } from "../_shared/playerUtils.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -71,7 +71,7 @@ serve(async (req) => {
       for (const p of positions) {
         for (let i = 0; i < p.count; i++) {
           const overall = Math.floor(Math.random() * 20) + 60 // 60-79 OVR
-          const baseValue = overall * 100000
+          const baseValue = calculateBaseValue(overall)
           const traits = generateTraits(overall, p.pos)
           const finalValue = calculatePlayerValue(baseValue, traits.length)
           playersToInsert.push({
@@ -98,7 +98,7 @@ serve(async (req) => {
       for (let i = 0; i < 50; i++) {
         const pos = positions[Math.floor(Math.random() * positions.length)]
         const overall = Math.floor(Math.random() * 20) + 70 // 70-89 OVR (Good players for market)
-        const baseValue = overall * 150000
+        const baseValue = calculateBaseValue(overall)
         const traits = generateTraits(overall, pos)
         const finalValue = calculatePlayerValue(baseValue, traits.length)
         playersToInsert.push({

@@ -36,3 +36,13 @@ export function calculatePlayerValue(baseValue: number, traitsCount: number): nu
   
   return Math.floor(baseValue * factor);
 }
+
+export function calculateBaseValue(overall: number): number {
+  if (overall >= 95) return 28_000_000 + Math.floor(Math.random() * 7_000_000);
+  if (overall >= 90) return 18_000_000 + Math.floor(Math.random() * 10_000_000);
+  if (overall >= 86) return 12_000_000 + Math.floor(Math.random() * 5_000_000);
+  if (overall >= 81) return 7_500_000 + Math.floor(Math.random() * 4_000_000);
+  if (overall >= 76) return 4_500_000 + Math.floor(Math.random() * 2_500_000);
+  if (overall >= 70) return 2_500_000 + Math.floor(Math.random() * 1_700_000);
+  return 1_000_000 + Math.floor(Math.random() * 1_400_000);
+}

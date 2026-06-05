@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1"
-import { generateTraits, calculatePlayerValue } from "../_shared/playerUtils.ts"
+import { generateTraits, calculatePlayerValue, calculateBaseValue } from "../_shared/playerUtils.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -232,7 +232,7 @@ serve(async (req) => {
             const pos = rolePositions[i]
             const names = ['Role', 'Backup', 'Reserve', 'Bench', 'Squad', 'Practice', 'Depth', 'Sub', 'Rookie', 'Veteran', 'Free Agent', 'Prospect', 'Walk-on', 'Camp', 'Local', 'Undrafted', 'Trial', 'Invite', 'Guest', 'Temp', 'Rotational', 'Development']
             const overall = 45 + Math.floor(Math.random() * 15)
-            const baseValue = 10000 + Math.floor(Math.random() * 40000)
+            const baseValue = calculateBaseValue(overall)
             const traits = generateTraits(overall, pos)
             const finalValue = calculatePlayerValue(baseValue, traits.length)
             

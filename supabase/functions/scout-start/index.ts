@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1"
-import { generateTraits, calculatePlayerValue } from "../_shared/playerUtils.ts"
+import { generateTraits, calculatePlayerValue, calculateBaseValue } from "../_shared/playerUtils.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -61,7 +61,7 @@ serve(async (req) => {
     // Generate Player Data (OVR 80-95)
     const names = ['James', 'Williams', 'Johnson', 'Brown', 'Davis', 'Miller', 'Wilson', 'Moore', 'Taylor', 'Anderson', 'Thomas', 'Jackson', 'White', 'Harris', 'Martin', 'Thompson', 'Garcia', 'Martinez', 'Robinson', 'Clark', 'Rodriguez', 'Lewis']
     const overall = 80 + Math.floor(Math.random() * 16) // 80 to 95
-    const baseValue = 500000 + Math.floor(Math.random() * 2000000)
+    const baseValue = calculateBaseValue(overall)
     const traits = generateTraits(overall, position)
     
     const playerData = {

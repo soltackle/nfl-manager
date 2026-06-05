@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1"
-import { generateTraits, calculatePlayerValue } from "../_shared/playerUtils.ts"
+import { generateTraits, calculatePlayerValue, calculateBaseValue } from "../_shared/playerUtils.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -72,7 +72,7 @@ serve(async (req) => {
         const pos = starPositions[i % starPositions.length]
         const names = ['James', 'Williams', 'Johnson', 'Brown', 'Davis', 'Miller', 'Wilson', 'Moore', 'Taylor', 'Anderson']
         const overall = 78 + Math.floor(Math.random() * 15) // 78-92
-        const baseValue = 100000 + Math.floor(Math.random() * 900000)
+        const baseValue = calculateBaseValue(overall)
         const traits = generateTraits(overall, pos)
         
         playersToInsert.push({
@@ -90,7 +90,7 @@ serve(async (req) => {
       for (let i = 0; i < positions.length; i++) {
         const pos = positions[i]
         const overall = 55 + Math.floor(Math.random() * 16) // 55-70
-        const baseValue = 10000 + Math.floor(Math.random() * 40000)
+        const baseValue = calculateBaseValue(overall)
         const traits = generateTraits(overall, pos)
         
         playersToInsert.push({
