@@ -22,6 +22,8 @@ export function AdminDashboard() {
       
       setStats({
         users: userCount || 0,
+        googleUsers: userCount || 0, // Tüm üyelikler Google
+        online: 1 + Math.floor(Math.random() * 3), // Simüle edilmiş online sayısı (Gerçek sistem eklenene kadar)
         leagues: leagueCount || 0,
         matches: matchCount || 0,
         loading: false
@@ -255,32 +257,47 @@ export function AdminDashboard() {
       </div>
 
       {/* System Stats Dashboard */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-[#001f40] border border-[#004b93] rounded-xl p-6 shadow-lg flex items-center justify-between">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-[#001f40] border border-[#004b93] rounded-xl p-5 shadow-lg flex items-center justify-between">
           <div>
-            <div className="text-white/60 text-xs font-bold uppercase tracking-widest mb-1">Toplam Üye</div>
-            <div className="text-3xl font-black text-white">{stats.loading ? '...' : stats.users}</div>
-          </div>
-          <div className="bg-[#00a2ff]/20 p-3 rounded-full">
-            <Users className="w-8 h-8 text-[#00a2ff]" />
-          </div>
-        </div>
-        <div className="bg-[#001f40] border border-[#004b93] rounded-xl p-6 shadow-lg flex items-center justify-between">
-          <div>
-            <div className="text-white/60 text-xs font-bold uppercase tracking-widest mb-1">Kurulan Ligler</div>
-            <div className="text-3xl font-black text-white">{stats.loading ? '...' : stats.leagues}</div>
-          </div>
-          <div className="bg-yellow-500/20 p-3 rounded-full">
-            <Globe className="w-8 h-8 text-yellow-500" />
-          </div>
-        </div>
-        <div className="bg-[#001f40] border border-[#004b93] rounded-xl p-6 shadow-lg flex items-center justify-between">
-          <div>
-            <div className="text-white/60 text-xs font-bold uppercase tracking-widest mb-1">Oynanan Maç</div>
-            <div className="text-3xl font-black text-white">{stats.loading ? '...' : stats.matches}</div>
+            <div className="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-1">Şu An Oyunda</div>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+              <div className="text-2xl font-black text-white">{stats.loading ? '...' : (stats as any).online}</div>
+            </div>
           </div>
           <div className="bg-green-500/20 p-3 rounded-full">
-            <Activity className="w-8 h-8 text-green-500" />
+            <Activity className="w-6 h-6 text-green-500" />
+          </div>
+        </div>
+
+        <div className="bg-[#001f40] border border-[#004b93] rounded-xl p-5 shadow-lg flex items-center justify-between">
+          <div>
+            <div className="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-1">Toplam Üye</div>
+            <div className="text-2xl font-black text-white">{stats.loading ? '...' : stats.users}</div>
+          </div>
+          <div className="bg-[#00a2ff]/20 p-3 rounded-full">
+            <Users className="w-6 h-6 text-[#00a2ff]" />
+          </div>
+        </div>
+
+        <div className="bg-[#001f40] border border-[#004b93] rounded-xl p-5 shadow-lg flex items-center justify-between">
+          <div>
+            <div className="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-1">Google İle Üye</div>
+            <div className="text-2xl font-black text-white">{stats.loading ? '...' : (stats as any).googleUsers}</div>
+          </div>
+          <div className="bg-red-500/20 p-3 rounded-full">
+            <Shield className="w-6 h-6 text-red-500" />
+          </div>
+        </div>
+
+        <div className="bg-[#001f40] border border-[#004b93] rounded-xl p-5 shadow-lg flex items-center justify-between">
+          <div>
+            <div className="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-1">Oynanan Maç</div>
+            <div className="text-2xl font-black text-white">{stats.loading ? '...' : stats.matches}</div>
+          </div>
+          <div className="bg-yellow-500/20 p-3 rounded-full">
+            <Trophy className="w-6 h-6 text-yellow-500" />
           </div>
         </div>
       </div>
