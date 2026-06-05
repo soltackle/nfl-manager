@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/store/authStore'
 import { useFranchiseStore } from '@/store/franchiseStore'
 import { supabase } from '@/lib/supabase'
-import { Users, Clock, ShieldAlert } from 'lucide-react'
+import { Users, Clock, ShieldAlert, Copy, Check } from 'lucide-react'
 
 export function LeagueLobbyPage() {
   const { user } = useAuthStore()
@@ -12,6 +12,14 @@ export function LeagueLobbyPage() {
 
   const [members, setMembers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [copied, setCopied] = useState(false)
+
+  const handleCopyInvite = () => {
+    const text = `🏈 Amerikan Futbolu Ligime davetlisin!\n\n🏆 Lig Adı: ${league?.name}\n${!league?.is_public ? `🔒 Şifre: ${league?.password || 'Komisyonere sorunuz'}\n` : ''}\nHemen takımını kur: https://nfl-manager-alpha.vercel.app/`
+    navigator.clipboard.writeText(text)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   useEffect(() => {
     if (!league || !franchise) return
@@ -126,10 +134,18 @@ export function LeagueLobbyPage() {
           <h1 className="text-3xl font-display font-black tracking-widest text-white uppercase mb-2">
             LOBİ: {league.name}
           </h1>
-          <p className="text-accent text-sm font-bold uppercase flex items-center justify-center gap-2">
-            <Users className="w-4 h-4" /> 
-            {members.length} / 8 OYUNCU
-          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <p className="text-accent text-sm font-bold uppercase flex items-center justify-center gap-2">
+              <Users className="w-4 h-4" /> 
+              {members.length} / 8 OYUNCU
+            </p>
+            <button 
+              onClick={handleCopyInvite}
+              className="flex items-center gap-2 bg-[#004b93]/20 hover:bg-[#004b93]/40 border border-[#005c99] text-white px-4 py-2 rounded-full text-xs font-bold transition-all uppercase tracking-wider"
+            >
+              {copied ? <><Check className="w-4 h-4 text-green-400" /> KOPYALANDI</> : <><Copy className="w-4 h-4" /> ARKADAŞINI DAVET ET</>}
+            </button>
+          </div>
         </div>
 
         {isDraftCountdown ? (

@@ -46,6 +46,7 @@ serve(async (req) => {
       name: name.trim(),
       match_time_utc: '14:00:00',
       is_public: is_public !== false,
+      password: password || null,
       owner_user_id: user.id,
       status: 'waiting',
     }).select().single()

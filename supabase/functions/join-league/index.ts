@@ -22,7 +22,7 @@ serve(async (req) => {
     const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(authHeader.replace('Bearer ', ''))
     if (userError || !user) throw new Error('Invalid token')
 
-    const { league_id } = await req.json()
+    const { league_id, password } = await req.json()
     if (!league_id) throw new Error('league_id gerekli')
 
     // Ensure user exists in public.users
@@ -49,6 +49,12 @@ serve(async (req) => {
 
     if (lErr || !league) throw new Error('Lig bulunamadı')
     if (league.status !== 'waiting') throw new Error('Bu lig artık katılıma kapalı')
+    
+    if (league.is_public === false) {
+      if (!password || password !== league.password) {
+        throw new Error('Hatalı şifre veya şifre girilmedi')
+      }
+    }
     
     const memberCount = league.franchises?.length || 0
     if (memberCount >= 8) throw new Error('Bu lig dolu (8/8)')

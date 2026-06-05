@@ -36,7 +36,6 @@ export function LeaguesPage() {
     const { data, error } = await supabase
       .from('leagues')
       .select('*, franchises(id, user_id)')
-      .eq('is_public', true)
       .in('status', ['waiting', 'draft'])
       
     if (!error && data) {
@@ -47,10 +46,19 @@ export function LeaguesPage() {
 
   const handleJoinLeague = async (league: any) => {
     if (!user) return
+
+    let password = undefined
+    if (!league.is_public) {
+      const entered = window.prompt('Bu lig şifreli. Lütfen şifreyi girin:')
+      if (entered === null) return // User cancelled
+      if (!entered.trim()) return alert('Şifre girmeden şifreli bir lige katılamazsınız.')
+      password = entered.trim()
+    }
+
     setJoiningId(league.id)
     try {
       const { data, error } = await supabase.functions.invoke('join-league', {
-        body: { league_id: league.id }
+        body: { league_id: league.id, password }
       })
 
       if (error) throw error
@@ -155,7 +163,10 @@ export function LeaguesPage() {
                         <Trophy className="w-6 h-6 text-yellow-500" />
                       </div>
                       <div>
-                        <h3 className="font-display font-black text-xl uppercase tracking-wide">{league.name}</h3>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-display font-black text-xl uppercase tracking-wide">{league.name}</h3>
+                          {!league.is_public && <Lock className="w-4 h-4 text-red-400" title="Şifreli Lig" />}
+                        </div>
                         <div className="flex items-center gap-4 mt-1">
                           <span className="text-xs font-bold uppercase text-white/50 flex items-center gap-1">
                             <Users className="w-3 h-3" />
