@@ -39,12 +39,11 @@ serve(async (req) => {
     // 1. Verify franchise belongs to user (or is bot logic bypassing it)
     const { data: franchise, error: fErr } = await supabaseAdmin
       .from('franchises')
-      .select('id, league_id')
+      .select('id, league_id, user_id')
       .eq('id', franchise_id)
-      .eq('user_id', user.id)
       .single()
 
-    if (!franchise || fErr) throw new Error('Unauthorized franchise')
+    if (!franchise || fErr) throw new Error('Franchise not found')
 
     // 2. Verify draft session is active and it's this franchise's turn
     const { data: session, error: sErr } = await supabaseAdmin
@@ -83,8 +82,9 @@ serve(async (req) => {
     let { data: available } = await supabaseAdmin
       .from('players')
       .select('id, position, overall')
+      .eq('league_id', session.league_id)
       .is('franchise_id', null)
-      .order('overall', { ascending: false })
+      .order('value', { ascending: false })
 
     if (!available) available = []
 
@@ -100,6 +100,7 @@ serve(async (req) => {
     const { data: allRosters } = await supabaseAdmin
       .from('players')
       .select('id, position, overall, franchise_id')
+      .eq('league_id', session.league_id)
       .not('franchise_id', 'is', null)
       
     // Create a map of franchise_id -> players
@@ -282,7 +283,7 @@ serve(async (req) => {
     })
 
   } catch (error: any) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: error.message, stack: error.stack }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400,
     })

@@ -41,6 +41,7 @@ export function useDraft() {
         const { data: players } = await supabase
           .from('players')
           .select('*')
+          .eq('league_id', franchise.league_id)
           .is('franchise_id', null)
           .order('overall', { ascending: false })
           .limit(100)

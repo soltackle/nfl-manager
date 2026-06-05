@@ -48,10 +48,11 @@ serve(async (req) => {
       throw new Error('League is not full yet. Fill empty slots with bots first.')
     }
 
-    // Check if Draft Pool exists
+    // Check if Draft Pool exists for THIS league
     const { data: existingPool } = await supabaseAdmin
       .from('players')
       .select('id')
+      .eq('league_id', league_id)
       .is('franchise_id', null)
       .limit(1)
 
@@ -88,6 +89,7 @@ serve(async (req) => {
           if (overall >= 90) prefix = 'Elite'
 
           draftPlayers.push({
+            league_id: league_id,
             franchise_id: null, // Draft Pool
             name: `${prefix} ${req.pos} ${Math.floor(Math.random() * 1000)}`,
             position: req.pos,
