@@ -289,20 +289,45 @@ serve(async (req) => {
       const { data: homeCoaches } = await supabaseAdmin.from('coaches').select('*').eq('franchise_id', match.home_franchise_id)
       const { data: awayCoaches } = await supabaseAdmin.from('coaches').select('*').eq('franchise_id', match.away_franchise_id)
       
-      const getTeamPower = (players: any[]) => {
-        if (!players || players.length === 0) return 50
-        const sorted = players.sort((a, b) => b.overall - a.overall).slice(0, 11)
-        return sorted.reduce((sum, p) => sum + p.overall, 0) / sorted.length
+      const getPositionalAverage = (players: any[], positions: string[], count: number) => {
+        const matching = players.filter(p => positions.includes(p.position)).sort((a, b) => b.overall - a.overall)
+        let sum = 0
+        for (let i = 0; i < count; i++) {
+          sum += matching[i] ? matching[i].overall : 40 // Missing players are penalized with 40 OVR
+        }
+        return sum
+      }
+
+      const getOffensePower = (players: any[]) => {
+        if (!players || players.length === 0) return 40
+        let sum = 0
+        sum += getPositionalAverage(players, ['QB'], 1)
+        sum += getPositionalAverage(players, ['RB'], 1)
+        sum += getPositionalAverage(players, ['WR'], 3)
+        sum += getPositionalAverage(players, ['TE'], 1)
+        sum += getPositionalAverage(players, ['OL'], 5)
+        return sum / 11
+      }
+
+      const getDefensePower = (players: any[]) => {
+        if (!players || players.length === 0) return 40
+        let sum = 0
+        sum += getPositionalAverage(players, ['DE', 'DL'], 4)
+        sum += getPositionalAverage(players, ['LB'], 3)
+        sum += getPositionalAverage(players, ['CB', 'S', 'DB'], 4)
+        return sum / 11
       }
 
       const { data: homeFranchise } = await supabaseAdmin.from('franchises').select('id, active_boost').eq('id', match.home_franchise_id).single()
       const { data: awayFranchise } = await supabaseAdmin.from('franchises').select('id, active_boost').eq('id', match.away_franchise_id).single()
       
-      let homePower = getTeamPower(homePlayers || [])
-      let awayPower = getTeamPower(awayPlayers || [])
+      let homeOffPower = getOffensePower(homePlayers || [])
+      let homeDefPower = getDefensePower(homePlayers || [])
+      let awayOffPower = getOffensePower(awayPlayers || [])
+      let awayDefPower = getDefensePower(awayPlayers || [])
 
-      if (homeFranchise?.active_boost === 'power_boost') homePower += 5
-      if (awayFranchise?.active_boost === 'power_boost') awayPower += 5
+      if (homeFranchise?.active_boost === 'power_boost') { homeOffPower += 5; homeDefPower += 5; }
+      if (awayFranchise?.active_boost === 'power_boost') { awayOffPower += 5; awayDefPower += 5; }
 
       const hasTrait = (team: 'home' | 'away', pos: string, trait: string) => {
         const pList = team === 'home' ? homePlayers : awayPlayers
@@ -318,15 +343,17 @@ serve(async (req) => {
 
       const { data: stadium } = await supabaseAdmin.from('stadiums').select('turf_level').eq('franchise_id', match.home_franchise_id).single()
       if (stadium) {
-        if (stadium.turf_level === 1) homePower *= 1.02
-        if (stadium.turf_level === 2) homePower *= 1.04
-        if (stadium.turf_level === 3) homePower *= 1.06
+        let mult = 1
+        if (stadium.turf_level === 1) mult = 1.02
+        if (stadium.turf_level === 2) mult = 1.04
+        if (stadium.turf_level === 3) mult = 1.06
+        homeOffPower *= mult; homeDefPower *= mult;
       }
 
-      if (homeTac.x_aggressiveness === 'physical') homePower += 2
-      if (awayTac.x_aggressiveness === 'physical') awayPower += 2
-      if (homeTac.x_rotation === 'ironman') homePower += 2
-      if (awayTac.x_rotation === 'ironman') awayPower += 2
+      if (homeTac.x_aggressiveness === 'physical') { homeOffPower += 2; homeDefPower += 2; }
+      if (awayTac.x_aggressiveness === 'physical') { awayOffPower += 2; awayDefPower += 2; }
+      if (homeTac.x_rotation === 'ironman') { homeOffPower += 2; homeDefPower += 2; }
+      if (awayTac.x_rotation === 'ironman') { awayOffPower += 2; awayDefPower += 2; }
 
       let homeScore = 0
       let awayScore = 0
@@ -368,8 +395,8 @@ serve(async (req) => {
 
         const offTac = possession === 'home' ? homeTac : awayTac
         const defTac = possession === 'home' ? awayTac : homeTac
-        const offPower = possession === 'home' ? homePower : awayPower
-        const defPower = possession === 'home' ? awayPower : homePower
+        const offPower = possession === 'home' ? homeOffPower : awayOffPower
+        const defPower = possession === 'home' ? awayDefPower : homeDefPower
 
         const teamName = possession === 'home' ? 'Ev Sahibi' : 'Deplasman'
         const timePrefix = `${quarter}Q | ${down}${down === 1 ? 'st' : down === 2 ? 'nd' : down === 3 ? 'rd' : 'th'} & ${distance}`
@@ -385,7 +412,7 @@ serve(async (req) => {
           }
         }
 
-        const powerAdvantage = (currentOffPower - currentDefPower) / 100
+        const powerAdvantage = ((currentOffPower - currentDefPower) * 1.5) / 100
         let roll = Math.random() + powerAdvantage
 
         // SITUATION ANALYZER
@@ -468,10 +495,10 @@ serve(async (req) => {
              const predRoll = Math.random() * 100;
              if (predRoll < defCoach.prediction_rating) {
                predictionText = `[Koç ${defCoach.name} BLITZ'i iptal edip pası savundu - BAŞARILI TAHMİN!] `
-               roll -= 0.15 
+               roll -= 0.30 
              } else {
                predictionText = `[Koç ${defCoach.name} hazırlıksız yakalandı! (Hatalı Okuma)] `
-               roll += 0.15 
+               roll += 0.30 
              }
           }
         } 
@@ -480,10 +507,10 @@ serve(async (req) => {
              const predRoll = Math.random() * 100;
              if (predRoll < offCoach.prediction_rating) {
                predictionText = `[Hücum Koçu ${offCoach.name} ekran pası çağırdı - BAŞARILI TAHMİN!] `
-               roll += 0.10 
+               roll += 0.30 
              } else {
                predictionText = `[Hücum Koçu ${offCoach.name} savunmanın tuzağına düştü (Hatalı Okuma)] `
-               roll -= 0.10
+               roll -= 0.30
              }
           }
         }
@@ -492,10 +519,10 @@ serve(async (req) => {
              const predRoll = Math.random() * 100;
              if (predRoll < defCoach.prediction_rating) {
                predictionText = `[DC ${defCoach.name} koşuyu sezdi, kutuyu doldurdu - BAŞARILI TAHMİN!] `
-               roll -= 0.15 
+               roll -= 0.30 
              } else {
                predictionText = `[DC ${defCoach.name} pas beklerken koşuyla ezildi! (Hatalı Okuma)] `
-               roll += 0.15 
+               roll += 0.30 
              }
           }
         }
