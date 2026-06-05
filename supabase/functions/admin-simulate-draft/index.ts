@@ -52,8 +52,12 @@ serve(async (req) => {
     }
 
     // 4. Generate random players for each franchise to simulate draft
-    // Use only valid enum positions: QB, RB, WR, TE, OL, DE, LB, CB, S, K
-    const positions: string[] = ['QB', 'RB', 'WR', 'WR', 'TE', 'OL', 'OL', 'OL', 'OL', 'OL', 'DE', 'DE', 'LB', 'LB', 'LB', 'CB', 'CB', 'S', 'S', 'K', 'RB', 'WR']
+    // Use only valid enum positions: QB, RB, WR, TE, OL, DE, LB, CB, S, K, P
+    const positions: string[] = [
+      'QB', 'RB', 'WR', 'WR', 'WR', 'TE', 'OL', 'OL', 'OL',
+      'DE', 'DE', 'LB', 'LB', 'LB', 'CB', 'CB', 'S', 'S',
+      'K', 'P', 'RB', 'TE'
+    ]
 
     for (const franchise of franchises) {
       // First, check if franchise already has players (avoid duplicates on re-run)

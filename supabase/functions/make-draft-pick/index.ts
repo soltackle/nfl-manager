@@ -176,13 +176,22 @@ serve(async (req) => {
         // Draft is over!
         await supabaseAdmin.from('draft_sessions').delete().eq('id', session_id)
         
-        // Generate Role Players in batch if possible, or loop
-        const rolePositions = ['QB', 'RB', 'WR', 'TE', 'OL', 'DE', 'LB', 'CB', 'S', 'K', 'OL', 'DE', 'LB', 'CB']
+        // Generate Role Players in batch
+        // We need to ensure that every team has enough players to fill all slots in Depth Chart:
+        // OFF: QB(1), RB(1), WR(3), TE(1), OL(2)
+        // DEF: DE(2), LB(3), CB(2), S(1)
+        // ST: K(1), P(1)
+        // Plus some bench players. So we generate ~20 role players per team.
+        const rolePositions = [
+          'QB', 'RB', 'WR', 'WR', 'WR', 'TE', 'OL', 'OL', 'OL',
+          'DE', 'DE', 'LB', 'LB', 'LB', 'CB', 'CB', 'S', 'S',
+          'K', 'P', 'RB', 'TE'
+        ]
         const allRolePlayers = []
         for (const lf of leagueFranchises) {
-          for (let i = 0; i < 14; i++) {
-            const pos = rolePositions[i % rolePositions.length]
-            const names = ['Role', 'Backup', 'Reserve', 'Bench', 'Squad', 'Practice', 'Depth', 'Sub', 'Rookie', 'Veteran', 'Free Agent', 'Prospect', 'Walk-on', 'Camp']
+          for (let i = 0; i < rolePositions.length; i++) {
+            const pos = rolePositions[i]
+            const names = ['Role', 'Backup', 'Reserve', 'Bench', 'Squad', 'Practice', 'Depth', 'Sub', 'Rookie', 'Veteran', 'Free Agent', 'Prospect', 'Walk-on', 'Camp', 'Local', 'Undrafted', 'Trial', 'Invite', 'Guest', 'Temp', 'Rotational', 'Development']
             const overall = 45 + Math.floor(Math.random() * 15)
             const baseValue = 10000 + Math.floor(Math.random() * 40000)
             const traits = generateTraits(overall, pos)
@@ -190,7 +199,7 @@ serve(async (req) => {
             
             allRolePlayers.push({
               franchise_id: lf.id,
-              name: `${names[i]} ${pos}${Math.floor(Math.random() * 99)}`,
+              name: `${names[i % names.length]} ${pos}${Math.floor(Math.random() * 99)}`,
               position: pos,
               overall: overall,
               value: finalValue,
