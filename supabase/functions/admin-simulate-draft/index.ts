@@ -65,20 +65,40 @@ serve(async (req) => {
       if (existingPlayers && existingPlayers.length > 0) continue
 
       const playersToInsert = []
-      for (let i = 0; i < 22; i++) {
-        const pos = positions[i % positions.length]
-        const names = ['James', 'Williams', 'Johnson', 'Brown', 'Davis', 'Miller', 'Wilson', 'Moore', 'Taylor', 'Anderson', 'Thomas', 'Jackson', 'White', 'Harris', 'Martin', 'Thompson', 'Garcia', 'Martinez', 'Robinson', 'Clark', 'Rodriguez', 'Lewis']
-        const overall = 60 + Math.floor(Math.random() * 30)
+      
+      // 1. Generate 8 "Drafted" Star Players (Overall 65-90)
+      const starPositions = ['QB', 'RB', 'WR', 'TE', 'DE', 'LB', 'CB', 'S']
+      for (let i = 0; i < 8; i++) {
+        const pos = starPositions[i % starPositions.length]
+        const names = ['James', 'Williams', 'Johnson', 'Brown', 'Davis', 'Miller', 'Wilson', 'Moore', 'Taylor', 'Anderson']
+        const overall = 65 + Math.floor(Math.random() * 25)
         const baseValue = 100000 + Math.floor(Math.random() * 900000)
         const traits = generateTraits(overall, pos)
-        const finalValue = calculatePlayerValue(baseValue, traits.length)
         
         playersToInsert.push({
           franchise_id: franchise.id,
-          name: `${names[i]} ${pos}${Math.floor(Math.random() * 99)}`,
+          name: `${names[Math.floor(Math.random() * names.length)]} ${pos}${Math.floor(Math.random() * 99)}`,
           position: pos,
           overall: overall,
-          value: finalValue,
+          value: calculatePlayerValue(baseValue, traits.length),
+          traits: traits
+        })
+      }
+
+      // 2. Generate 22 Role Players (Overall 45-60) to fill Depth Chart perfectly
+      const roleNames = ['Role', 'Backup', 'Reserve', 'Bench', 'Squad', 'Practice', 'Depth', 'Sub', 'Rookie', 'Veteran', 'Free Agent', 'Prospect', 'Walk-on', 'Camp']
+      for (let i = 0; i < positions.length; i++) {
+        const pos = positions[i]
+        const overall = 45 + Math.floor(Math.random() * 15)
+        const baseValue = 10000 + Math.floor(Math.random() * 40000)
+        const traits = generateTraits(overall, pos)
+        
+        playersToInsert.push({
+          franchise_id: franchise.id,
+          name: `${roleNames[i % roleNames.length]} ${pos}${Math.floor(Math.random() * 99)}`,
+          position: pos,
+          overall: overall,
+          value: calculatePlayerValue(baseValue, traits.length),
           traits: traits
         })
       }

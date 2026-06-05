@@ -5,11 +5,14 @@ import { supabase } from '@/lib/supabase'
 import { ShoppingCart, DollarSign, ArrowRight } from 'lucide-react'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { TraitBadge } from '@/components/ui/TraitBadge'
+import { ScoutModal } from './ScoutModal'
+import { Search } from 'lucide-react'
 
 export function MarketPage() {
   const { freeAgents, isLoading, mutate } = useMarket()
   const { franchise, setFranchise } = useFranchiseStore()
   const [buyingId, setBuyingId] = useState<string | null>(null)
+  const [isScoutModalOpen, setIsScoutModalOpen] = useState(false)
 
   if (isLoading) return (
     <div className="space-y-4 pt-4">
@@ -55,13 +58,22 @@ export function MarketPage() {
             <p className="text-white/60 text-xs font-bold uppercase">Serbest Oyuncular (FA)</p>
           </div>
         </div>
-        <div className="text-right">
-          <p className="text-white/60 text-xs font-bold uppercase">KULÜP BÜTÇESİ</p>
-          <p className="text-green-400 font-display font-bold text-lg flex items-center gap-1 justify-end">
-            <DollarSign className="w-4 h-4" />
-            {franchise?.club_fund.toLocaleString()}
-          </p>
-        </div>
+        <div className="flex items-center gap-6">
+          <button 
+            onClick={() => setIsScoutModalOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-accent to-yellow-500 text-[#001021] font-bold rounded-lg shadow-[0_0_15px_rgba(255,156,0,0.4)] hover:shadow-[0_0_25px_rgba(255,156,0,0.6)] hover:scale-105 transition-all"
+          >
+            <Search className="w-4 h-4" />
+            ÖZEL SCOUT
+          </button>
+          <div className="text-right">
+            <p className="text-white/60 text-xs font-bold uppercase">KULÜP BÜTÇESİ</p>
+            <p className="text-green-400 font-display font-bold text-lg flex items-center gap-1 justify-end">
+              <DollarSign className="w-4 h-4" />
+              {franchise?.club_fund.toLocaleString()}
+            </p>
+          </div>
+      </div>
       </div>
 
       {/* Roster List */}
@@ -121,6 +133,7 @@ export function MarketPage() {
         )}
       </div>
 
+      <ScoutModal isOpen={isScoutModalOpen} onClose={() => setIsScoutModalOpen(false)} />
     </div>
   )
 }
