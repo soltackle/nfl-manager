@@ -20,8 +20,19 @@ serve(async (req) => {
 
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) throw new Error('Missing Auth Header')
-    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(authHeader.replace('Bearer ', ''))
-    if (userError || !user) throw new Error('Invalid token')
+    
+    const token = authHeader.replace('Bearer ', '')
+    let user = null
+    
+    // Check if it's the service role key
+    if (token === Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')) {
+      // Create a dummy admin user
+      user = { id: 'admin', email: 'admin@system.local' }
+    } else {
+      const { data: userData, error: userError } = await supabaseAdmin.auth.getUser(token)
+      if (userError || !userData?.user) throw new Error('Invalid token')
+      user = userData.user
+    }
 
     const { franchise_id, session_id, player_id, is_timeout } = await req.json()
 

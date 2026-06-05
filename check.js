@@ -5,71 +5,34 @@ dotenv.config()
 const supabaseAdmin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
 
 async function run() {
-  const { data: session } = await supabaseAdmin.from('draft_sessions').select('*').limit(1).single()
-  if (!session) {
-    console.log("No active draft session")
-    return
-  }
+  const { data: franchises } = await supabaseAdmin.from('franchises').select('id, user_id').eq('league_id', 'bc1e4d44-1983-4895-81c3-9b8ffe3e54b5').order('created_at', { ascending: true })
   
-  console.log("Session:", session)
+  // Create a mock session
+  const session_id = '8872605b-cc59-4dc8-b111-eca8b2d47e51'
+  const franchise_id = 'ab0b6639-e4b3-4826-b559-2eb69e29478b' // The next human turn
   
-  const { data: franchise } = await supabaseAdmin.from('franchises').select('*').eq('id', session.current_pick_franchise_id).single()
-  console.log("Franchise to pick:", franchise)
+  // Find a player to pick
+  const { data: players } = await supabaseAdmin.from('players').select('id').is('franchise_id', null).limit(1)
+  const player_id = players[0].id
   
-  // Let's manually run the bot pick algorithm
-  let { data: available } = await supabaseAdmin
-      .from('players')
-      .select('id, position, overall')
-      .is('franchise_id', null)
-      .order('overall', { ascending: false })
-
-  console.log("Available players:", available?.length)
+  console.log("Invoking with:", { franchise_id, session_id, player_id })
   
-  if (!available || available.length === 0) {
-    console.log("NO PLAYERS AVAILABLE!")
-    return
-  }
-  
-  // Fetch roster
-  const { data: roster } = await supabaseAdmin
-    .from('players')
-    .select('position, overall')
-    .eq('franchise_id', franchise.id)
-    
-  console.log("Roster size:", roster?.length)
-  
-  const rosterCount = {}
-  const maxOverall = {}
-  const positions = ['QB', 'RB', 'WR', 'TE', 'OL', 'DE', 'LB', 'CB', 'S', 'K']
-  
-  positions.forEach(p => { rosterCount[p] = 0; maxOverall[p] = 0; })
-  if (roster) {
-    roster.forEach(p => {
-      rosterCount[p.position] = (rosterCount[p.position] || 0) + 1
-      if (p.overall > maxOverall[p.position]) maxOverall[p.position] = p.overall
+  const res = await fetch(`${process.env.SUPABASE_URL}/functions/v1/make-draft-pick`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      franchise_id,
+      session_id,
+      player_id,
+      is_timeout: false
     })
-  }
-
-  let needPos = null
-  if (maxOverall['QB'] < 70 && rosterCount['QB'] < 1) needPos = 'QB'
-  else if (maxOverall['OL'] < 65 && rosterCount['OL'] < 5) needPos = 'OL'
-  else if (rosterCount['K'] === 0) needPos = 'K'
-
-  let currentPlayerId = null
-  if (needPos) {
-    const bestNeedIndex = available.findIndex(p => p.position === needPos)
-    if (bestNeedIndex !== -1) {
-      currentPlayerId = available[bestNeedIndex].id
-    }
-  }
-
-  if (!currentPlayerId) {
-    currentPlayerId = available[0].id
-  }
+  })
   
-  console.log("Selected Player ID:", currentPlayerId)
-  
-  const { data: playerDetails } = await supabaseAdmin.from('players').select('*').eq('id', currentPlayerId).single()
-  console.log("Player:", playerDetails.name, playerDetails.position, playerDetails.overall)
+  const text = await res.text()
+  console.log("Status:", res.status)
+  console.log("Response:", text)
 }
 run()
