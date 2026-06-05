@@ -475,7 +475,7 @@ export function AdminDashboard() {
                           {lg.status}
                         </span>
                       </td>
-                      <td className="px-4 py-4 font-mono">Hafta {lg.current_week}</td>
+                      <td className="px-4 py-4 font-mono">Hafta {lg.current_week || '-'}</td>
                       <td className="px-4 py-4 text-xs text-gray-400">
                         {new Date(lg.created_at).toLocaleDateString('tr-TR')}
                       </td>
