@@ -65,10 +65,10 @@ export function LeagueLobbyPage() {
       const updateTimer = () => {
         try {
           const now = new Date()
-          // Robust parsing of time string (e.g. "20:00:00" or "20:00" or "20:00:00+00")
-          const timeStr = league.match_time_utc || '20:00:00'
+          // Robust parsing of time string (e.g. "14:00:00" or "14:00" or "14:00:00+00")
+          const timeStr = league.match_time_utc || '14:00:00'
           const parts = timeStr.split(':')
-          const hours = parseInt(parts[0] || '20', 10)
+          const hours = parseInt(parts[0] || '14', 10)
           const minutes = parseInt(parts[1] || '0', 10)
           
           if (isNaN(hours) || isNaN(minutes)) {

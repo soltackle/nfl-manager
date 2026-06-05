@@ -41,7 +41,7 @@ serve(async (req) => {
     // 1. Create League
     const { data: league, error: leagueErr } = await supabaseAdmin.from('leagues').insert({
       name: name || 'Admin Test Ligi',
-      match_time_utc: '20:00',
+      match_time_utc: '14:00',
       owner_user_id: user.id,
       status: 'waiting'
     }).select().single()
