@@ -72,9 +72,14 @@ export function LeagueLobbyPage() {
     if (members.length === 8 && league?.draft_start_time) {
       const updateTimer = () => {
         const target = new Date(league.draft_start_time).getTime()
-        const diff = target - Date.now()
+        const now = Date.now()
+        const diff = target - now
         if (diff <= 0) {
           setTimeLeft(0)
+          // Auto start if commissioner
+          if (league.owner_user_id === user?.id && league.status === 'waiting') {
+            handleStartDraft()
+          }
         } else {
           setTimeLeft(diff)
         }
@@ -85,7 +90,7 @@ export function LeagueLobbyPage() {
     } else {
       setTimeLeft(null)
     }
-  }, [members.length, league?.draft_start_time])
+  }, [members.length, league?.draft_start_time, league?.status])
 
   const handleFillBots = async () => {
     if (!league) return
@@ -97,7 +102,7 @@ export function LeagueLobbyPage() {
       })
       if (error) throw error
       if (data?.error) throw new Error(data.error)
-      // fetchMembers will be triggered by realtime
+      await fetchMembers()
     } catch (err: any) {
       alert('Hata: ' + err.message)
     } finally {
@@ -114,6 +119,7 @@ export function LeagueLobbyPage() {
       })
       if (error) throw error
       if (data?.error) throw new Error(data.error)
+      setLeague({ ...league, draft_start_time: data.draft_start_time })
     } catch (err: any) {
       alert('Hata: ' + err.message)
     } finally {
@@ -130,7 +136,8 @@ export function LeagueLobbyPage() {
       })
       if (error) throw error
       if (data?.error) throw new Error(data.error)
-      // Realtime listener will redirect to /draft
+      setLeague({ ...league, status: 'draft' })
+      navigate('/draft')
     } catch (err: any) {
       alert('Hata: ' + err.message)
     } finally {
@@ -241,13 +248,9 @@ export function LeagueLobbyPage() {
               )}
 
               {members.length === 8 && league.draft_start_time && timeLeft === 0 && (
-                <button 
-                  onClick={handleStartDraft}
-                  disabled={actionLoading}
-                  className="bg-red-600 hover:bg-red-500 text-white font-bold py-3 px-6 rounded-lg text-xl tracking-widest transition animate-pulse"
-                >
-                  DRAFTI BAŞLAT
-                </button>
+                <div className="bg-green-600/20 text-green-400 font-bold py-3 px-6 rounded-lg text-lg tracking-widest border border-green-500/50">
+                  DRAFT BAŞLATILIYOR...
+                </div>
               )}
             </div>
           </div>
