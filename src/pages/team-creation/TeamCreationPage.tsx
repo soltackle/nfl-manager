@@ -204,7 +204,7 @@ export function TeamCreationPage() {
       if (data?.error) throw new Error(data.error)
 
       // Update the local store so the router doesn't kick us back
-      const updatedFranchise = { ...franchise, is_ready: true }
+      const updatedFranchise = { ...franchise, budget: franchise.budget - cart.reduce((sum, p) => sum + p.value, 0) }
       useFranchiseStore.getState().setFranchise(updatedFranchise)
 
       navigate('/dashboard')

@@ -78,7 +78,7 @@ function GameRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/lobby" replace />
   }
 
-  if (league.status === 'draft' && !franchise.is_ready) {
+  if (league.status === 'draft' && franchise.budget >= 100000000) {
     return <Navigate to="/team-creation" replace />
   }
 
