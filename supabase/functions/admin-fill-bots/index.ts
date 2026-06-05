@@ -23,7 +23,7 @@ serve(async (req) => {
     if (userError || !user) throw new Error('Invalid token')
 
     // Verify admin
-    const { data: dbUser } = await supabaseAdmin.from('users').select('role').eq('id', user.id).single()
+    const { data: dbUser } = await supabaseAdmin.from('profiles').select('role').eq('id', user.id).single()
     if (!dbUser || dbUser.role !== 'admin') throw new Error('Unauthorized')
 
     const { league_id } = await req.json()
@@ -44,7 +44,7 @@ serve(async (req) => {
     for (let i = 0; i < missingCount; i++) {
       // Create a fake bot user
       const botId = crypto.randomUUID()
-      await supabaseAdmin.from('users').insert({
+      await supabaseAdmin.from('profiles').insert({
         id: botId,
         email: `bot_${botId.substring(0,6)}@nflmanager.local`,
         username: `Bot_${i+1}`,
@@ -72,7 +72,7 @@ serve(async (req) => {
   } catch (error: any) {
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 400,
+      status: 200,
     })
   }
 })

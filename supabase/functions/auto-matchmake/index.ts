@@ -49,7 +49,24 @@ serve(async (req) => {
 
     if (waitingLeagues && waitingLeagues.length > 0) {
       for (const league of waitingLeagues) {
-        const { count } = await supabaseAdmin.from('franchises').select('*', { count: 'exact', head: true }).eq('league_id', league.id)
+        // 1. Check if user is already in this league
+        const { data: userInLeague } = await supabaseAdmin
+          .from('franchises')
+          .select('id')
+          .eq('league_id', league.id)
+          .eq('user_id', user.id)
+          .single()
+          
+        if (userInLeague) {
+          continue // Skip this league, user is already in it
+        }
+
+        // 2. Check if league has space
+        const { count } = await supabaseAdmin
+          .from('franchises')
+          .select('*', { count: 'exact', head: true })
+          .eq('league_id', league.id)
+
         if (count !== null && count < 8) {
           matchedLeagueId = league.id
           break
