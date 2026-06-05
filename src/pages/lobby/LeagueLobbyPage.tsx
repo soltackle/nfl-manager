@@ -230,8 +230,6 @@ export function LeagueLobbyPage() {
                 TEST BOTLARLA DOLDUR (Sadece soltackle)
               </button>
             )}
-
-            )}
           </div>
         </div>
       </div>
