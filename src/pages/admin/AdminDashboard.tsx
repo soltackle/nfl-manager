@@ -57,6 +57,16 @@ export function AdminDashboard() {
       alert('Hata: ' + err.message)
     }
   }
+  const handleResetDraftPool = async () => {
+    if (!confirm('DİKKAT: Serbest oyuncu havuzundaki (franchise_id: null) TÜM oyuncular silinecek. Emin misiniz?')) return
+    try {
+      const { error } = await supabase.from('players').delete().is('franchise_id', null)
+      if (error) throw error
+      alert('Draft havuzu başarıyla sıfırlandı! Şimdi Draftı başlatırsanız yeni dengeli havuz üretilecek.')
+    } catch (err: any) {
+      alert('Hata: ' + err.message)
+    }
+  }
 
   const handleStartDraft = async () => {
     if (!league) return alert('Aktif bir ligde değilsiniz!')
@@ -311,6 +321,13 @@ export function AdminDashboard() {
             >
               ⚡ DRAFT BEKLEMESİNİ ATLA (ANINDA BAŞLAT)
             </Button>
+
+            <button 
+              onClick={handleResetDraftPool}
+              className="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3 px-4 rounded-xl text-xs sm:text-sm transition-all"
+            >
+              🔄 DRAFT HAVUZUNU SIFIRLA (SİL)
+            </button>
 
             <Button 
               className="w-full justify-start border border-accent bg-accent/10 hover:bg-accent hover:text-[#001021] text-accent"
