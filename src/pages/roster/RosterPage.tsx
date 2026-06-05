@@ -47,28 +47,54 @@ export function RosterPage() {
   const mainRoster = sortedFiltered.slice(0, 22)
   const practiceSquad = sortedFiltered.slice(22)
 
+  const handleListForSale = async (player: any) => {
+    if (!franchise) return
+    const priceStr = prompt(`${player.name} için satış bedeli giriniz (Mevcut değer: $${(player.value / 1000000).toFixed(1)}M):`, player.value.toString())
+    if (!priceStr) return
+    const listPrice = parseInt(priceStr, 10)
+    if (isNaN(listPrice) || listPrice < 1000) return alert('Geçersiz fiyat.')
+
+    if (confirm(`${player.name} isimli oyuncuyu $${(listPrice / 1000000).toFixed(1)}M karşılığında transfer listesine koymak istediğinize emin misiniz? (%5 kesinti uygulanır)`)) {
+      setIsSelling(player.id)
+      try {
+        const { data, error } = await supabase.functions.invoke('market-transactions', {
+          body: { action: 'list_player', player_id: player.id, franchise_id: franchise.id, list_price: listPrice }
+        })
+        if (error) throw error
+        if (data?.error) throw new Error(data.error)
+        alert('Oyuncu transfer listesine eklendi!')
+        window.location.reload()
+      } catch (err: any) {
+        alert('Hata: ' + err.message)
+      } finally {
+        setIsSelling(null)
+      }
+    }
+  }
+
   const handleSell = async (player: any) => {
     if (!franchise) return
     const sellValue = Math.floor(player.value * 0.8) // 80% of value
-    if (confirm(`${player.name} isimli oyuncuyu $${(sellValue / 1000000).toFixed(1)}M karşılığında serbest bırakmak istediğinize emin misiniz?`)) {
+    if (confirm(`${player.name} isimli oyuncuyu $${(sellValue / 1000000).toFixed(1)}M karşılığında sisteme satmak (serbest bırakmak) istediğinize emin misiniz?`)) {
       setIsSelling(player.id)
       try {
         const { error: updateError } = await supabase
           .from('players')
-          .update({ franchise_id: null })
+          .update({ franchise_id: null, status: 'free_agent' })
           .eq('id', player.id)
           
         if (updateError) throw updateError
 
         const { error: fundError } = await supabase
           .from('franchises')
-          .update({ club_fund: franchise.club_fund + sellValue })
+          .update({ budget: franchise.budget + sellValue })
           .eq('id', franchise.id)
           
         if (fundError) throw fundError
 
-        setFranchise({ ...franchise, club_fund: franchise.club_fund + sellValue })
+        setFranchise({ ...franchise, budget: franchise.budget + sellValue })
         alert('Oyuncu başarıyla satıldı!')
+        window.location.reload()
       } catch (err: any) {
         alert('Hata: ' + err.message)
       } finally {
@@ -108,15 +134,28 @@ export function RosterPage() {
           </div>
         </div>
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          {player.status === 'listed_for_sale' ? (
+            <div className="text-[10px] uppercase font-bold px-2 py-1 bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded">
+              Listede ($${((player.listed_price || 0) / 1000000).toFixed(1)}M)
+            </div>
+          ) : (
+            <button 
+              onClick={() => handleListForSale(player)}
+              disabled={isSelling === player.id}
+              className="text-[10px] uppercase font-bold px-2 py-1 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded hover:bg-blue-500 hover:text-white transition-colors"
+            >
+              Listele
+            </button>
+          )}
           <button 
             onClick={() => handleSell(player)}
-            disabled={isSelling === player.id}
-            className="text-[10px] uppercase font-bold px-2 py-1 bg-red-500/20 text-red-400 border border-red-500/30 rounded hover:bg-red-500 hover:text-white transition-colors"
+            disabled={isSelling === player.id || player.status === 'listed_for_sale'}
+            className="text-[10px] uppercase font-bold px-2 py-1 bg-red-500/20 text-red-400 border border-red-500/30 rounded hover:bg-red-500 hover:text-white transition-colors disabled:opacity-30 disabled:hover:bg-red-500/20 disabled:hover:text-red-400"
           >
-            {isSelling === player.id ? 'SATILIYOR...' : 'SAT'}
+            {isSelling === player.id ? '...' : 'Serbest Bırak'}
           </button>
-          <div className="flex flex-col items-center justify-center w-12 h-12 rounded-full bg-[#001021] border-2 border-[#005c99]">
+          <div className="flex flex-col items-center justify-center w-12 h-12 rounded-full bg-[#001021] border-2 border-[#005c99] ml-2">
             <span className="text-white font-display font-bold text-lg leading-none">{player.overall}</span>
           </div>
           <ChevronRight className="w-5 h-5 text-white/30" />

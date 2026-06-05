@@ -2,7 +2,6 @@ import { createBrowserRouter, RouterProvider, Navigate, Outlet } from 'react-rou
 import { Layout } from './components/layout/Layout'
 import { LoginPage } from './pages/auth/LoginPage'
 import { SlotsPage } from './pages/auth/SlotsPage'
-import { LeaguesPage } from './pages/auth/LeaguesPage'
 import { DashboardPage } from './pages/dashboard/DashboardPage'
 import { RosterPage } from './pages/roster/RosterPage'
 import { DepthChartPage } from './pages/depth-chart/DepthChartPage'
@@ -12,7 +11,7 @@ import { TrainingPage } from './pages/training/TrainingPage'
 import { ClubPage } from './pages/club/ClubPage'
 import { MatchResultPage } from './pages/match/MatchResultPage'
 import { MatchesPage } from './pages/match/MatchesPage'
-import { DraftPage } from './pages/draft/DraftPage'
+import { TeamCreationPage } from './pages/team-creation/TeamCreationPage'
 import { AdminDashboard } from './pages/admin/AdminDashboard'
 import { AdminRoute } from './components/auth/AdminRoute'
 import { useAuthStore } from './store/authStore'
@@ -79,8 +78,8 @@ function GameRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/lobby" replace />
   }
 
-  if (league.status === 'draft') {
-    return <Navigate to="/draft" replace />
+  if (league.status === 'team_creation') {
+    return <Navigate to="/team-creation" replace />
   }
 
   return <>{children}</>
@@ -94,7 +93,6 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/slots" replace /> },
       { path: 'slots', element: <SlotsPage /> },
-      { path: 'leagues', element: <LeaguesPage /> },
       
       // Setup and Lobby are standalone screens
       {
@@ -103,7 +101,7 @@ const router = createBrowserRouter([
         children: [
           { path: 'setup', element: <FranchiseSetupPage /> },
           { path: 'lobby', element: <LeagueLobbyPage /> },
-          { path: 'draft', element: <DraftPage /> },
+          { path: 'team-creation', element: <TeamCreationPage /> },
           { path: 'coach-selection', element: <CoachSelectionPage /> },
         ]
       },

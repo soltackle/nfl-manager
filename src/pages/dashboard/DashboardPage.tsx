@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { QuestsModal } from '@/components/dashboard/QuestsModal'
+import { LeagueChat } from '@/components/dashboard/LeagueChat'
 
 export function DashboardPage() {
   const { user } = useAuthStore()
@@ -191,100 +192,46 @@ export function DashboardPage() {
         </div>
       )}
 
-      {/* 2. OSM Quick Actions Layout */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        
-        {/* Antrenman */}
-        <div className="bg-gradient-to-br from-[#003366] to-[#001f40] border border-[#004b93] rounded-xl p-4 flex items-center justify-between cursor-pointer hover:brightness-110 transition shadow-lg" onClick={() => navigate('/training')}>
-          <div className="flex items-center gap-4">
-            <img src="https://api.dicebear.com/7.x/shapes/svg?seed=cone&backgroundColor=00a2ff" className="w-12 h-12 rounded" />
-            <div>
-              <div className="text-accent text-xs font-bold uppercase tracking-wider mb-1">ANTRENMAN</div>
-              <div className="text-white font-display font-bold text-lg uppercase">ANTRENÖR MÜSAİT</div>
-            </div>
-          </div>
-          <ChevronRight className="text-white/50 w-6 h-6" />
-        </div>
+      )}
 
-        {/* Maç Hazırlığı */}
-        <div className="bg-gradient-to-br from-[#003366] to-[#001f40] border border-[#004b93] rounded-xl p-4 flex items-center justify-between cursor-pointer hover:brightness-110 transition shadow-lg" onClick={() => navigate('/roster')}>
-          <div className="flex items-center gap-4">
-            <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=sad_player`} className="w-12 h-12 bg-white/10 rounded" />
-            <div className="flex-1 w-full">
-              <div className="text-accent text-xs font-bold uppercase tracking-wider mb-1">MAÇ HAZIRLIĞI</div>
-              <div className="flex items-center gap-3">
-                <div className="h-3 w-24 bg-red-900 rounded-full overflow-hidden border border-red-500">
-                  <div className="h-full bg-red-500 w-1/4"></div>
-                </div>
-                <span className="text-white font-bold text-sm uppercase">KRİTİK</span>
+      {/* Grid containing Quick Actions and Chat */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 h-min">
+          {/* Antrenman */}
+          <div className="bg-gradient-to-br from-[#003366] to-[#001f40] border border-[#004b93] rounded-xl p-4 flex items-center justify-between cursor-pointer hover:brightness-110 transition shadow-lg h-min" onClick={() => navigate('/training')}>
+            <div className="flex items-center gap-4">
+              <img src="https://api.dicebear.com/7.x/shapes/svg?seed=cone&backgroundColor=00a2ff" className="w-12 h-12 rounded" />
+              <div>
+                <div className="text-accent text-xs font-bold uppercase tracking-wider mb-1">ANTRENMAN</div>
+                <div className="text-white font-display font-bold text-lg uppercase">ANTRENÖR MÜSAİT</div>
               </div>
             </div>
+            <ChevronRight className="text-white/50 w-6 h-6" />
           </div>
-          <Info className="text-green-400 w-5 h-5 absolute top-2 right-2" />
-        </div>
 
-      </div>
-
-      {/* Mini Standings Widget */}
-      {standings.length > 0 && (
-        <div className="bg-gradient-to-b from-[#00152b] to-[#001021] rounded-xl border border-[#005c99]/50 overflow-hidden shadow-xl cursor-pointer hover:border-accent/30 transition-colors" onClick={() => navigate('/matches')}>
-          <div className="flex items-center justify-between px-4 py-3 bg-[#00254c] border-b border-[#005c99]">
-            <div className="flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-accent" />
-              <span className="font-display font-bold text-sm text-white uppercase tracking-wider">Puan Tablosu</span>
-            </div>
-            <ChevronRight className="w-4 h-4 text-white/30" />
-          </div>
-          <div>
-            {standings.slice(0, 4).map((row, idx) => {
-              const rank = idx + 1
-              const streakLetter = row.streak.slice(-1)
-              let streakColor = 'text-white/40'
-              let StreakIcon = Minus
-              if (streakLetter === 'W') { streakColor = 'text-green-400'; StreakIcon = TrendingUp }
-              else if (streakLetter === 'L') { streakColor = 'text-red-400'; StreakIcon = TrendingDown }
-
-              return (
-                <div key={row.franchise_id} className={`flex items-center justify-between px-4 py-2.5 border-b border-white/5 ${row.isUser ? 'bg-accent/10 border-l-4 border-l-accent' : ''}`}>
-                  <div className="flex items-center gap-3">
-                    <span className={`font-display font-black text-lg w-6 text-center ${rank === 1 ? 'text-yellow-400' : 'text-white/40'}`}>{rank}</span>
-                    <Shield className={`w-4 h-4 ${row.isUser ? 'text-accent' : 'text-white/20'}`} fill="currentColor" />
-                    <span className={`font-bold text-sm ${row.isUser ? 'text-accent' : 'text-white'}`}>{row.team_name}</span>
+          {/* Maç Hazırlığı */}
+          <div className="bg-gradient-to-br from-[#003366] to-[#001f40] border border-[#004b93] rounded-xl p-4 flex items-center justify-between cursor-pointer hover:brightness-110 transition shadow-lg h-min" onClick={() => navigate('/roster')}>
+            <div className="flex items-center gap-4">
+              <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=sad_player`} className="w-12 h-12 bg-white/10 rounded" />
+              <div className="flex-1 w-full">
+                <div className="text-accent text-xs font-bold uppercase tracking-wider mb-1">MAÇ HAZIRLIĞI</div>
+                <div className="flex items-center gap-3">
+                  <div className="h-3 w-24 bg-red-900 rounded-full overflow-hidden border border-red-500">
+                    <div className="h-full bg-red-500 w-1/4"></div>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <span className="text-xs font-bold text-white/60">{row.wins}G-{row.losses}M</span>
-                    <div className={`flex items-center gap-1 ${streakColor}`}>
-                      <StreakIcon className="w-3 h-3" />
-                      <span className="text-[10px] font-bold">{row.streak}</span>
-                    </div>
-                  </div>
+                  <span className="text-white font-bold text-sm uppercase">KRİTİK</span>
                 </div>
-              )
-            })}
-            {/* Show user's position if not in top 4 */}
-            {(() => {
-              const userIdx = standings.findIndex(r => r.isUser)
-              if (userIdx >= 4) {
-                const row = standings[userIdx]
-                return (
-                  <>
-                    <div className="text-center text-white/20 text-xs py-1">···</div>
-                    <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/5 bg-accent/10 border-l-4 border-l-accent">
-                      <div className="flex items-center gap-3">
-                        <span className="font-display font-black text-lg w-6 text-center text-white/40">{userIdx + 1}</span>
-                        <Shield className="w-4 h-4 text-accent" fill="currentColor" />
-                        <span className="font-bold text-sm text-accent">{row.team_name}</span>
-                      </div>
-                      <span className="text-xs font-bold text-white/60">{row.wins}G-{row.losses}M</span>
-                    </div>
-                  </>
-                )
-              }
-              return null
-            })()}
+              </div>
+            </div>
+            <Info className="text-green-400 w-5 h-5 absolute top-2 right-2" />
           </div>
         </div>
-      )}
+
+        {/* League Chat Panel */}
+        <div className="lg:col-span-1 lg:row-span-2">
+          <LeagueChat />
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         

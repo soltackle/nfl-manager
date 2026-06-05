@@ -11,7 +11,7 @@ export interface League {
   id: string
   name: string
   match_time_utc: string
-  status: 'waiting' | 'draft' | 'active' | 'playoffs' | 'completed'
+  status: 'waiting' | 'team_creation' | 'active' | 'playoffs' | 'completed'
   is_public: boolean
   owner_user_id: string
 }
@@ -29,6 +29,7 @@ export interface Franchise {
   team_name: string
   city: string
   club_fund: number
+  budget: number
   morale: number
   league_id: string
   user_id: string
@@ -39,10 +40,15 @@ export interface Franchise {
 export interface Player {
   id: string
   name: string
-  position: 'QB' | 'RB' | 'WR' | 'TE' | 'OL' | 'DE' | 'LB' | 'CB' | 'S' | 'K'
+  position: 'QB' | 'RB' | 'WR' | 'TE' | 'OL' | 'DE' | 'DL' | 'LB' | 'CB' | 'S' | 'K'
   overall: number
   value: number
   franchise_id: string | null
+  status: 'personal_pool' | 'free_agent' | 'roster' | 'listed_for_sale'
+  listed_price?: number | null
+  target_user_id?: string | null
+  hidden_traits?: any
+  traits?: any
 }
 
 export interface DepthChart {
@@ -83,20 +89,25 @@ export interface MatchDriveLog {
   expires_at: string
 }
 
-export interface DraftSession {
+export interface TradeOffer {
   id: string
   league_id: string
-  current_round: number
-  current_pick_franchise_id: string | null
+  sender_franchise_id: string
+  receiver_franchise_id: string
+  offered_player_ids: string[]
+  offered_coins: number
+  requested_player_ids: string[]
+  status: 'pending' | 'accepted' | 'rejected' | 'cancelled'
+  created_at: string
 }
 
-export interface DraftPick {
+export interface LeagueChat {
   id: string
-  round: number
-  pick_number: number
-  player_id: string
-  franchise_id: string
-  session_id: string
+  league_id: string
+  franchise_id: string | null
+  message: string
+  is_system: boolean
+  created_at: string
 }
 
 export interface Achievement {

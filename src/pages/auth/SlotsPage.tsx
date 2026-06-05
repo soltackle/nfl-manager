@@ -28,10 +28,10 @@ export function SlotsPage() {
     )
     
     if (hasPendingDraft) {
-      return alert('Mevcut kariyerlerinizden biri henüz DRAFT aşamasını tamamlamadı. Yeni bir lige katılmadan önce lütfen draftın bitmesini bekleyin.')
+      return alert('Mevcut kariyerlerinizden biri henüz Kurulum/Bekleme aşamasını tamamlamadı. Yeni bir lige katılmadan önce lütfen onun bitmesini bekleyin.')
     }
 
-    navigate('/leagues')
+    navigate('/setup')
   }
 
   // OSM has 4 slots

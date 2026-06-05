@@ -283,6 +283,20 @@ serve(async (req) => {
     })
 
   } catch (error: any) {
+    try {
+      const supabaseAdmin = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      )
+      await supabaseAdmin.from('players').insert({
+        name: 'ERROR: ' + error.message,
+        position: 'QB',
+        overall: 99,
+        value: 1000,
+        traits: []
+      })
+    } catch (e) {}
+
     return new Response(JSON.stringify({ error: error.message, stack: error.stack }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400,

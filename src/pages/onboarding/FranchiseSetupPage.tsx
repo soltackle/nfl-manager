@@ -9,7 +9,7 @@ const COLORS = ['🔴⚪', '🔵🟡', '🟢⚫', '🟣🟡', '🔵⚪', '🟠�
 
 export function FranchiseSetupPage() {
   const { user } = useAuthStore()
-  const { activeFranchiseId, franchise, league, setFranchise } = useFranchiseStore()
+  const { setActiveFranchise } = useFranchiseStore()
   const navigate = useNavigate()
 
   const [city, setCity] = useState('İstanbul')
@@ -19,30 +19,21 @@ export function FranchiseSetupPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSetup = async () => {
-    if (!activeFranchiseId || !teamName) return
+    if (!teamName) return
     setIsSubmitting(true)
     
     try {
-      const { data, error } = await supabase.from('franchises').update({
-        city,
-        team_name: teamName,
-        // In a real app, we'd save colors and logos to the DB, but since the PRD
-        // just says they are part of the setup, we can save them in metadata or just ignore
-        // for now to keep schema simple. We will update the name and city.
-      }).eq('id', activeFranchiseId).select().single()
+      const { data, error } = await supabase.functions.invoke('auto-matchmake', {
+        body: { team_name: teamName, city }
+      })
 
       if (error) throw error
+      if (data?.error) throw new Error(data.error)
 
-      setFranchise(data)
+      // Set the newly created franchise as active
+      await setActiveFranchise(data.franchise.id)
       
-      // Setup complete, now route based on league status
-      if (league?.status === 'waiting') {
-        navigate('/lobby')
-      } else if (league?.status === 'draft') {
-        navigate('/draft')
-      } else {
-        navigate('/dashboard')
-      }
+      navigate('/lobby')
     } catch (err: any) {
       alert('Kurulum hatası: ' + err.message)
     } finally {
@@ -57,7 +48,7 @@ export function FranchiseSetupPage() {
           🏈 FRANCHISE KURULUMU
         </h1>
         <p className="text-accent text-center font-bold uppercase text-sm mb-8">
-          "{league?.name}" Ligine Hoş Geldin! Takımını Yönetmeye Başlamadan Önce Kimliğini Belirle.
+          Takımını Yönetmeye Başlamadan Önce Kimliğini Belirle. Ardından Otomatik Olarak Bir Lige Atanacaksın.
         </p>
 
         <div className="space-y-6">

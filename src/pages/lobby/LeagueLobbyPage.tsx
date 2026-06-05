@@ -69,17 +69,20 @@ export function LeagueLobbyPage() {
   const [timeLeft, setTimeLeft] = useState<number | null>(null)
 
   useEffect(() => {
-    if (members.length === 8 && league?.draft_start_time) {
+    if (league?.status === 'waiting') {
       const updateTimer = () => {
-        const target = new Date(league.draft_start_time).getTime()
+        if (!league.matchmaking_start_time) return
+        
+        // 60 minutes from matchmaking_start_time
+        const target = new Date(league.matchmaking_start_time).getTime() + (60 * 60 * 1000)
         const now = Date.now()
         const diff = target - now
+        
         if (diff <= 0) {
           setTimeLeft(0)
-          // Auto start if commissioner
-          if (league.owner_user_id === user?.id && league.status === 'waiting') {
-            handleStartDraft()
-          }
+          // If time is up, any user in the lobby can trigger the bot fill (the edge function allows this now)
+          // We can auto trigger it, but let's be careful not to spam the function if 8 people hit it at once.
+          // Let's just rely on the 'handleFillBots' button showing up for everyone when time is 0.
         } else {
           setTimeLeft(diff)
         }
@@ -90,7 +93,7 @@ export function LeagueLobbyPage() {
     } else {
       setTimeLeft(null)
     }
-  }, [members.length, league?.draft_start_time, league?.status])
+  }, [league?.status, league?.matchmaking_start_time])
 
   const handleFillBots = async () => {
     if (!league) return
@@ -131,13 +134,13 @@ export function LeagueLobbyPage() {
     if (!league) return
     setActionLoading(true)
     try {
-      const { data, error } = await supabase.functions.invoke('league-start-draft', {
+      const { data, error } = await supabase.functions.invoke('league-start-team-creation', {
         body: { league_id: league.id }
       })
       if (error) throw error
       if (data?.error) throw new Error(data.error)
-      setLeague({ ...league, status: 'draft' })
-      navigate('/draft')
+      setLeague({ ...league, status: 'team_creation' })
+      navigate('/team-creation')
     } catch (err: any) {
       alert('Hata: ' + err.message)
     } finally {
@@ -181,80 +184,31 @@ export function LeagueLobbyPage() {
           </div>
         </div>
 
-        {isDraftCountdown ? (
-          <div className="bg-red-500/10 border border-red-500/50 rounded-xl p-6 mb-8 text-center">
-            <h2 className="text-xl font-display font-black text-red-500 uppercase tracking-widest mb-2 flex justify-center items-center gap-2">
-              <Clock className="w-6 h-6 animate-pulse" /> DRAFT BAŞLIYOR
-            </h2>
-            <p className="text-white/70 text-sm font-bold uppercase mb-4">Lütfen sayfadan ayrılmayın, süre dolduğunda komisyoner draftı başlatacak.</p>
-            <div className="text-5xl font-mono font-black text-white">{formatTime(timeLeft)}</div>
-          </div>
-        ) : (
-          <div className="bg-[#001021] border border-white/5 rounded-xl p-6 mb-8 text-center">
-            <h2 className="text-lg font-display font-bold text-white/50 uppercase tracking-widest mb-2 flex justify-center items-center gap-2">
-              <Clock className="w-5 h-5" /> BEKLENİYOR...
-            </h2>
-            <p className="text-white/40 text-xs font-bold uppercase">
-              {members.length < 8 ? 'Ligin dolması bekleniyor.' : 'Komisyonerin süreyi başlatması bekleniyor.'}
-            </p>
-          </div>
-        )}
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {members.map(m => (
-            <div key={m.id} className={`p-4 rounded-lg border ${m.id === activeFranchiseId ? 'bg-accent/10 border-accent' : 'bg-[#001021] border-[#004b93]'}`}>
-              <div className="text-xs text-white/40 font-bold uppercase mb-1">
-                {m.id === activeFranchiseId ? 'SİZ' : (m.users?.username || 'Menajer')}
-              </div>
-              <div className={`font-display font-black uppercase text-sm ${m.id === activeFranchiseId ? 'text-accent' : 'text-white'}`}>
-                {m.city} {m.team_name.replace(' Team', '')}
-              </div>
-            </div>
-          ))}
-          
-          {Array.from({ length: 8 - members.length }).map((_, i) => (
-            <div key={i} className="p-4 rounded-lg border border-dashed border-white/10 bg-[#001021]/50 flex items-center justify-center">
-              <span className="text-white/20 font-bold uppercase text-xs">BOŞ SLOT</span>
-            </div>
-          ))}
-        </div>
-
-        {league.owner_user_id === user?.id && (
-          <div className="mt-8 pt-6 border-t border-white/10 text-center">
-            <p className="text-xs text-accent font-bold uppercase mb-4 flex justify-center items-center gap-2">
-              <ShieldAlert className="w-4 h-4" /> Komisyoner Paneli
-            </p>
+        {/* Bot Fill Action Area */}
+        <div className="mt-8 pt-6 border-t border-white/10 text-center">
+          <div className="flex flex-col gap-4 max-w-md mx-auto">
+            {members.length < 8 && (
+              <button 
+                onClick={handleFillBots}
+                disabled={actionLoading || (timeLeft !== 0 && league.owner_user_id !== user?.id)}
+                className={`font-bold py-3 px-6 rounded-lg text-sm transition flex items-center justify-center gap-2 ${
+                  timeLeft === 0 || league.owner_user_id === user?.id
+                    ? 'bg-[#004b93] hover:bg-[#005c99] text-white cursor-pointer'
+                    : 'bg-white/5 text-white/30 cursor-not-allowed border border-white/10'
+                }`}
+              >
+                <Cpu className="w-4 h-4" /> 
+                {timeLeft === 0 ? 'SÜRE DOLDU: BOTLARLA DOLDUR' : league.owner_user_id === user?.id ? 'KOMİSYONER: BOTLARLA DOLDUR' : 'SÜRENİN DOLMASINI BEKLEYİN...'}
+              </button>
+            )}
             
-            <div className="flex flex-col gap-4 max-w-md mx-auto">
-              {members.length < 8 && (
-                <button 
-                  onClick={handleFillBots}
-                  disabled={actionLoading}
-                  className="bg-[#004b93] hover:bg-[#005c99] text-white font-bold py-3 px-6 rounded-lg text-sm transition disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  <Cpu className="w-4 h-4" /> EKSİK SLOTLARI BOTLARLA DOLDUR
-                </button>
-              )}
-              
-              {members.length === 8 && !league.draft_start_time && (
-                <div className="bg-[#001021] border border-[#005c99] rounded-lg p-4">
-                  <p className="text-xs text-white/70 mb-3">Draft süresini ayarlayın ve başlatın:</p>
-                  <div className="flex gap-2 justify-center">
-                    <button onClick={() => handleSetTime(1)} disabled={actionLoading} className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded text-sm font-bold transition">1 DK</button>
-                    <button onClick={() => handleSetTime(5)} disabled={actionLoading} className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded text-sm font-bold transition">5 DK</button>
-                    <button onClick={() => handleSetTime(10)} disabled={actionLoading} className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded text-sm font-bold transition">10 DK</button>
-                  </div>
-                </div>
-              )}
-
-              {members.length === 8 && league.draft_start_time && timeLeft === 0 && (
-                <div className="bg-green-600/20 text-green-400 font-bold py-3 px-6 rounded-lg text-lg tracking-widest border border-green-500/50">
-                  DRAFT BAŞLATILIYOR...
-                </div>
-              )}
-            </div>
+            {members.length === 8 && league.status === 'waiting' && (
+              <div className="bg-green-600/20 text-green-400 font-bold py-3 px-6 rounded-lg text-lg tracking-widest border border-green-500/50">
+                TAKIM KURMA AŞAMASI BAŞLIYOR...
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   )
