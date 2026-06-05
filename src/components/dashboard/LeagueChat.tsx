@@ -11,6 +11,7 @@ export function LeagueChat() {
   const [messages, setMessages] = useState<ChatType[]>([])
   const [newMessage, setNewMessage] = useState('')
   const [loading, setLoading] = useState(true)
+  const [cooldown, setCooldown] = useState(0)
   const chatEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -64,12 +65,23 @@ export function LeagueChat() {
     }, 100)
   }
 
+  useEffect(() => {
+    let timer: any;
+    if (cooldown > 0) {
+      timer = setInterval(() => {
+        setCooldown(prev => prev - 1)
+      }, 1000)
+    }
+    return () => clearInterval(timer)
+  }, [cooldown])
+
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!newMessage.trim() || !league || !franchise) return
+    if (!newMessage.trim() || !league || !franchise || cooldown > 0) return
 
     const msg = newMessage.trim()
     setNewMessage('')
+    setCooldown(60) // 60 seconds cooldown
 
     await supabase.from('league_chat').insert({
       league_id: league.id,
@@ -141,12 +153,13 @@ export function LeagueChat() {
           type="text"
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
-          placeholder="Lige mesaj gönder..."
-          className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-accent transition-colors"
+          disabled={cooldown > 0}
+          placeholder={cooldown > 0 ? `Lütfen ${cooldown} saniye bekleyin...` : "Lige mesaj gönder..."}
+          className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-accent transition-colors disabled:opacity-50"
         />
         <button 
           type="submit"
-          disabled={!newMessage.trim()}
+          disabled={!newMessage.trim() || cooldown > 0}
           className="bg-accent hover:bg-yellow-400 text-[#001021] p-2 px-4 rounded-lg disabled:opacity-50 transition-colors flex items-center justify-center"
         >
           <Send className="w-4 h-4" />

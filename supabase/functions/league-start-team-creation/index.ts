@@ -48,16 +48,16 @@ serve(async (req) => {
       // Bot behavior: Generate exact 11 starters and assign directly
       if (isBot) {
         const rosterReq = [
-          { pos: 'QB', count: 1, starChance: 0.3 },
-          { pos: 'RB', count: 1, starChance: 0.2 },
-          { pos: 'WR', count: 2, starChance: 0.2 },
-          { pos: 'TE', count: 1, starChance: 0.2 },
-          { pos: 'OL', count: 1, starChance: 0.1 },
-          { pos: 'DE', count: 1, starChance: 0.2 },
-          { pos: 'LB', count: 1, starChance: 0.2 },
-          { pos: 'CB', count: 1, starChance: 0.2 },
-          { pos: 'S',  count: 1, starChance: 0.2 },
-          { pos: 'K',  count: 1, starChance: 0.1 }
+          { pos: 'QB', count: 2, starChance: 0.3 },
+          { pos: 'RB', count: 2, starChance: 0.2 },
+          { pos: 'WR', count: 4, starChance: 0.2 },
+          { pos: 'TE', count: 2, starChance: 0.2 },
+          { pos: 'OL', count: 2, starChance: 0.1 },
+          { pos: 'DE', count: 2, starChance: 0.2 },
+          { pos: 'LB', count: 2, starChance: 0.2 },
+          { pos: 'CB', count: 2, starChance: 0.2 },
+          { pos: 'S',  count: 2, starChance: 0.2 },
+          { pos: 'K',  count: 2, starChance: 0.1 }
         ]
         
         let totalCost = 0
@@ -88,8 +88,8 @@ serve(async (req) => {
           }
         }
         
-        // Deduct cost from bot budget
-        await supabaseAdmin.from('franchises').update({ budget: 100000000 - totalCost }).eq('id', franchise.id)
+        // Deduct cost from bot budget and set bot as ready
+        await supabaseAdmin.from('franchises').update({ budget: 100000000 - totalCost, is_ready: true }).eq('id', franchise.id)
       } 
       // Human behavior: Generate 40-50 players into their personal pool
       else {

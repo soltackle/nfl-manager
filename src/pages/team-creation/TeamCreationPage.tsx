@@ -5,6 +5,8 @@ import { useAuthStore } from '../../store/authStore'
 import { useFranchiseStore } from '../../store/franchiseStore'
 import type { Player, Franchise } from '../../types'
 import { Layout } from '../../components/layout/Layout'
+import { LoadingScreen } from '../../components/ui/LoadingScreen'
+import { TraitBadge } from '../../components/ui/TraitBadge'
 import { motion, AnimatePresence } from 'framer-motion'
 import { DollarSign, ShieldAlert, CheckCircle2, UserPlus, Info, Wand2 } from 'lucide-react'
 
@@ -201,6 +203,10 @@ export function TeamCreationPage() {
       if (error) throw new Error(error.message)
       if (data?.error) throw new Error(data.error)
 
+      // Update the local store so the router doesn't kick us back
+      const updatedFranchise = { ...franchise, is_ready: true }
+      useFranchiseStore.getState().setFranchise(updatedFranchise)
+
       navigate('/dashboard')
     } catch (err: any) {
       alert(err.message)
@@ -209,17 +215,10 @@ export function TeamCreationPage() {
   }
 
   if (loading) {
-    return (
-      <Layout>
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <div className="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <h2 className="text-2xl font-black text-white tracking-widest uppercase">Kadro Havuzunuz Hazırlanıyor...</h2>
-            <p className="text-slate-400 mt-2">Scout ekibimiz sizin için uygun oyuncuları listeliyor</p>
-          </div>
-        </div>
-      </Layout>
-    )
+    return <LoadingScreen title="Kadro Havuzunuz Hazırlanıyor..." withLayout={true} />
+  }
+  if (submitting) {
+    return <LoadingScreen title="Takımınız Onaylanıyor..." messages={["Kadrolar kaydediliyor...", "Sözleşmeler hazırlanıyor...", "Lig yetkilileri onaylıyor..."]} withLayout={true} />
   }
   if (!franchise) return null
 
@@ -291,9 +290,7 @@ export function TeamCreationPage() {
                     {player.traits && player.traits.length > 0 && (
                       <div className="flex flex-wrap gap-1 my-2">
                         {player.traits.map((t: string) => (
-                          <span key={t} className="text-[10px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded border border-amber-500/30">
-                            {t}
-                          </span>
+                          <TraitBadge key={t} trait={t} />
                         ))}
                       </div>
                     )}

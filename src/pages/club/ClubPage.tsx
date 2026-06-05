@@ -3,6 +3,7 @@ import { useClub } from '@/hooks/useClub'
 import { useFranchiseStore } from '@/store/franchiseStore'
 import { supabase } from '@/lib/supabase'
 import { Building2, TrendingUp, Users, Activity, Lock, Briefcase, CheckCircle2 } from 'lucide-react'
+import { useToastStore } from '@/store/toastStore'
 
 export const SPONSORS = [
   { id: 'safe', name: 'Global Sigorta', desc: 'Güvenli liman. Yüksek garanti gelir, düşük başarı primi.', basePay: 500000, winBonus: 50000, color: 'from-blue-600 to-blue-800' },
@@ -20,9 +21,9 @@ export function ClubPage() {
     setIsUpgrading(true)
     try {
       await upgradeStadium(type)
-      alert('Yükseltme tamamlandı!')
+      useToastStore.getState().addToast('Yükseltme tamamlandı!', 'success')
     } catch (err: any) {
-      alert('Hata: ' + err.message)
+      useToastStore.getState().addToast('Hata: ' + err.message, 'error')
     } finally {
       setIsUpgrading(false)
     }
@@ -35,9 +36,9 @@ export function ClubPage() {
       const { error } = await supabase.from('franchises').update({ active_sponsor_id: sponsorId }).eq('id', franchise.id)
       if (error) throw error
       await initialize(franchise.user_id)
-      alert('Sponsor başarıyla seçildi! Anlaşma sezon sonuna kadar geçerli.')
+      useToastStore.getState().addToast('Sponsor başarıyla seçildi! Anlaşma sezon sonuna kadar geçerli.', 'success')
     } catch (err: any) {
-      alert('Hata: ' + err.message)
+      useToastStore.getState().addToast('Hata: ' + err.message, 'error')
     } finally {
       setIsSelectingSponsor(false)
     }

@@ -2,7 +2,10 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Trophy, Star, Target, Crown } from 'lucide-react'
 
+import { useAuthStore } from '@/store/authStore'
+
 export function LeaderboardPage() {
+  const { user: currentUser } = useAuthStore()
   const [tab, setTab] = useState<'xp' | 'winrate'>('xp')
   const [users, setUsers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -12,7 +15,7 @@ export function LeaderboardPage() {
       setLoading(true)
       const { data } = await supabase
         .from('users')
-        .select('username, manager_xp, total_matches_played, total_matches_won, role')
+        .select('id, username, manager_xp, total_matches_played, total_matches_won, role')
         .neq('role', 'bot')
       
       if (data) {
@@ -87,43 +90,96 @@ export function LeaderboardPage() {
             ) : users.length === 0 ? (
               <tr><td colSpan={4} className="p-8 text-center text-white/50">{tab === 'winrate' ? 'Sıralamaya girmek için en az 5 resmi maç yapılmalıdır.' : 'Kimse bulunamadı.'}</td></tr>
             ) : (
-              users.map((u, i) => {
-                const wr = u.total_matches_played > 0 
-                  ? Math.round((u.total_matches_won / u.total_matches_played) * 100) 
-                  : 0
-                const level = Math.floor((u.manager_xp || 0) / 100) + 1
+              <>
+                {users.slice(0, 20).map((u, i) => {
+                  const wr = u.total_matches_played > 0 
+                    ? Math.round((u.total_matches_won / u.total_matches_played) * 100) 
+                    : 0
+                  const level = Math.floor((u.manager_xp || 0) / 100) + 1
+                  const isMe = currentUser?.id === u.id
 
-                return (
-                  <tr key={i} className="hover:bg-white/5 transition-colors">
-                    <td className="p-4 text-center font-black text-lg">
-                      {i === 0 ? <Crown className="w-6 h-6 text-yellow-500 mx-auto drop-shadow-[0_0_5px_rgba(234,179,8,0.8)]" /> :
-                       i === 1 ? <span className="text-gray-400">2</span> :
-                       i === 2 ? <span className="text-amber-700">3</span> :
-                       <span className="text-white/40">{i + 1}</span>}
-                    </td>
-                    <td className="p-4 font-bold uppercase tracking-wider text-base">
-                      {u.username}
-                      {u.role === 'admin' && <span className="ml-2 text-[9px] bg-red-600 px-1.5 py-0.5 rounded text-white">ADMIN</span>}
-                    </td>
-                    <td className="p-4 text-center font-bold text-white/70">
-                      {u.total_matches_played || 0}
-                    </td>
-                    <td className="p-4 text-center">
-                      {tab === 'xp' ? (
-                        <div className="flex flex-col items-center">
-                          <span className="text-accent font-black text-lg">LVL {level}</span>
-                          <span className="text-[10px] text-white/40">{u.manager_xp || 0} XP</span>
-                        </div>
-                      ) : (
-                        <div className="flex flex-col items-center">
-                          <span className="text-[#00a2ff] font-black text-lg">%{wr}</span>
-                          <span className="text-[10px] text-white/40">{u.total_matches_won} G - {u.total_matches_played - u.total_matches_won} M</span>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                )
-              })
+                  return (
+                    <tr key={i} className={`transition-colors ${isMe ? 'bg-accent/20 border-l-4 border-accent' : 'hover:bg-white/5'}`}>
+                      <td className="p-4 text-center font-black text-lg">
+                        {i === 0 ? <Crown className="w-6 h-6 text-yellow-500 mx-auto drop-shadow-[0_0_5px_rgba(234,179,8,0.8)]" /> :
+                         i === 1 ? <span className="text-gray-400">2</span> :
+                         i === 2 ? <span className="text-amber-700">3</span> :
+                         <span className="text-white/40">{i + 1}</span>}
+                      </td>
+                      <td className="p-4 font-bold uppercase tracking-wider text-base">
+                        {u.username}
+                        {u.role === 'admin' && <span className="ml-2 text-[9px] bg-red-600 px-1.5 py-0.5 rounded text-white">ADMIN</span>}
+                        {isMe && <span className="ml-2 text-[9px] bg-accent text-[#001021] px-1.5 py-0.5 rounded font-bold">SEN</span>}
+                      </td>
+                      <td className="p-4 text-center font-bold text-white/70">
+                        {u.total_matches_played || 0}
+                      </td>
+                      <td className="p-4 text-center">
+                        {tab === 'xp' ? (
+                          <div className="flex flex-col items-center">
+                            <span className="text-accent font-black text-lg">LVL {level}</span>
+                            <span className="text-[10px] text-white/40">{u.manager_xp || 0} XP</span>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-center">
+                            <span className="text-[#00a2ff] font-black text-lg">%{wr}</span>
+                            <span className="text-[10px] text-white/40">{u.total_matches_won} G - {u.total_matches_played - u.total_matches_won} M</span>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  )
+                })}
+                {/* Check if current user is outside top 20 */}
+                {currentUser && users.findIndex(u => u.id === currentUser.id) >= 20 && (
+                  <>
+                    <tr>
+                      <td colSpan={4} className="p-2 text-center text-white/30 text-xs tracking-widest bg-[#00152b]">
+                        •••
+                      </td>
+                    </tr>
+                    {(() => {
+                      const myIndex = users.findIndex(u => u.id === currentUser.id);
+                      const myRank = myIndex + 1;
+                      const u = users[myIndex];
+                      if (!u) return null;
+                      
+                      const wr = u.total_matches_played > 0 
+                        ? Math.round((u.total_matches_won / u.total_matches_played) * 100) 
+                        : 0
+                      const level = Math.floor((u.manager_xp || 0) / 100) + 1
+
+                      return (
+                        <tr className="bg-accent/20 border-t-2 border-accent/50 sticky bottom-0 backdrop-blur-md">
+                          <td className="p-4 text-center font-black text-lg text-white/80">
+                            {myRank}
+                          </td>
+                          <td className="p-4 font-bold uppercase tracking-wider text-base">
+                            {u.username}
+                            <span className="ml-2 text-[9px] bg-accent text-[#001021] px-1.5 py-0.5 rounded font-bold">SEN</span>
+                          </td>
+                          <td className="p-4 text-center font-bold text-white/70">
+                            {u.total_matches_played || 0}
+                          </td>
+                          <td className="p-4 text-center">
+                            {tab === 'xp' ? (
+                              <div className="flex flex-col items-center">
+                                <span className="text-accent font-black text-lg">LVL {level}</span>
+                                <span className="text-[10px] text-white/40">{u.manager_xp || 0} XP</span>
+                              </div>
+                            ) : (
+                              <div className="flex flex-col items-center">
+                                <span className="text-[#00a2ff] font-black text-lg">%{wr}</span>
+                                <span className="text-[10px] text-white/40">{u.total_matches_won} G - {u.total_matches_played - u.total_matches_won} M</span>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      )
+                    })()}
+                  </>
+                )}
+              </>
             )}
           </tbody>
         </table>

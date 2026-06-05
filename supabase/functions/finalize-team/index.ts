@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
+import { generateTraits, calculateBaseValue, calculatePlayerValue } from "../_shared/playerUtils.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -101,6 +102,35 @@ serve(async (req) => {
     await supabaseAdmin.from('players')
       .update({ status: 'roster', franchise_id: franchise.id, target_user_id: null })
       .in('id', selected_player_ids)
+
+    // Generate 19 Backup Players to reach exactly 30 players (OVR 65-70)
+    const backupReq = ['QB', 'RB', 'RB', 'WR', 'WR', 'WR', 'TE', 'TE', 'OL', 'OL', 'OL', 'DE', 'DE', 'LB', 'LB', 'CB', 'CB', 'S', 'K']
+    
+    const firstNames = ['John', 'Michael', 'David', 'James', 'Robert', 'William', 'Joseph', 'Richard', 'Thomas', 'Charles', 'Daniel', 'Matthew', 'Anthony', 'Mark', 'Donald', 'Steven', 'Paul', 'Andrew', 'Joshua', 'Kenneth', 'Kevin', 'Brian', 'George', 'Timothy', 'Ronald', 'Edward', 'Jason', 'Jeffrey', 'Ryan', 'Jacob', 'Gary', 'Nicholas', 'Eric', 'Jonathan', 'Stephen', 'Larry', 'Justin', 'Scott', 'Brandon', 'Benjamin'];
+    const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin', 'Lee', 'Perez', 'Thompson', 'White', 'Harris', 'Sanchez', 'Clark', 'Ramirez', 'Lewis', 'Robinson', 'Walker', 'Young', 'Allen', 'King', 'Wright', 'Scott', 'Torres', 'Nguyen', 'Hill', 'Flores'];
+
+    const backupsToInsert = backupReq.map(pos => {
+      const overall = Math.floor(Math.random() * 6) + 65 // 65-70
+      const baseValue = calculateBaseValue(overall) / 2 // Backups are cheaper
+      const traits = generateTraits(overall, pos)
+      const finalValue = calculatePlayerValue(baseValue, traits.length)
+      
+      const randomFirstName = firstNames[Math.floor(Math.random() * firstNames.length)]
+      const randomLastName = lastNames[Math.floor(Math.random() * lastNames.length)]
+      
+      return {
+        league_id,
+        franchise_id: franchise.id,
+        status: 'roster',
+        name: `${randomFirstName} ${randomLastName}`,
+        position: pos,
+        overall,
+        value: finalValue,
+        traits
+      }
+    })
+
+    await supabaseAdmin.from('players').insert(backupsToInsert)
 
     // Delete unselected personal pool players for this user
     await supabaseAdmin.from('players')

@@ -6,6 +6,7 @@ import { Shield, ChevronRight } from 'lucide-react'
 import { useFranchiseStore } from '@/store/franchiseStore'
 import { supabase } from '@/lib/supabase'
 import { TraitBadge } from '@/components/ui/TraitBadge'
+import { useToastStore } from '@/store/toastStore'
 
 const OFFENSE_POS = ['QB', 'RB', 'WR', 'TE', 'OL']
 const DEFENSE_POS = ['DE', 'LB', 'CB', 'S']
@@ -62,10 +63,10 @@ export function RosterPage() {
         })
         if (error) throw error
         if (data?.error) throw new Error(data.error)
-        alert('Oyuncu transfer listesine eklendi!')
+        useToastStore.getState().addToast('Oyuncu transfer listesine eklendi!', 'success')
         window.location.reload()
       } catch (err: any) {
-        alert('Hata: ' + err.message)
+        useToastStore.getState().addToast('Hata: ' + err.message, 'error')
       } finally {
         setIsSelling(null)
       }
@@ -93,10 +94,10 @@ export function RosterPage() {
         if (fundError) throw fundError
 
         setFranchise({ ...franchise, budget: franchise.budget + sellValue })
-        alert('Oyuncu başarıyla satıldı!')
+        useToastStore.getState().addToast('Oyuncu başarıyla satıldı!', 'success')
         window.location.reload()
       } catch (err: any) {
-        alert('Hata: ' + err.message)
+        useToastStore.getState().addToast('Hata: ' + err.message, 'error')
       } finally {
         setIsSelling(null)
       }

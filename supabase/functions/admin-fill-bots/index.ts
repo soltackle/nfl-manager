@@ -57,7 +57,8 @@ serve(async (req) => {
         user_id: botId,
         team_name: `${botCities[i % botCities.length]} ${botMascots[i % botMascots.length]}`,
         city: botCities[i % botCities.length],
-        club_fund: 100000
+        club_fund: 100000,
+        is_ready: true
       })
     }
 

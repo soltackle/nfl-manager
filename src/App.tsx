@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useAuthStore } from './store/authStore'
 import { AppRouter } from './router'
+import { ToastContainer } from './components/ui/ToastContainer'
 
 export default function App() {
   const { initialize, isLoading } = useAuthStore()
@@ -13,5 +14,10 @@ export default function App() {
     return <div className="flex h-screen items-center justify-center bg-primary text-white">Yükleniyor...</div>
   }
 
-  return <AppRouter />
+  return (
+    <>
+      <AppRouter />
+      <ToastContainer />
+    </>
+  )
 }

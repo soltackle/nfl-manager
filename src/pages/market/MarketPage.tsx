@@ -3,12 +3,16 @@ import { useFranchiseStore } from '@/store/franchiseStore'
 import { supabase } from '@/lib/supabase'
 import { ShoppingCart, DollarSign, ArrowRight, ArrowLeftRight, UserCheck, Search, ShieldAlert, List } from 'lucide-react'
 import { Skeleton } from '@/components/ui/Skeleton'
+import { TraitBadge } from '@/components/ui/TraitBadge'
+import { useToastStore } from '@/store/toastStore'
 import type { Player, TradeOffer } from '@/types'
 import { Layout } from '@/components/layout/Layout'
+import { ScoutModal } from './ScoutModal'
 
 export function MarketPage() {
   const { franchise, league } = useFranchiseStore()
   const [activeTab, setActiveTab] = useState<'fa' | 'transfer' | 'trades'>('fa')
+  const [isScoutModalOpen, setIsScoutModalOpen] = useState(false)
   
   const [freeAgents, setFreeAgents] = useState<Player[]>([])
   const [listedPlayers, setListedPlayers] = useState<Player[]>([])
@@ -42,7 +46,7 @@ export function MarketPage() {
 
   const handleBuyFA = async (player: Player) => {
     if (!franchise) return
-    if (franchise.budget < player.value) return alert('Yetersiz Bütçe')
+    if (franchise.budget < player.value) return useToastStore.getState().addToast('Yetersiz Bütçe', 'error')
     if (!confirm(`${player.name} oyuncusunu $${player.value} karşılığında transfer etmek istiyor musun?`)) return
     
     try {
@@ -51,18 +55,18 @@ export function MarketPage() {
       })
       if (error) throw error
       if (data?.error) throw new Error(data.error)
-      alert('Transfer başarılı!')
+      useToastStore.getState().addToast('Transfer başarılı!', 'success')
       fetchMarketData()
       window.location.reload()
     } catch (err: any) {
-      alert(err.message)
+      useToastStore.getState().addToast(err.message, 'error')
     }
   }
 
   const handleBuyListed = async (player: Player) => {
     if (!franchise || !player.listed_price) return
-    if (franchise.budget < player.listed_price) return alert('Yetersiz Bütçe')
-    if (player.franchise_id === franchise.id) return alert('Kendi oyuncunuzu alamazsınız.')
+    if (franchise.budget < player.listed_price) return useToastStore.getState().addToast('Yetersiz Bütçe', 'error')
+    if (player.franchise_id === franchise.id) return useToastStore.getState().addToast('Kendi oyuncunuzu alamazsınız.', 'warning')
     
     if (!confirm(`${player.name} oyuncusunu $${player.listed_price} karşılığında transfer etmek istiyor musun?`)) return
     
@@ -72,11 +76,11 @@ export function MarketPage() {
       })
       if (error) throw error
       if (data?.error) throw new Error(data.error)
-      alert('Transfer başarılı!')
+      useToastStore.getState().addToast('Transfer başarılı!', 'success')
       fetchMarketData()
       window.location.reload()
     } catch (err: any) {
-      alert(err.message)
+      useToastStore.getState().addToast(err.message, 'error')
     }
   }
 
@@ -87,10 +91,10 @@ export function MarketPage() {
       })
       if (error) throw error
       if (data?.error) throw new Error(data.error)
-      alert('İşlem başarılı!')
+      useToastStore.getState().addToast('İşlem başarılı!', 'success')
       fetchMarketData()
     } catch (err: any) {
-      alert(err.message)
+      useToastStore.getState().addToast(err.message, 'error')
     }
   }
 
@@ -117,26 +121,37 @@ export function MarketPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-6 bg-[#001021] p-2 rounded-xl border border-[#005c99]/50 overflow-x-auto">
+      <div className="flex gap-2 mb-6 bg-[#001021] p-2 rounded-xl border border-[#005c99]/50 overflow-x-auto justify-between items-center">
+        <div className="flex gap-2">
+          <button 
+            onClick={() => setActiveTab('fa')}
+            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-bold uppercase tracking-wider text-sm transition-all whitespace-nowrap ${activeTab === 'fa' ? 'bg-[#004b93] text-white shadow-lg shadow-blue-900/20' : 'text-white/50 hover:bg-white/5'}`}
+          >
+            <UserCheck className="w-4 h-4" /> Serbest Oyuncular
+          </button>
+          <button 
+            onClick={() => setActiveTab('transfer')}
+            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-bold uppercase tracking-wider text-sm transition-all whitespace-nowrap ${activeTab === 'transfer' ? 'bg-[#004b93] text-white shadow-lg shadow-blue-900/20' : 'text-white/50 hover:bg-white/5'}`}
+          >
+            <List className="w-4 h-4" /> Transfer Listesi
+          </button>
+          <button 
+            onClick={() => setActiveTab('trades')}
+            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-bold uppercase tracking-wider text-sm transition-all whitespace-nowrap ${activeTab === 'trades' ? 'bg-[#004b93] text-white shadow-lg shadow-blue-900/20' : 'text-white/50 hover:bg-white/5'}`}
+          >
+            <ArrowLeftRight className="w-4 h-4" /> Takas Teklifleri
+          </button>
+        </div>
+        
         <button 
-          onClick={() => setActiveTab('fa')}
-          className={`flex items-center gap-2 px-6 py-3 rounded-lg font-bold uppercase tracking-wider text-sm transition-all whitespace-nowrap ${activeTab === 'fa' ? 'bg-[#004b93] text-white shadow-lg shadow-blue-900/20' : 'text-white/50 hover:bg-white/5'}`}
+          onClick={() => setIsScoutModalOpen(true)}
+          className="flex items-center gap-2 px-6 py-3 rounded-lg font-bold uppercase tracking-wider text-sm bg-accent text-black hover:bg-yellow-400 transition-all whitespace-nowrap"
         >
-          <UserCheck className="w-4 h-4" /> Serbest Oyuncular
-        </button>
-        <button 
-          onClick={() => setActiveTab('transfer')}
-          className={`flex items-center gap-2 px-6 py-3 rounded-lg font-bold uppercase tracking-wider text-sm transition-all whitespace-nowrap ${activeTab === 'transfer' ? 'bg-[#004b93] text-white shadow-lg shadow-blue-900/20' : 'text-white/50 hover:bg-white/5'}`}
-        >
-          <List className="w-4 h-4" /> Transfer Listesi
-        </button>
-        <button 
-          onClick={() => setActiveTab('trades')}
-          className={`flex items-center gap-2 px-6 py-3 rounded-lg font-bold uppercase tracking-wider text-sm transition-all whitespace-nowrap ${activeTab === 'trades' ? 'bg-[#004b93] text-white shadow-lg shadow-blue-900/20' : 'text-white/50 hover:bg-white/5'}`}
-        >
-          <ArrowLeftRight className="w-4 h-4" /> Takas Teklifleri
+          <Search className="w-4 h-4" /> Scout GÃ¶nder
         </button>
       </div>
+
+      <ScoutModal isOpen={isScoutModalOpen} onClose={() => setIsScoutModalOpen(false)} />
 
       {/* Content */}
       <div className="bg-[#00152b] border border-[#005c99]/30 rounded-xl p-6 min-h-[500px]">
@@ -160,7 +175,14 @@ export function MarketPage() {
                       </div>
                       <div>
                         <div className="font-bold text-white text-lg">{player.name}</div>
-                        <div className="text-xs text-accent font-bold uppercase">{player.position}</div>
+                        <div className="flex items-center gap-2 mt-1">
+                          <div className="text-xs text-accent font-bold uppercase bg-accent/10 px-2 py-0.5 rounded">{player.position}</div>
+                          {player.traits && player.traits.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                              {player.traits.map(t => <TraitBadge key={t} trait={t} />)}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-2">
@@ -191,7 +213,14 @@ export function MarketPage() {
                       <div>
                         <div className="font-bold text-white text-lg">{player.name}</div>
                         <div className="text-xs text-white/50 font-bold uppercase mb-1">{(player as any).franchises?.team_name}</div>
-                        <div className="text-xs text-accent font-bold uppercase inline-block bg-accent/10 px-2 py-0.5 rounded">{player.position}</div>
+                        <div className="flex items-center gap-2 mt-1">
+                          <div className="text-xs text-accent font-bold uppercase inline-block bg-accent/10 px-2 py-0.5 rounded">{player.position}</div>
+                          {player.traits && player.traits.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                              {player.traits.map(t => <TraitBadge key={t} trait={t} />)}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="flex flex-col items-end gap-2">

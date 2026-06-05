@@ -61,8 +61,11 @@ serve(async (req) => {
 
       if (nextMatch) {
         const week = nextMatch.week
-        // Reset readiness
-        await supabaseAdmin.from('franchises').update({ is_ready: false }).eq('league_id', league_id)
+        // Reset readiness for human players only
+        const humanFranchiseIds = franchises.filter(f => f.users?.role !== 'bot').map(f => f.id)
+        if (humanFranchiseIds.length > 0) {
+          await supabaseAdmin.from('franchises').update({ is_ready: false }).in('id', humanFranchiseIds)
+        }
 
         const functionUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/admin-simulate-match`
         const res = await fetch(functionUrl, {

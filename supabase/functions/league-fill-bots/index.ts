@@ -79,7 +79,7 @@ serve(async (req) => {
           budget: 100000000,
           club_fund: 0,
           morale: 100,
-          is_ready: false
+          is_ready: true
         })
       }
     }

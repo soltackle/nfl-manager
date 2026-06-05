@@ -809,8 +809,20 @@ serve(async (req) => {
         if (capStadium.capacity_level === 3) gateMult = 1.6
       }
       
-      const homeWinFactor = homeScore > awayScore ? 1.0 : 0.6
-      const homeRevenue = Math.floor(400000 * gateMult * homeWinFactor)
+      const isDraw = homeScore === awayScore
+      const homeIsWinner = homeScore > awayScore
+      
+      const getReward = (win: boolean, draw: boolean) => {
+        if (draw) return 4000000
+        if (win) return 10000000
+        return 1500000
+      }
+
+      const homeBaseReward = getReward(homeIsWinner, isDraw)
+      const awayBaseReward = getReward(!homeIsWinner, isDraw)
+      
+      // Home team still gets a small gate multiplier bonus
+      const homeRevenue = Math.floor(homeBaseReward * gateMult)
       
       const SPONSORS: Record<string, { basePay: number, winBonus: number }> = {
         safe: { basePay: 500000, winBonus: 50000 },
@@ -835,10 +847,11 @@ serve(async (req) => {
           const { data: u } = await supabaseAdmin.from('users').select('total_matches_played, total_matches_won, manager_xp').eq('id', homeFranchiseFin.user_id).single()
           if (u) {
             const isWin = homeScore > awayScore
+            const isDrawMatch = homeScore === awayScore
             await supabaseAdmin.from('users').update({
               total_matches_played: (u.total_matches_played || 0) + 1,
               total_matches_won: (u.total_matches_won || 0) + (isWin ? 1 : 0),
-              manager_xp: (u.manager_xp || 0) + (isWin ? 50 : 10)
+              manager_xp: (u.manager_xp || 0) + (isWin ? 50 : isDrawMatch ? 20 : 10)
             }).eq('id', homeFranchiseFin.user_id)
           }
         }
@@ -852,7 +865,7 @@ serve(async (req) => {
           sponsorPay = sp.basePay + (awayScore > homeScore ? sp.winBonus : 0)
         }
         await supabaseAdmin.from('franchises').update({ 
-          club_fund: awayFranchiseFin.club_fund + 80000 + sponsorPay,
+          club_fund: awayFranchiseFin.club_fund + awayBaseReward + sponsorPay,
           active_boost: null // Clear boost after match
         }).eq('id', match.away_franchise_id)
 
@@ -861,10 +874,11 @@ serve(async (req) => {
           const { data: u } = await supabaseAdmin.from('users').select('total_matches_played, total_matches_won, manager_xp').eq('id', awayFranchiseFin.user_id).single()
           if (u) {
             const isWin = awayScore > homeScore
+            const isDrawMatch = awayScore === homeScore
             await supabaseAdmin.from('users').update({
               total_matches_played: (u.total_matches_played || 0) + 1,
               total_matches_won: (u.total_matches_won || 0) + (isWin ? 1 : 0),
-              manager_xp: (u.manager_xp || 0) + (isWin ? 50 : 10)
+              manager_xp: (u.manager_xp || 0) + (isWin ? 50 : isDrawMatch ? 20 : 10)
             }).eq('id', awayFranchiseFin.user_id)
           }
         }

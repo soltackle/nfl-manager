@@ -5,8 +5,23 @@ interface TraitBadgeProps {
   trait: string;
 }
 
+const TRAIT_DESCRIPTIONS: Record<string, string> = {
+  "Pocket Presence": "Baskı altındayken daha az hata yapar ve sack olmaktan kaçınır.",
+  "Deep Threat": "Uzun paslarda yakalama ihtimali ve hızı çok yüksektir.",
+  "Tackle Machine": "İkili mücadelelerde ve tackle yapmada üstün başarı sağlar.",
+  "Ball Hawk": "Pas arası yapma (Interception) yeteneği çok yüksektir.",
+  "Speedster": "Açık alanda yakalanması çok zor, elit hız seviyesine sahiptir.",
+  "Power Back": "Kısa mesafelerde savunmayı yararak ekstra yarda kazanır.",
+  "Route Runner": "Koşu yollarını mükemmel çizer, boşluk bulmada ustadır.",
+  "Edge Rusher": "Dışarıdan gelerek oyun kurucuya (QB) saniyeler içinde baskı kurar.",
+  "Brick Wall": "Savunma veya hücum hattında geçilmesi neredeyse imkansızdır.",
+  "Clutch": "Maçın son anlarında ve kritik oyunlarda performansı artar."
+}
+
 // OVR tabanlı değil ama genel olarak yeteneklerin altın/özel görünmesi istenmiş
 export const TraitBadge: React.FC<TraitBadgeProps> = ({ trait }) => {
+  const description = TRAIT_DESCRIPTIONS[trait] || "Oyuncunun özel yeteneği, sahada ekstra katkı sağlar.";
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
@@ -20,8 +35,9 @@ export const TraitBadge: React.FC<TraitBadgeProps> = ({ trait }) => {
       {trait}
       
       {/* Tooltip */}
-      <div className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 w-max -translate-x-1/2 scale-95 rounded-md bg-black/90 px-3 py-1.5 text-xs font-normal text-white opacity-0 shadow-xl transition-all group-hover:scale-100 group-hover:opacity-100">
-        <span className="font-bold text-yellow-400">{trait}</span> yeteneği
+      <div className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 w-48 -translate-x-1/2 scale-95 rounded-md bg-black/95 border border-yellow-500/30 px-3 py-2 text-xs font-normal text-white opacity-0 shadow-xl transition-all group-hover:scale-100 group-hover:opacity-100">
+        <div className="font-bold text-yellow-400 mb-1">{trait}</div>
+        <div className="text-white/80 leading-relaxed text-[11px] whitespace-normal normal-case">{description}</div>
       </div>
     </motion.div>
   );

@@ -42,14 +42,8 @@ serve(async (req) => {
       const p = session.players
       if (!p) continue
 
-      // Calculate growth based on age
-      let growthRate = 0
-      if (p.age >= 18 && p.age <= 21) growthRate = 0.03 + Math.random() * 0.01 // 3-4%
-      else if (p.age >= 22 && p.age <= 25) growthRate = 0.02 + Math.random() * 0.01 // 2-3%
-      else if (p.age >= 26 && p.age <= 29) growthRate = 0.01 + Math.random() * 0.01 // 1-2%
-      else growthRate = 0.005 // 0.5% for 30+
-
-      const newOverall = Math.min(99, Math.round(p.overall * (1 + growthRate)))
+      // Permanently increase OVR by +2
+      const newOverall = Math.min(99, p.overall + 2)
 
       // Update player
       await supabaseAdmin

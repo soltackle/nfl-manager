@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useTraining } from '@/hooks/useTraining'
 import { Shield, Zap, Activity, Clock, Plus, X } from 'lucide-react'
+import { useToastStore } from '@/store/toastStore'
 
 export function TrainingPage() {
   const { roster, sessions, startTraining } = useTraining()
@@ -34,7 +35,7 @@ export function TrainingPage() {
       const pos = playersInSession[0].position
       let sessionSlot = 'HC'
       if (['QB', 'RB', 'WR', 'TE', 'OL'].includes(pos)) sessionSlot = 'OC'
-      else if (['DL', 'LB', 'CB', 'S'].includes(pos)) sessionSlot = 'DC'
+      else if (['DL', 'DE', 'LB', 'CB', 'S'].includes(pos)) sessionSlot = 'DC'
       else if (['K', 'P'].includes(pos)) sessionSlot = 'ST'
 
       if (sessionSlot === slot) {
@@ -56,7 +57,7 @@ export function TrainingPage() {
     slotName = 'Hücum Koordinatörü (OC)'
     maxPlayers = 3
   } else if (selectedSlot === 'DC') {
-    allowedPos = ['DL', 'LB', 'CB', 'S']
+    allowedPos = ['DL', 'DE', 'LB', 'CB', 'S']
     slotName = 'Savunma Koordinatörü (DC)'
     maxPlayers = 3
   } else if (selectedSlot === 'ST') {
@@ -91,9 +92,9 @@ export function TrainingPage() {
     try {
       await startTraining(selectedPlayers, selectedSlot)
       setSelectedPlayers([])
-      alert('Antrenman başarıyla başladı! 4 saat sonra tamamlanacak.')
+      useToastStore.getState().addToast('Antrenman başarıyla başladı! 4 saat sonra tamamlanacak.', 'success')
     } catch (err: any) {
-      alert('Hata: ' + err.message)
+      useToastStore.getState().addToast('Hata: ' + err.message, 'error')
     } finally {
       setIsStarting(false)
     }

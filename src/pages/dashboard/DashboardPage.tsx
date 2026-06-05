@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { QuestsModal } from '@/components/dashboard/QuestsModal'
 import { LeagueChat } from '@/components/dashboard/LeagueChat'
+import { LeagueNews } from '@/components/dashboard/LeagueNews'
 
 export function DashboardPage() {
   const { user } = useAuthStore()
@@ -157,8 +158,7 @@ export function DashboardPage() {
       </div>
 
       {/* Ready Button Section */}
-      {match && (
-        <div className="bg-[#00152b] border border-[#005c99] rounded-xl p-4 flex flex-col items-center justify-center text-center">
+      <div className="bg-[#00152b] border border-[#005c99] rounded-xl p-4 flex flex-col items-center justify-center text-center">
           <div className="mb-4">
             <h3 className="text-white font-display font-bold uppercase tracking-widest text-lg">MAÇA HAZIRLIK</h3>
             <p className="text-white/50 text-sm">Tüm menajerler hazır olduğunda maç otomatik olarak oynanır.</p>
@@ -173,16 +173,24 @@ export function DashboardPage() {
             <button 
               onClick={handleSetReady}
               disabled={franchise?.is_ready || isReadying}
-              className={`flex-1 md:w-64 py-4 px-6 rounded-xl font-display font-black text-lg tracking-widest uppercase transition-all flex items-center justify-center gap-2 ${
+              className={`relative flex-1 md:w-64 py-4 px-6 rounded-xl font-display font-black text-xl tracking-widest uppercase transition-all flex items-center justify-center gap-2 overflow-hidden ${
                 franchise?.is_ready 
-                  ? 'bg-green-500/20 text-green-400 border border-green-500 cursor-not-allowed' 
-                  : 'bg-accent text-[#001021] hover:bg-white hover:text-[#001021] hover:shadow-[0_0_20px_rgba(255,156,0,0.4)]'
+                  ? 'bg-emerald-500/20 text-emerald-400 border-2 border-emerald-500/50 cursor-not-allowed shadow-[0_0_15px_rgba(16,185,129,0.2)]' 
+                  : 'bg-gradient-to-r from-accent via-yellow-400 to-accent text-[#001021] hover:brightness-110 hover:shadow-[0_0_30px_rgba(255,156,0,0.6)] border-2 border-transparent hover:border-white/50 bg-[length:200%_100%] animate-gradient'
               }`}
             >
+              {/* Shine effect when ready to be clicked */}
+              {!franchise?.is_ready && !isReadying && (
+                <span className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-[-20deg]" />
+              )}
               {franchise?.is_ready ? (
-                <><CheckCircle className="w-5 h-5" /> HAZIRSINIZ</>
+                <><CheckCircle className="w-6 h-6" /> ONAYLANDI</>
               ) : (
-                isReadying ? 'BEKLEYİN...' : 'HAZIRIM'
+                isReadying ? (
+                  <><div className="w-5 h-5 border-2 border-[#001021] border-t-transparent rounded-full animate-spin" /> BEKLENİYOR</>
+                ) : (
+                  <><Zap className="w-6 h-6" /> MAÇA HAZIRIM</>
+                )
               )}
             </button>
           </div>
@@ -190,7 +198,6 @@ export function DashboardPage() {
             <p className="text-accent text-xs font-bold mt-4 uppercase animate-pulse">Diğer menajerlerin hazır olması bekleniyor...</p>
           )}
         </div>
-      )}
 
       {/* Grid containing Quick Actions and Chat */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -222,6 +229,11 @@ export function DashboardPage() {
               </div>
             </div>
             <Info className="text-green-400 w-5 h-5 absolute top-2 right-2" />
+          </div>
+
+          {/* League News */}
+          <div className="md:col-span-2">
+            <LeagueNews />
           </div>
         </div>
 

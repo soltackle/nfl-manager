@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuthStore } from '@/store/authStore'
 import { useFranchiseStore } from '@/store/franchiseStore'
 import { supabase } from '@/lib/supabase'
+import { LoadingScreen } from '@/components/ui/LoadingScreen'
 
 const LOGOS = ['🐻 Ayı', '🐺 Kurt', '🦅 Kartal', '🦁 Aslan', '🦅 Şahin', '🐂 Boğa', '🐍 Yılan', '🦈 Köpekbalığı']
 const COLORS = ['🔴⚪', '🔵🟡', '🟢⚫', '🟣🟡', '🔵⚪', '🟠⚫', '🟡🔵', '🟢🟡', '🔴⚫', '⚪🔵', '🟤🟡', '⚫🟡']
@@ -45,6 +46,10 @@ export function FranchiseSetupPage() {
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  if (isSubmitting) {
+    return <LoadingScreen title="Franchise Kuruluyor..." messages={["Logo tasarlanıyor...", "Şehir ayarlanıyor...", "Lig aranıyor...", "Saha yükleniyor..."]} withLayout={false} />
   }
 
   return (
