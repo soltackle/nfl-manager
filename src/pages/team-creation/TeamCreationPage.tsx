@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuthStore } from '../../store/authStore'
 import { Player, Franchise } from '../../types'
-import { Layout } from '../../components/Layout'
+import { Layout } from '../../components/layout/Layout'
 import { motion, AnimatePresence } from 'framer-motion'
 import { DollarSign, ShieldAlert, CheckCircle2, UserPlus, Info } from 'lucide-react'
 
