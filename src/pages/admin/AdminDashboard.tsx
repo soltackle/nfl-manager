@@ -478,7 +478,7 @@ export function AdminDashboard() {
                       </td>
                       <td className="px-4 py-4 text-center">
                         <span className="font-bold text-[#00a2ff]">{lg.franchises?.[0]?.count || 0}</span>
-                        <span className="text-gray-500 text-xs">/32</span>
+                        <span className="text-gray-500 text-xs">/8</span>
                       </td>
                       <td className="px-4 py-4 font-mono">Hafta {lg.current_week || '-'}</td>
                       <td className="px-4 py-4 text-xs text-gray-400">
