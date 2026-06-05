@@ -5,7 +5,7 @@ import { useAuthStore } from '@/store/authStore'
 
 export function ScoutModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
   const { mission, isLoading, startScout, claimScout } = useScout()
-  const { user } = useAuthStore()
+  const { profile } = useAuthStore()
   
   const [selectedPos, setSelectedPos] = useState('QB')
   const [isProcessing, setIsProcessing] = useState(false)
@@ -34,7 +34,7 @@ export function ScoutModal({ isOpen, onClose }: { isOpen: boolean, onClose: () =
   if (!isOpen) return null
 
   const handleStart = async () => {
-    if ((user?.amfutcoin || 0) < 100) return alert('Yetersiz Amfutcoin!')
+    if ((profile?.amfutcoin || 0) < 100) return alert('Yetersiz Amfutcoin!')
     setIsProcessing(true)
     try {
       await startScout(selectedPos)
