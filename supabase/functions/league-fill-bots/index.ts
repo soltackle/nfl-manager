@@ -85,9 +85,12 @@ serve(async (req) => {
     }
 
     // Now trigger Team Creation Phase
-    await supabaseAdmin.functions.invoke('league-start-team-creation', {
+    const { data: startData, error: startErr } = await supabaseAdmin.functions.invoke('league-start-team-creation', {
       body: { league_id: league.id }
     })
+
+    if (startErr) throw new Error('Start Team Creation Failed: ' + startErr.message)
+    if (startData?.error) throw new Error('Start Team Creation Error: ' + startData.error)
 
     return new Response(JSON.stringify({ success: true, filled: needed }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

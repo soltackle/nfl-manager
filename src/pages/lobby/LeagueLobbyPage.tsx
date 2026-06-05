@@ -69,6 +69,15 @@ export function LeagueLobbyPage() {
     
     if (data) setMembers(data)
     setLoading(false)
+
+    // Also re-fetch league status just in case realtime missed it
+    const { data: lg } = await supabase.from('leagues').select('*').eq('id', league.id).single()
+    if (lg) {
+      setLeague(lg as any)
+      if (lg.status === 'draft') {
+        navigate('/team-creation')
+      }
+    }
   }
 
   const [timeLeft, setTimeLeft] = useState<number | null>(null)
@@ -110,7 +119,14 @@ export function LeagueLobbyPage() {
       })
       if (error) throw error
       if (data?.error) throw new Error(data.error)
+      
+      // Botlar doldu, artık üyeleri ve ligi çek
       await fetchMembers()
+      
+      // Bazen edge function uzun sürerse ekstra bir check daha yapalım 3 saniye sonra
+      setTimeout(() => {
+        fetchMembers()
+      }, 3000)
     } catch (err: any) {
       alert('Hata: ' + err.message)
     } finally {
