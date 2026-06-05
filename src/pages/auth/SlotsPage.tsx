@@ -22,6 +22,15 @@ export function SlotsPage() {
   }
 
   const handleNewCareer = () => {
+    // Check if user has any franchise in waiting/draft status
+    const hasPendingDraft = franchises.some((f: any) => 
+      f.leagues?.status === 'waiting' || f.leagues?.status === 'draft'
+    )
+    
+    if (hasPendingDraft) {
+      return alert('Mevcut kariyerlerinizden biri henüz DRAFT aşamasını tamamlamadı. Yeni bir lige katılmadan önce lütfen draftın bitmesini bekleyin.')
+    }
+
     navigate('/leagues')
   }
 

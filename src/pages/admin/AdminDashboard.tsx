@@ -110,16 +110,38 @@ export function AdminDashboard() {
         const lastNames = ['Brady', 'Mahomes', 'Rodgers', 'Jackson', 'Allen', 'Burrow', 'Herbert', 'Hurts', 'Lawrence', 'Stafford', 'Wilson', 'Murray', 'Prescott', 'Goff', 'Cousins', 'Tagovailoa', 'Purdy', 'Williams', 'Daniels', 'Maye', 'Hill', 'Jefferson', 'Chase', 'Lamb', 'Brown', 'Adams', 'Diggs', 'Kupp', 'Samuel', 'McCaffrey', 'Henry', 'Barkley', 'Taylor', 'Hall', 'Robinson', 'Gibbs', 'Kelce', 'Kittle', 'Andrews', 'LaPorta', 'Watt', 'Garrett', 'Parsons', 'Bosa', 'Crosby', 'Jones', 'Donald', 'Warner', 'Smith', 'Gardner', 'Surtain', 'Ramsey', 'Fitzpatrick', 'James', 'Simmons']
         
         const poolInsert = []
-        for (let i = 0; i < 200; i++) {
-          const fn = firstNames[Math.floor(Math.random() * firstNames.length)]
-          const ln = lastNames[Math.floor(Math.random() * lastNames.length)]
-          poolInsert.push({
-            name: `${fn} ${ln}`,
-            position: positions[i % positions.length],
-            overall: 55 + Math.floor(Math.random() * 40),
-            value: 50000 + Math.floor(Math.random() * 500000),
-            franchise_id: null
-          })
+        // Generate players FOR EACH position to ensure balance
+        for (const pos of positions) {
+          // 2 Elite (90-95)
+          for (let i = 0; i < 2; i++) {
+            poolInsert.push({
+              name: `${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastNames[Math.floor(Math.random() * lastNames.length)]}`,
+              position: pos,
+              overall: 90 + Math.floor(Math.random() * 6),
+              value: 2000000 + Math.floor(Math.random() * 1000000),
+              franchise_id: null
+            })
+          }
+          // 4 Stars (80-89)
+          for (let i = 0; i < 4; i++) {
+            poolInsert.push({
+              name: `${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastNames[Math.floor(Math.random() * lastNames.length)]}`,
+              position: pos,
+              overall: 80 + Math.floor(Math.random() * 10),
+              value: 500000 + Math.floor(Math.random() * 500000),
+              franchise_id: null
+            })
+          }
+          // 14 Role Players (65-79)
+          for (let i = 0; i < 14; i++) {
+            poolInsert.push({
+              name: `${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastNames[Math.floor(Math.random() * lastNames.length)]}`,
+              position: pos,
+              overall: 65 + Math.floor(Math.random() * 15),
+              value: 50000 + Math.floor(Math.random() * 150000),
+              franchise_id: null
+            })
+          }
         }
         await supabase.from('players').insert(poolInsert)
       }

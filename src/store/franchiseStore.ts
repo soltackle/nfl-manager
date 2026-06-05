@@ -52,7 +52,7 @@ export const useFranchiseStore = create<FranchiseState>((set, get) => ({
   initialize: async (userId: string) => {
     // Fetch ALL franchises for user
     const { data: fData } = await import('@/lib/supabase').then(m => m.supabase).then(supabase => 
-      supabase.from('franchises').select('*').eq('user_id', userId)
+      supabase.from('franchises').select('*, leagues(status)').eq('user_id', userId)
     )
     
     if (fData) {
