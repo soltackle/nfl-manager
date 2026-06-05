@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { ShoppingCart, DollarSign, ArrowRight, ArrowLeftRight, UserCheck, Search, ShieldAlert, List } from 'lucide-react'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { Player, TradeOffer } from '@/types'
-import { Layout } from '@/components/Layout'
+import { Layout } from '@/components/layout/Layout'
 
 export function MarketPage() {
   const { franchise, league } = useFranchiseStore()
