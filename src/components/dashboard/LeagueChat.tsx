@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useFranchiseStore } from '../../store/franchiseStore'
-import { LeagueChat as ChatType } from '../../types'
+import type { LeagueChat as ChatType } from '../../types'
 import { Send, AlertCircle, Shield } from 'lucide-react'
 import { format } from 'date-fns'
 import { tr } from 'date-fns/locale'

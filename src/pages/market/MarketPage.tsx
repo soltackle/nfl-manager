@@ -3,7 +3,7 @@ import { useFranchiseStore } from '@/store/franchiseStore'
 import { supabase } from '@/lib/supabase'
 import { ShoppingCart, DollarSign, ArrowRight, ArrowLeftRight, UserCheck, Search, ShieldAlert, List } from 'lucide-react'
 import { Skeleton } from '@/components/ui/Skeleton'
-import { Player, TradeOffer } from '@/types'
+import type { Player, TradeOffer } from '@/types'
 import { Layout } from '@/components/layout/Layout'
 
 export function MarketPage() {
