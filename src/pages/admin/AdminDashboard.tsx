@@ -16,18 +16,22 @@ export function AdminDashboard() {
 
   useEffect(() => {
     const fetchStats = async () => {
-      const { count: userCount } = await supabase.from('users').select('*', { count: 'exact', head: true })
-      const { count: leagueCount } = await supabase.from('leagues').select('*', { count: 'exact', head: true })
-      const { count: matchCount } = await supabase.from('matches').select('*', { count: 'exact', head: true }).eq('final_stats->>played', 'true')
-      
-      setStats({
-        users: userCount || 0,
-        googleUsers: userCount || 0, // Tüm üyelikler Google
-        online: 1 + Math.floor(Math.random() * 3), // Simüle edilmiş online sayısı (Gerçek sistem eklenene kadar)
-        leagues: leagueCount || 0,
-        matches: matchCount || 0,
-        loading: false
-      })
+      try {
+        const { data, error } = await supabase.functions.invoke('admin-get-stats')
+        if (error) throw error
+        
+        setStats({
+          users: data.users || 0,
+          googleUsers: data.googleUsers || 0,
+          online: 1 + Math.floor(Math.random() * 3), // Simüle edilmiş online sayısı
+          leagues: data.leagues || 0,
+          matches: data.matches || 0,
+          loading: false
+        })
+      } catch (err) {
+        console.error('Stats fetching error:', err)
+        setStats(prev => ({ ...prev, loading: false }))
+      }
     }
     fetchStats()
   }, [])
