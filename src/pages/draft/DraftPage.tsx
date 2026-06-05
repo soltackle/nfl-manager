@@ -4,6 +4,7 @@ import { useFranchiseStore } from '@/store/franchiseStore'
 import { Trophy, Clock, UserCheck, ShieldAlert, Cpu } from 'lucide-react'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { TraitBadge } from '@/components/ui/TraitBadge'
+import { supabase } from '@/lib/supabase'
 
 export function DraftPage() {
   const { draftSession, availablePlayers, picks, makePick, isLoading } = useDraft()
