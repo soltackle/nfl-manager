@@ -25,7 +25,7 @@ serve(async (req) => {
     if (userError || !userData?.user) throw new Error('Invalid token')
     const user = userData.user
 
-    const { team_name, city } = await req.json()
+    const { team_name, city, target_league_id } = await req.json()
     if (!team_name || !city) throw new Error('Takım Adı ve Şehir zorunludur')
 
     // 1. Check if user already has an active or waiting franchise
@@ -47,29 +47,43 @@ serve(async (req) => {
     let matchedLeagueId = null
     let isNewLeague = false
 
-    if (waitingLeagues && waitingLeagues.length > 0) {
-      for (const league of waitingLeagues) {
-        // 1. Check if user is already in this league
-        const { data: userInLeague } = await supabaseAdmin
-          .from('franchises')
-          .select('id')
-          .eq('league_id', league.id)
-          .eq('user_id', user.id)
-          .single()
-          
-        if (userInLeague) {
-          continue // Skip this league, user is already in it
-        }
+    if (target_league_id) {
+      // Direct join
+      const { data: targetLeague } = await supabaseAdmin.from('leagues').select('*').eq('id', target_league_id).eq('status', 'waiting').single()
+      if (!targetLeague) throw new Error('Bu lig artık katılıma açık değil veya bulunamadı.')
+      
+      const { data: userInLeague } = await supabaseAdmin.from('franchises').select('id').eq('league_id', target_league_id).eq('user_id', user.id).single()
+      if (userInLeague) throw new Error('Bu lige zaten katıldınız.')
+      
+      const { count } = await supabaseAdmin.from('franchises').select('*', { count: 'exact', head: true }).eq('league_id', target_league_id)
+      if (count !== null && count >= 8) throw new Error('Bu ligin kapasitesi dolu.')
 
-        // 2. Check if league has space
-        const { count } = await supabaseAdmin
-          .from('franchises')
-          .select('*', { count: 'exact', head: true })
-          .eq('league_id', league.id)
+      matchedLeagueId = target_league_id
+    } else {
+      if (waitingLeagues && waitingLeagues.length > 0) {
+        for (const league of waitingLeagues) {
+          // 1. Check if user is already in this league
+          const { data: userInLeague } = await supabaseAdmin
+            .from('franchises')
+            .select('id')
+            .eq('league_id', league.id)
+            .eq('user_id', user.id)
+            .single()
+            
+          if (userInLeague) {
+            continue // Skip this league, user is already in it
+          }
 
-        if (count !== null && count < 8) {
-          matchedLeagueId = league.id
-          break
+          // 2. Check if league has space
+          const { count } = await supabaseAdmin
+            .from('franchises')
+            .select('*', { count: 'exact', head: true })
+            .eq('league_id', league.id)
+
+          if (count !== null && count < 8) {
+            matchedLeagueId = league.id
+            break
+          }
         }
       }
     }

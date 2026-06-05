@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuthStore } from '@/store/authStore'
 import { useFranchiseStore } from '@/store/franchiseStore'
 import { supabase } from '@/lib/supabase'
@@ -11,6 +11,8 @@ export function FranchiseSetupPage() {
   const { user } = useAuthStore()
   const { setActiveFranchise, initialize } = useFranchiseStore()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const joinLeagueId = searchParams.get('join_league')
 
   const [city, setCity] = useState('İstanbul')
   const [teamName, setTeamName] = useState('')
@@ -24,7 +26,7 @@ export function FranchiseSetupPage() {
     
     try {
       const { data, error } = await supabase.functions.invoke('auto-matchmake', {
-        body: { team_name: teamName, city }
+        body: { team_name: teamName, city, target_league_id: joinLeagueId }
       })
 
       if (error) throw error

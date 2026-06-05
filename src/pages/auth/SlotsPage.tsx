@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useFranchiseStore } from '@/store/franchiseStore'
 import { useAuthStore } from '@/store/authStore'
 import { LogOut, Plus, Shield, ShieldQuestion } from 'lucide-react'
@@ -8,6 +8,8 @@ export function SlotsPage() {
   const { user, signOut } = useAuthStore()
   const { franchises, setActiveFranchise, activeFranchiseId } = useFranchiseStore()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const joinLeagueId = searchParams.get('join_league')
 
   useEffect(() => {
     // If we land here, we explicitly clear the active franchise
@@ -31,7 +33,11 @@ export function SlotsPage() {
       return alert('Mevcut kariyerlerinizden biri henüz Kurulum/Bekleme aşamasını tamamlamadı. Yeni bir lige katılmadan önce lütfen onun bitmesini bekleyin.')
     }
 
-    navigate('/setup')
+    if (joinLeagueId) {
+      navigate(`/setup?join_league=${joinLeagueId}`)
+    } else {
+      navigate('/setup')
+    }
   }
 
   // OSM has 4 slots

@@ -84,6 +84,9 @@ serve(async (req) => {
       }
     }
 
+    // Wait a second for replicas to sync the new franchises
+    await new Promise(resolve => setTimeout(resolve, 1000))
+
     // Now trigger Team Creation Phase
     const { data: startData, error: startErr } = await supabaseAdmin.functions.invoke('league-start-team-creation', {
       body: { league_id: league.id }

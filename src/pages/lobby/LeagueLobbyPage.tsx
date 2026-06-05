@@ -16,7 +16,7 @@ export function LeagueLobbyPage() {
   const [actionLoading, setActionLoading] = useState(false)
 
   const handleCopyInvite = () => {
-    const text = `🏈 Amerikan Futbolu Ligime davetlisin!\n\n🏆 Lig Adı: ${league?.name}\n${!league?.is_public ? `🔒 Şifre: ${league?.password || 'Komisyonere sorunuz'}\n` : ''}\nHemen takımını kur: https://nfl-manager-alpha.vercel.app/`
+    const text = `🏈 Amerikan Futbolu Ligime davetlisin!\n\n🏆 Lig Adı: ${league?.name}\n${!league?.is_public ? `🔒 Şifre: ${league?.password || 'Komisyonere sorunuz'}\n` : ''}\nHemen takımını kur: https://nfl-manager-alpha.vercel.app/slots?join_league=${league?.id}`
     navigator.clipboard.writeText(text)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
