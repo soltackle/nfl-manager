@@ -11,7 +11,7 @@ export interface League {
   id: string
   name: string
   match_time_utc: string
-  status: 'waiting' | 'team_creation' | 'active' | 'playoffs' | 'completed'
+  status: 'waiting' | 'draft' | 'active' | 'playoffs' | 'completed'
   is_public: boolean
   owner_user_id: string
 }

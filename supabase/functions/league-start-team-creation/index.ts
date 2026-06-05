@@ -137,8 +137,8 @@ serve(async (req) => {
       await supabaseAdmin.from('players').insert(playersToInsert)
     }
 
-    // Update league status to team_creation
-    await supabaseAdmin.from('leagues').update({ status: 'team_creation' }).eq('id', league_id)
+    // Update league status to draft
+    await supabaseAdmin.from('leagues').update({ status: 'draft' }).eq('id', league_id)
 
     // Check if ALL human managers are actually done (if there are NO human managers!)
     const humanFranchises = franchises.filter(f => roleMap.get(f.user_id) !== 'bot')
