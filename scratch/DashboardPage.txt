@@ -1,4 +1,4 @@
-import { useAuthStore } from '@/store/authStore'
+﻿import { useAuthStore } from '@/store/authStore'
 import { useFranchiseStore } from '@/store/franchiseStore'
 import { useMatch } from '@/hooks/useMatch'
 import { useStandings } from '@/hooks/useStandings'
@@ -9,7 +9,6 @@ import { supabase } from '@/lib/supabase'
 import { QuestsModal } from '@/components/dashboard/QuestsModal'
 import { LeagueChat } from '@/components/dashboard/LeagueChat'
 import { LeagueNews } from '@/components/dashboard/LeagueNews'
-import { useUiStore } from '@/store/uiStore'
 
 export function DashboardPage() {
   const { user } = useAuthStore()
@@ -23,21 +22,6 @@ export function DashboardPage() {
   const [isReadying, setIsReadying] = useState(false)
   const [showQuests, setShowQuests] = useState(false)
   const [questsData, setQuestsData] = useState<any>(null)
-  const [countdown, setCountdown] = useState<number | null>(null)
-
-  useEffect(() => {
-    if (totalFranchises > 0 && readyCount === totalFranchises) {
-      setCountdown(5)
-    } else {
-      setCountdown(null)
-    }
-  }, [readyCount, totalFranchises])
-
-  useEffect(() => {
-    if (countdown === null || countdown <= 0) return
-    const timer = setInterval(() => setCountdown(c => c ? c - 1 : 0), 1000)
-    return () => clearInterval(timer)
-  }, [countdown])
 
   useEffect(() => {
     if (!franchise) return
@@ -95,7 +79,6 @@ export function DashboardPage() {
   const handleSetReady = async () => {
     if (!franchise || !league) return
     setIsReadying(true)
-    useUiStore.getState().setLoading(true, 'Maça Hazırlanıyor...')
     try {
       const { data, error } = await supabase.functions.invoke('player-ready', {
         body: { franchise_id: franchise.id, league_id: league.id }
@@ -110,7 +93,6 @@ export function DashboardPage() {
       alert("Hata: " + err.message)
     } finally {
       setIsReadying(false)
-      useUiStore.getState().setLoading(false)
     }
   }
 
@@ -126,9 +108,9 @@ export function DashboardPage() {
             {/* Header */}
             <div className="relative z-10 flex flex-col items-center mb-6">
               <div className="bg-[#00254c] border-2 border-[#005c99] rounded px-4 py-1 mb-2 shadow-lg">
-                <span className="text-white font-display font-bold uppercase tracking-widest text-sm">MAÇ GÜNÜ {match.week}</span>
+                <span className="text-white font-display font-bold uppercase tracking-widest text-sm">MAÃ‡ GÃœNÃœ {match.week}</span>
               </div>
-              <span className="text-white font-bold text-sm tracking-wide">Sıradaki maç</span>
+              <span className="text-white font-bold text-sm tracking-wide">SÄ±radaki maÃ§</span>
             </div>
 
             {/* VS Section */}
@@ -142,7 +124,7 @@ export function DashboardPage() {
                 <div className="text-white font-display font-bold text-lg mt-4 uppercase tracking-wide">
                   {(match as any).home_franchise?.team_name || 'Ev Sahibi'}
                 </div>
-                {match.home_franchise_id === franchise?.id && <div className="text-[#00a2ff] text-xs font-bold mt-1">Sizin Takımınız</div>}
+                {match.home_franchise_id === franchise?.id && <div className="text-[#00a2ff] text-xs font-bold mt-1">Sizin TakÄ±mÄ±nÄ±z</div>}
               </div>
 
               {/* VS */}
@@ -162,15 +144,15 @@ export function DashboardPage() {
                 <div className="text-white font-display font-bold text-lg mt-4 uppercase tracking-wide">
                   {(match as any).away_franchise?.team_name || 'Deplasman'}
                 </div>
-                {match.away_franchise_id === franchise?.id && <div className="text-[#00a2ff] text-xs font-bold mt-1">Sizin Takımınız</div>}
+                {match.away_franchise_id === franchise?.id && <div className="text-[#00a2ff] text-xs font-bold mt-1">Sizin TakÄ±mÄ±nÄ±z</div>}
               </div>
 
             </div>
           </>
         ) : (
           <div className="relative z-10 flex flex-col items-center justify-center h-48">
-            <span className="text-white font-display font-bold text-2xl uppercase tracking-wider">LİGDE SIRADAKİ MAÇ YOK</span>
-            <span className="text-white/60 text-sm mt-2">Fikstür tamamlanmış veya henüz çekilmemiş olabilir.</span>
+            <span className="text-white font-display font-bold text-2xl uppercase tracking-wider">LÄ°GDE SIRADAKÄ° MAÃ‡ YOK</span>
+            <span className="text-white/60 text-sm mt-2">FikstÃ¼r tamamlanmÄ±ÅŸ veya henÃ¼z Ã§ekilmemiÅŸ olabilir.</span>
           </div>
         )}
       </div>
@@ -178,14 +160,14 @@ export function DashboardPage() {
       {/* Ready Button Section */}
       <div className="bg-[#00152b] border border-[#005c99] rounded-xl p-4 flex flex-col items-center justify-center text-center">
           <div className="mb-4">
-            <h3 className="text-white font-display font-bold uppercase tracking-widest text-lg">MAÇA HAZIRLIK</h3>
-            <p className="text-white/50 text-sm">Tüm menajerler hazır olduğunda maç otomatik olarak oynanır.</p>
+            <h3 className="text-white font-display font-bold uppercase tracking-widest text-lg">MAÃ‡A HAZIRLIK</h3>
+            <p className="text-white/50 text-sm">TÃ¼m menajerler hazÄ±r olduÄŸunda maÃ§ otomatik olarak oynanÄ±r.</p>
           </div>
           
           <div className="flex items-center gap-4 w-full md:w-auto">
             <div className="bg-[#00254c] border border-[#005c99] px-6 py-3 rounded-xl flex flex-col items-center min-w-[120px]">
               <span className="text-accent text-2xl font-display font-black">{readyCount} / {totalFranchises}</span>
-              <span className="text-white/50 text-[10px] font-bold uppercase tracking-wider">Hazır</span>
+              <span className="text-white/50 text-[10px] font-bold uppercase tracking-wider">HazÄ±r</span>
             </div>
             
             <button 
@@ -205,20 +187,15 @@ export function DashboardPage() {
                 <><CheckCircle className="w-6 h-6" /> ONAYLANDI</>
               ) : (
                 isReadying ? (
-                  <><div className="w-5 h-5 border-2 border-[#001021] border-t-transparent rounded-full animate-spin" /> BEKLENİYOR</>
+                  <><div className="w-5 h-5 border-2 border-[#001021] border-t-transparent rounded-full animate-spin" /> BEKLENÄ°YOR</>
                 ) : (
-                  <><Zap className="w-6 h-6" /> MAÇA HAZIRIM</>
+                  <><Zap className="w-6 h-6" /> MAÃ‡A HAZIRIM</>
                 )
               )}
             </button>
           </div>
-          {franchise?.is_ready && countdown === null && (
-            <p className="text-accent text-xs font-bold mt-4 uppercase animate-pulse">Diğer menajerlerin hazır olması bekleniyor...</p>
-          )}
-          {countdown !== null && (
-            <p className="text-emerald-400 text-sm font-bold mt-4 uppercase animate-pulse">
-              {countdown > 0 ? `Maç Başlıyor... ${countdown}` : `Maç Yükleniyor...`}
-            </p>
+          {franchise?.is_ready && (
+            <p className="text-accent text-xs font-bold mt-4 uppercase animate-pulse">DiÄŸer menajerlerin hazÄ±r olmasÄ± bekleniyor...</p>
           )}
         </div>
 
@@ -231,23 +208,23 @@ export function DashboardPage() {
               <img src="https://api.dicebear.com/7.x/shapes/svg?seed=cone&backgroundColor=00a2ff" className="w-12 h-12 rounded" />
               <div>
                 <div className="text-accent text-xs font-bold uppercase tracking-wider mb-1">ANTRENMAN</div>
-                <div className="text-white font-display font-bold text-lg uppercase">ANTRENÖR MÜSAİT</div>
+                <div className="text-white font-display font-bold text-lg uppercase">ANTRENÃ–R MÃœSAÄ°T</div>
               </div>
             </div>
             <ChevronRight className="text-white/50 w-6 h-6" />
           </div>
 
-          {/* Maç Hazırlığı */}
+          {/* MaÃ§ HazÄ±rlÄ±ÄŸÄ± */}
           <div className="bg-gradient-to-br from-[#003366] to-[#001f40] border border-[#004b93] rounded-xl p-4 flex items-center justify-between cursor-pointer hover:brightness-110 transition shadow-lg h-min" onClick={() => navigate('/roster')}>
             <div className="flex items-center gap-4">
               <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=sad_player`} className="w-12 h-12 bg-white/10 rounded" />
               <div className="flex-1 w-full">
-                <div className="text-accent text-xs font-bold uppercase tracking-wider mb-1">MAÇ HAZIRLIĞI</div>
+                <div className="text-accent text-xs font-bold uppercase tracking-wider mb-1">MAÃ‡ HAZIRLIÄžI</div>
                 <div className="flex items-center gap-3">
                   <div className="h-3 w-24 bg-red-900 rounded-full overflow-hidden border border-red-500">
                     <div className="h-full bg-red-500 w-1/4"></div>
                   </div>
-                  <span className="text-white font-bold text-sm uppercase">KRİTİK</span>
+                  <span className="text-white font-bold text-sm uppercase">KRÄ°TÄ°K</span>
                 </div>
               </div>
             </div>
@@ -268,7 +245,7 @@ export function DashboardPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         
-        {/* Günlük Görevler */}
+        {/* GÃ¼nlÃ¼k GÃ¶revler */}
         <div 
           className="bg-gradient-to-r from-purple-600 to-indigo-800 rounded-xl p-4 flex items-center gap-4 cursor-pointer hover:brightness-110 transition shadow-lg md:col-span-1 border border-purple-400/50"
           onClick={() => setShowQuests(true)}
@@ -278,21 +255,21 @@ export function DashboardPage() {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <div className="text-white font-display font-black text-lg uppercase tracking-wider">GÜNLÜK GÖREVLER</div>
-              <div className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-white">YENİ</div>
+              <div className="text-white font-display font-black text-lg uppercase tracking-wider">GÃœNLÃœK GÃ–REVLER</div>
+              <div className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-white">YENÄ°</div>
             </div>
-            <div className="text-white/80 text-xs font-bold uppercase mt-1">GÖREVLERİ YAP, COIN KAZAN</div>
+            <div className="text-white/80 text-xs font-bold uppercase mt-1">GÃ–REVLERÄ° YAP, COIN KAZAN</div>
           </div>
         </div>
 
-        {/* Dostluk Maçları */}
+        {/* Dostluk MaÃ§larÄ± */}
         <div className="bg-gradient-to-br from-[#003366] to-[#001f40] border border-[#004b93] rounded-xl p-4 flex items-center gap-4 cursor-pointer hover:brightness-110 transition shadow-lg md:col-span-1" onClick={() => navigate('/friendlies')}>
           <div className="flex justify-center w-12">
             <div className="w-0 h-0 border-l-[15px] border-l-transparent border-r-[15px] border-r-transparent border-t-[20px] border-t-yellow-400 drop-shadow-[0_0_5px_rgba(250,204,21,0.8)]"></div>
           </div>
           <div>
-            <div className="text-accent font-display font-bold text-lg uppercase tracking-wider">DOSTLUK MAÇLARI</div>
-            <div className="text-white text-xs font-bold uppercase mt-1">LİGİNDEKİ DİĞER KULÜPLERE KARŞI DOSTLUK MAÇI OYNA</div>
+            <div className="text-accent font-display font-bold text-lg uppercase tracking-wider">DOSTLUK MAÃ‡LARI</div>
+            <div className="text-white text-xs font-bold uppercase mt-1">LÄ°GÄ°NDEKÄ° DÄ°ÄžER KULÃœPLERE KARÅžI DOSTLUK MAÃ‡I OYNA</div>
           </div>
         </div>
 
@@ -304,8 +281,8 @@ export function DashboardPage() {
               <div className="absolute -top-1 -right-1 bg-red-500 w-4 h-4 rounded-full text-white flex items-center justify-center text-[10px] font-bold">1</div>
             </div>
             <div>
-              <div className="text-[#00a2ff] font-display font-bold text-lg uppercase tracking-wider">TRANSFER LİSTESİ</div>
-              <div className="text-white text-xs font-bold uppercase mt-1">ÖZEL TEKLİF VAR</div>
+              <div className="text-[#00a2ff] font-display font-bold text-lg uppercase tracking-wider">TRANSFER LÄ°STESÄ°</div>
+              <div className="text-white text-xs font-bold uppercase mt-1">Ã–ZEL TEKLÄ°F VAR</div>
             </div>
           </div>
         </div>

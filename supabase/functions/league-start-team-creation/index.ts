@@ -48,17 +48,18 @@ serve(async (req) => {
       // Bot behavior: Generate exact 11 starters and assign directly
       if (isBot) {
         const rosterReq = [
-          { pos: 'QB', count: 2, starChance: 0.3 },
-          { pos: 'RB', count: 2, starChance: 0.2 },
-          { pos: 'WR', count: 4, starChance: 0.2 },
-          { pos: 'TE', count: 2, starChance: 0.2 },
-          { pos: 'OL', count: 2, starChance: 0.1 },
-          { pos: 'DE', count: 2, starChance: 0.2 },
-          { pos: 'LB', count: 2, starChance: 0.2 },
+          { pos: 'QB', count: 3, starChance: 0.3 },
+          { pos: 'RB', count: 3, starChance: 0.2 },
+          { pos: 'WR', count: 5, starChance: 0.2 },
+          { pos: 'TE', count: 3, starChance: 0.2 },
+          { pos: 'OL', count: 5, starChance: 0.1 },
+          { pos: 'DE', count: 3, starChance: 0.2 },
+          { pos: 'LB', count: 3, starChance: 0.2 },
           { pos: 'CB', count: 2, starChance: 0.2 },
           { pos: 'S',  count: 2, starChance: 0.2 },
-          { pos: 'K',  count: 2, starChance: 0.1 }
+          { pos: 'K',  count: 1, starChance: 0.1 }
         ]
+
         
         let totalCost = 0
 
@@ -147,6 +148,7 @@ serve(async (req) => {
     if (humanFranchises.length === 0) {
       // If it's a full bot league (unlikely but possible), start it immediately
       await supabaseAdmin.from('leagues').update({ status: 'active' }).eq('id', league_id)
+      await supabaseAdmin.rpc('generate_fixtures', { p_league_id: league_id })
     }
 
     return new Response(JSON.stringify({ success: true }), {

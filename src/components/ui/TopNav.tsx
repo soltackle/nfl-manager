@@ -18,7 +18,7 @@ export function TopNav() {
             <Shield className="h-10 w-10 text-accent drop-shadow-[0_0_8px_rgba(255,156,0,0.6)]" fill="currentColor" />
           </div>
           <div className="flex flex-col leading-tight">
-            <span className="font-display font-bold text-lg tracking-wide uppercase">{franchise?.team_name || 'NFL Manager'}</span>
+            <span className="font-display font-bold text-lg tracking-wide uppercase">{franchise?.team_name || 'amfutmanager'}</span>
             <span className="text-xs text-[#00a2ff] font-bold">TÜRKİYE</span>
           </div>
         </div>
@@ -26,7 +26,7 @@ export function TopNav() {
         {/* Center: Logo / Timer */}
         <div className="flex flex-col items-center justify-center w-1/3">
           <div className="bg-red-600 px-4 py-1 rounded-b-xl border-x-2 border-b-2 border-white shadow-lg -mt-2">
-            <span className="font-display font-bold text-xl italic tracking-tighter">NFLM</span>
+            <span className="font-display font-bold text-xl italic tracking-tighter">AMFUT</span>
           </div>
         </div>
 

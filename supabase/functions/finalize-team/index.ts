@@ -155,6 +155,7 @@ serve(async (req) => {
 
     if (allHumansReady) {
       await supabaseAdmin.from('leagues').update({ status: 'active' }).eq('id', league_id)
+      await supabaseAdmin.rpc('generate_fixtures', { p_league_id: league_id })
     }
 
     return new Response(JSON.stringify({ success: true }), {

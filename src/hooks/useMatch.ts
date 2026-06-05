@@ -14,13 +14,11 @@ export function useMatch() {
       .from('matches')
       .select('*, home_franchise:franchises!matches_home_franchise_id_fkey(team_name), away_franchise:franchises!matches_away_franchise_id_fkey(team_name)')
       .or(`home_franchise_id.eq.${franchise.id},away_franchise_id.eq.${franchise.id}`)
-      .is('final_stats->played', null)
       .order('week', { ascending: true })
-      .limit(1)
-      .maybeSingle()
     
     if (error) throw error
-    return data as Match | null
+    const nextMatch = data?.find(m => !m.final_stats?.played)
+    return (nextMatch as Match) || null
   }
 
   const { data, error, isLoading, mutate } = useSWR<Match | null>(

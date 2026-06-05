@@ -74,6 +74,21 @@ serve(async (req) => {
 
     if (fErr) throw fErr
 
+    if (memberCount + 1 === 8) {
+      await supabaseAdmin.from('leagues').update({ status: 'team_creation' }).eq('id', league_id)
+      
+      const functionUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/league-start-team-creation`
+      await fetch(functionUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': authHeader,
+          'X-Internal-Secret': Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ league_id })
+      })
+    }
+
     return new Response(JSON.stringify({ 
       success: true, 
       franchise 

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useTraining } from '@/hooks/useTraining'
 import { Shield, Zap, Activity, Clock, Plus, X } from 'lucide-react'
 import { useToastStore } from '@/store/toastStore'
+import { useUiStore } from '@/store/uiStore'
 
 export function TrainingPage() {
   const { roster, sessions, startTraining } = useTraining()
@@ -89,6 +90,7 @@ export function TrainingPage() {
   const handleStartTraining = async () => {
     if (selectedPlayers.length === 0) return
     setIsStarting(true)
+    useUiStore.getState().setLoading(true, 'Antrenman Başlatılıyor...')
     try {
       await startTraining(selectedPlayers, selectedSlot)
       setSelectedPlayers([])
@@ -97,6 +99,7 @@ export function TrainingPage() {
       useToastStore.getState().addToast('Hata: ' + err.message, 'error')
     } finally {
       setIsStarting(false)
+      useUiStore.getState().setLoading(false)
     }
   }
 

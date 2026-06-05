@@ -84,6 +84,23 @@ serve(async (req) => {
       }
     }
 
+    // Now it should be exactly 8 teams
+    const { data: finalFranchises } = await supabaseAdmin.from('franchises').select('id').eq('league_id', league_id)
+    if (finalFranchises && finalFranchises.length === 8) {
+      await supabaseAdmin.from('leagues').update({ status: 'team_creation' }).eq('id', league_id)
+      
+      const functionUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/league-start-team-creation`
+      await fetch(functionUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': authHeader,
+          'X-Internal-Secret': Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ league_id })
+      })
+    }
+
     return new Response(JSON.stringify({ success: true, filled: needed }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,

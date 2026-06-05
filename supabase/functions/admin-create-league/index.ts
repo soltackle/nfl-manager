@@ -136,7 +136,8 @@ serve(async (req) => {
           user_id: botUser.id,
           team_name: `${botName} Team`,
           city: 'Bot City',
-          club_fund: 100000
+          club_fund: 100000,
+          is_ready: true
         }).select().single()
         
         if (botFranchise) {

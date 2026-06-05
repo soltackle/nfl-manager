@@ -22,7 +22,10 @@ export function useTraining() {
   // 2. Fetch Active Training Sessions
   const fetchSessions = async () => {
     if (!franchise) return []
-    // Use an RPC or edge function if RLS blocks direct query. 
+
+    // Process any completed training sessions before fetching
+    await supabase.functions.invoke('process-training')
+
     // Assuming RLS allows select via migration 002.
     const { data, error } = await supabase
       .from('training_sessions')
@@ -52,6 +55,7 @@ export function useTraining() {
     })
     
     if (error) throw error
+    if (data?.error) throw new Error(data?.error)
     mutateSessions()
     return data
   }
