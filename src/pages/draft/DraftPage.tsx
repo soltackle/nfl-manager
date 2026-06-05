@@ -71,8 +71,8 @@ export function DraftPage() {
   useEffect(() => {
     if (!draftSession) return
 
-    // Initialize timer to 4 seconds for every pick
-    setTimeLeft(4)
+    // Initialize timer to 10 seconds for every pick
+    setTimeLeft(10)
     
     const interval = setInterval(() => {
       setTimeLeft(prev => {
