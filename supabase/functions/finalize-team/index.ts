@@ -138,6 +138,19 @@ serve(async (req) => {
       .eq('target_user_id', user.id)
       .eq('status', 'personal_pool')
 
+    // Create a default tactic (Auto-tactic) using the 11 selected players
+    await supabaseAdmin.from('tactics').insert({
+      franchise_id: franchise.id,
+      ilk_11_oyuncu_ids: selected_player_ids,
+      slider_ayarlari: { 
+        hucum_hizi: 50, 
+        pas_uzunlugu: 50, 
+        agresiflik: 50, 
+        x_aggressiveness: "balanced", 
+        x_rotation: "balanced" 
+      }
+    })
+
     // Update franchise budget and ready state
     await supabaseAdmin.from('franchises')
       .update({ budget: franchise.budget - totalCost, is_ready: false })

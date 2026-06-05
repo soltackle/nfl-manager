@@ -51,11 +51,12 @@ serve(async (req) => {
       return sorted.reduce((sum, p) => sum + p.overall, 0) / sorted.length
     }
 
-    const homePower = getPower(homePlayers || [])
-    const awayPower = getPower(awayPlayers || [])
-
-    // 5. Simulate Score
-    const diff = homePower - awayPower
+    const homeOffPower = getPower(homePlayers || [])
+    const homeDefPower = getPower(homePlayers || [])
+    const awayOffPower = getPower(awayPlayers || [])
+    const awayDefPower = getPower(awayPlayers || [])
+    
+    const diff = (homeOffPower + homeDefPower) - (awayOffPower + awayDefPower)
     
     // Base chances
     let homeScore = Math.floor(Math.random() * 21) + 7

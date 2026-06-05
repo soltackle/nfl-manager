@@ -14,9 +14,9 @@ const DEFAULT_TIPS = [
 ]
 
 const DEFAULT_MESSAGES = [
-  "Saha yükleniyor...",
-  "Oyuncular oluşturuluyor...",
-  "Taktikler ayarlanıyor...",
+  "Maç sahası yükleniyor...",
+  "Oyuncular yükleniyor...",
+  "Taktikler analiz ediliyor...",
   "Stadyum hazırlanıyor...",
   "Scout raporları bekleniyor..."
 ]
@@ -62,11 +62,11 @@ export function LoadingScreen({
           <AnimatePresence mode="wait">
             <motion.p
               key={messageIndex}
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: -20, opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="text-slate-400 font-medium absolute"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+              className="text-slate-400 font-medium absolute text-center w-full"
             >
               {messages[messageIndex]}
             </motion.p>

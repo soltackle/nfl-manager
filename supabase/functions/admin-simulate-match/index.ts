@@ -270,17 +270,51 @@ serve(async (req) => {
       if (!dbUser || dbUser.role !== 'admin') throw new Error('admin-simulate-match Unauthorized: Not an admin')
     }
 
-    const { league_id, week } = await req.json()
+    let reqBody = {}
+    try {
+      reqBody = await req.json()
+    } catch (e) {
+      // Ignored, empty body
+    }
 
-    const { data: matches, error: matchErr } = await supabaseAdmin
-      .from('matches')
-      .select('*, home_franchise_id, away_franchise_id')
-      .eq('league_id', league_id)
-      .eq('week', week)
+    const { league_id, week } = reqBody as any
 
-    if (matchErr || !matches) throw new Error('Matches not found')
+    let matchesToSimulate: any[] = []
 
-    for (const match of matches) {
+    if (league_id && week) {
+      const { data: matches, error: matchErr } = await supabaseAdmin
+        .from('matches')
+        .select('*, home_franchise_id, away_franchise_id')
+        .eq('league_id', league_id)
+        .eq('week', week)
+
+      if (matchErr) throw new Error('Matches not found')
+      matchesToSimulate = matches || []
+    } else {
+      // If no league_id and week are provided, select all matches that are played=false and in active leagues
+      // Actually, we can just get active leagues and their current week
+      const { data: activeLeagues } = await supabaseAdmin.from('leagues').select('id, current_week').eq('status', 'active')
+      if (activeLeagues && activeLeagues.length > 0) {
+        for (const lg of activeLeagues) {
+          const { data: m } = await supabaseAdmin
+            .from('matches')
+            .select('*, home_franchise_id, away_franchise_id')
+            .eq('league_id', lg.id)
+            .eq('week', lg.current_week)
+            .eq('final_stats->played', false)
+            
+          if (m && m.length > 0) {
+            matchesToSimulate = [...matchesToSimulate, ...m]
+          }
+        }
+      }
+    }
+
+    if (matchesToSimulate.length === 0) {
+      return new Response(JSON.stringify({ message: "No matches to simulate" }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 })
+    }
+
+    for (const match of matchesToSimulate) {
       if (match.final_stats?.played) continue
 
       const { data: homePlayers } = await supabaseAdmin.from('players').select('overall, traits, position').eq('franchise_id', match.home_franchise_id)
@@ -777,7 +811,9 @@ serve(async (req) => {
       }
 
       if (homeScore === awayScore) {
-        if (Math.random() < homePower / (homePower + awayPower)) {
+        const homeTotalPower = homeOffPower + homeDefPower
+        const awayTotalPower = awayOffPower + awayDefPower
+        if (Math.random() < homeTotalPower / (homeTotalPower + awayTotalPower)) {
           homeScore += 3
           addLog("OT", getRandomLog("FIELD_GOAL_ISABETLI", "Ev Sahibi", 30), "fg", "fg_good", 100)
         } else {
