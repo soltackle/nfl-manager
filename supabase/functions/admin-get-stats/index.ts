@@ -33,7 +33,7 @@ serve(async (req) => {
     const { count: matchesCount } = await supabaseAdmin.from('matches').select('*', { count: 'exact', head: true }).eq('final_stats->>played', 'true')
     
     // Get all leagues to display in the admin panel
-    const { data: leaguesList, error: lqErr } = await supabaseAdmin.from('leagues').select('id, name, status, created_at').order('created_at', { ascending: false })
+    const { data: leaguesList, error: lqErr } = await supabaseAdmin.from('leagues').select('id, name, status, created_at, franchises(count)').order('created_at', { ascending: false })
     if (lqErr) throw lqErr
 
     // To get Google users, we can list users from auth admin API

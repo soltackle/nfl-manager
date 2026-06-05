@@ -447,6 +447,7 @@ export function AdminDashboard() {
                 <tr>
                   <th className="px-4 py-3 rounded-tl-lg">Lig Adı</th>
                   <th className="px-4 py-3">Durum</th>
+                  <th className="px-4 py-3 text-center">Takımlar</th>
                   <th className="px-4 py-3">Hafta</th>
                   <th className="px-4 py-3">Oluşturulma</th>
                   <th className="px-4 py-3 text-right rounded-tr-lg">İşlemler</th>
@@ -455,7 +456,7 @@ export function AdminDashboard() {
               <tbody>
                 {leaguesList.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+                    <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
                       Sistemde hiç lig bulunmuyor.
                     </td>
                   </tr>
@@ -474,6 +475,10 @@ export function AdminDashboard() {
                         }`}>
                           {lg.status}
                         </span>
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        <span className="font-bold text-[#00a2ff]">{lg.franchises?.[0]?.count || 0}</span>
+                        <span className="text-gray-500 text-xs">/32</span>
                       </td>
                       <td className="px-4 py-4 font-mono">Hafta {lg.current_week || '-'}</td>
                       <td className="px-4 py-4 text-xs text-gray-400">
