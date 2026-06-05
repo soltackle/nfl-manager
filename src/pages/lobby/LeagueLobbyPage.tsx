@@ -192,21 +192,6 @@ export function LeagueLobbyPage() {
         {/* Bot Fill Action Area */}
         <div className="mt-8 pt-6 border-t border-white/10 text-center">
           <div className="flex flex-col gap-4 max-w-md mx-auto">
-            {members.length < 8 && (
-              <button 
-                onClick={handleFillBots}
-                disabled={actionLoading || (timeLeft !== 0 && league.owner_user_id !== user?.id)}
-                className={`font-bold py-3 px-6 rounded-lg text-sm transition flex items-center justify-center gap-2 ${
-                  timeLeft === 0 || league.owner_user_id === user?.id
-                    ? 'bg-[#004b93] hover:bg-[#005c99] text-white cursor-pointer'
-                    : 'bg-white/5 text-white/30 cursor-not-allowed border border-white/10'
-                }`}
-              >
-                <Cpu className="w-4 h-4" /> 
-                {timeLeft === 0 ? 'SÜRE DOLDU: BOTLARLA DOLDUR' : league.owner_user_id === user?.id ? 'KOMİSYONER: BOTLARLA DOLDUR' : 'SÜRENİN DOLMASINI BEKLEYİN...'}
-              </button>
-            )}
-            
             {members.length === 8 && league.status === 'waiting' && (
               <div className="bg-green-600/20 text-green-400 font-bold py-3 px-6 rounded-lg text-lg tracking-widest border border-green-500/50">
                 TAKIM KURMA AŞAMASI BAŞLIYOR...
