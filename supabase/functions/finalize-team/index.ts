@@ -102,8 +102,8 @@ serve(async (req) => {
     // Generate 18 Backup Players to reach exactly 30 players (OVR 65-70)
     const backupReq = ['QB', 'RB', 'WR', 'WR', 'WR', 'TE', 'TE', 'OL', 'OL', 'OL', 'DE', 'DE', 'LB', 'LB', 'CB', 'CB', 'S', 'K']
     
-    const { data: nameRows } = await supabaseAdmin.from('player_names').select('first_name, last_name')
-    const hasNames = nameRows && nameRows.length > 0
+    const firstNames = ['John', 'Michael', 'David', 'James', 'Robert', 'William', 'Joseph', 'Richard', 'Thomas', 'Charles', 'Daniel', 'Matthew', 'Anthony', 'Mark', 'Donald', 'Steven', 'Paul', 'Andrew', 'Joshua', 'Kenneth'];
+    const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin'];
 
     const backupsToInsert = backupReq.map(pos => {
       const overall = Math.floor(Math.random() * 6) + 65 // 65-70
@@ -111,11 +111,9 @@ serve(async (req) => {
       const traits = generateTraits(overall, pos)
       const finalValue = calculatePlayerValue(baseValue, traits.length)
       
-      let finalName = `Backup ${pos}`
-      if (hasNames) {
-        const randName = nameRows[Math.floor(Math.random() * nameRows.length)]
-        finalName = `${randName.first_name} ${randName.last_name}`
-      }
+      const randFirst = firstNames[Math.floor(Math.random() * firstNames.length)]
+      const randLast = lastNames[Math.floor(Math.random() * lastNames.length)]
+      const finalName = `${randFirst} ${randLast}`
       
       return {
         league_id,

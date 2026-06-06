@@ -3,7 +3,7 @@ import { useDepthChart } from '@/hooks/useDepthChart'
 import { useRoster } from '@/hooks/useRoster'
 import { useFranchiseStore } from '@/store/franchiseStore'
 import { supabase } from '@/lib/supabase'
-import { Shield, Save, X, GripVertical, AlertTriangle, Plus } from 'lucide-react'
+import { Shield, Save, X, GripVertical, AlertTriangle, Plus, Pencil } from 'lucide-react'
 import { Skeleton } from '@/components/ui/Skeleton'
 
 const PITCH_SLOTS: Record<string, string[]> = {
@@ -57,7 +57,7 @@ const getBasePosition = (slotName: string) => {
 
 export function DepthChartPage() {
   const { depthChart, isLoading: isDcLoading, mutate: mutateDc } = useDepthChart()
-  const { roster, isLoading: isRosterLoading } = useRoster()
+  const { roster, isLoading: isRosterLoading, mutate: mutateRoster } = useRoster()
   const { franchise } = useFranchiseStore()
   
   const [activeTab, setActiveTab] = useState<'OFF' | 'DEF' | 'ST' | 'PS'>('OFF')
@@ -140,6 +140,27 @@ export function DepthChartPage() {
       alert('Hata: ' + err.message)
     } finally {
       setIsSaving(false)
+    }
+  }
+
+  const handleRename = async (player: any) => {
+    const newName = window.prompt("Oyuncunun yeni ismini girin (3-30 karakter):", player.name)
+    if (!newName) return
+    const trimmed = newName.trim()
+    if (trimmed.length < 3 || trimmed.length > 30) {
+      return alert("İsim 3 ile 30 karakter arasında olmalıdır.")
+    }
+
+    try {
+      const { data, error } = await supabase.functions.invoke('rename-player', {
+        body: { player_id: player.id, new_name: trimmed }
+      })
+      if (error) throw error
+      if (data?.error) throw new Error(data.error)
+      
+      await mutateRoster()
+    } catch (e: any) {
+      alert("Hata: " + e.message)
     }
   }
 
@@ -259,7 +280,7 @@ export function DepthChartPage() {
              {/* Player Info */}
              <div className="py-1.5 px-1 relative">
                <div className="text-[9px] sm:text-[10px] font-bold text-white/90 truncate leading-tight">
-                 {player.name.split(' ').slice(1).join(' ') || player.name}
+                 {player.name.split(' ').pop()}
                </div>
                <div className={`text-xl sm:text-2xl font-display font-black leading-none mt-1 ${penalty > 0 ? 'text-red-400' : 'text-white'}`}>
                  {penalty > 0 ? player.overall - Math.floor(player.overall * penalty / 100) : player.overall}
@@ -283,6 +304,14 @@ export function DepthChartPage() {
                className="hidden group-hover:flex absolute -top-2 -right-2 bg-red-500 rounded-full w-5 h-5 items-center justify-center text-white shadow-lg"
              >
                <X className="w-3 h-3" />
+             </button>
+
+             {/* Rename Button (Hover) */}
+             <button 
+               onClick={(e) => { e.stopPropagation(); handleRename(player); }} 
+               className="hidden group-hover:flex absolute -top-2 -left-2 bg-blue-500 rounded-full w-5 h-5 items-center justify-center text-white shadow-lg"
+             >
+               <Pencil className="w-3 h-3" />
              </button>
           </div>
         ) : (
@@ -425,8 +454,11 @@ export function DepthChartPage() {
                   </div>
                   
                   <div className="flex-1 min-w-0">
-                    <div className="text-white text-xs sm:text-sm font-bold truncate">
+                    <div className="text-white text-xs sm:text-sm font-bold truncate flex items-center gap-1 group/name">
                       {player.overall >= 85 ? '⭐' : ''} {player.name}
+                      <button onClick={() => handleRename(player)} className="text-white/20 hover:text-white transition-colors opacity-0 group-hover/name:opacity-100">
+                         <Pencil className="w-3 h-3" />
+                      </button>
                     </div>
                     <div className="flex items-center gap-2 mt-0.5">
                       <span className="text-[9px] sm:text-[10px] bg-white/10 px-1 rounded text-accent whitespace-nowrap">🔥 Form: {form}</span>

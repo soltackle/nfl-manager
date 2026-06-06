@@ -317,8 +317,8 @@ serve(async (req) => {
     for (const match of matchesToSimulate) {
       if (match.final_stats?.played) continue
 
-      const { data: homePlayers } = await supabaseAdmin.from('players').select('overall, traits, position').eq('franchise_id', match.home_franchise_id)
-      const { data: awayPlayers } = await supabaseAdmin.from('players').select('overall, traits, position').eq('franchise_id', match.away_franchise_id)
+      const { data: homePlayers } = await supabaseAdmin.from('players').select('overall, traits, position, name').eq('franchise_id', match.home_franchise_id)
+      const { data: awayPlayers } = await supabaseAdmin.from('players').select('overall, traits, position, name').eq('franchise_id', match.away_franchise_id)
       
       const { data: homeCoaches } = await supabaseAdmin.from('coaches').select('*').eq('franchise_id', match.home_franchise_id)
       const { data: awayCoaches } = await supabaseAdmin.from('coaches').select('*').eq('franchise_id', match.away_franchise_id)
@@ -330,6 +330,13 @@ serve(async (req) => {
           sum += matching[i] ? matching[i].overall : 40 // Missing players are penalized with 40 OVR
         }
         return sum
+      }
+
+      const getRandomPlayerName = (teamPlayers: any[], positions: string[]) => {
+        const matching = teamPlayers?.filter(p => positions.includes(p.position)) || []
+        if (matching.length === 0) return ''
+        const randomPlayer = matching[Math.floor(Math.random() * matching.length)]
+        return randomPlayer.name || ''
       }
 
       const getOffensePower = (players: any[]) => {
@@ -400,10 +407,29 @@ serve(async (req) => {
       const maxPlaysPerQuarter = 25
       const logs: any[] = []
 
+      const injectPlayerNames = (text: string, currentPossession: string) => {
+        const offPlayers = currentPossession === 'home' ? homePlayers : awayPlayers
+        const defPlayers = currentPossession === 'home' ? awayPlayers : homePlayers
+
+        const qbName = getRandomPlayerName(offPlayers || [], ['QB']) || 'Oyun Kurucu'
+        const rbName = getRandomPlayerName(offPlayers || [], ['RB']) || 'Koşucu'
+        const wrName = getRandomPlayerName(offPlayers || [], ['WR', 'TE']) || 'Alıcı'
+        const kName = getRandomPlayerName(offPlayers || [], ['K']) || 'Vurucu'
+        const defName = getRandomPlayerName(defPlayers || [], ['LB', 'CB', 'S', 'DE', 'DL']) || 'Savunmacı'
+
+        return text
+          .replace(/pasörü|oyun kurucusu/gi, `(${qbName})`)
+          .replace(/koşucusu/gi, `(${rbName})`)
+          .replace(/alıcısı/gi, `(${wrName})`)
+          .replace(/vurucusu|kicker'ı/gi, `(${kName})`)
+          .replace(/savunmacı|defender|safety'si/gi, `savunmacı (${defName})`)
+      }
+
       const addLog = (time: string, text: string, playType: string, event: string | null = null, endYard: number = yardLine) => {
+        const enrichedText = injectPlayerNames(text, possession)
         logs.push({
           time,
-          text,
+          text: enrichedText,
           possession,
           startYard: yardLine,
           endYard,
