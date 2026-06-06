@@ -15,14 +15,14 @@ export function FranchiseSetupPage() {
   const [searchParams] = useSearchParams()
   const joinLeagueId = searchParams.get('join_league')
 
-  const [city, setCity] = useState('İstanbul')
+  const [city, setCity] = useState('')
   const [teamName, setTeamName] = useState('')
   const [selectedColor, setSelectedColor] = useState(COLORS[0])
   const [selectedLogo, setSelectedLogo] = useState(LOGOS[0])
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSetup = async () => {
-    if (!teamName) return
+    if (!teamName || !city) return
     setIsSubmitting(true)
     
     try {
@@ -66,20 +66,14 @@ export function FranchiseSetupPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold uppercase text-white/50 mb-2">Şehir</label>
-              <select 
+              <input 
+                type="text"
                 value={city}
                 onChange={e => setCity(e.target.value)}
+                placeholder="Örn: İstanbul"
+                maxLength={20}
                 className="w-full bg-[#001021] border border-[#004b93] rounded p-4 text-white font-bold uppercase focus:border-accent outline-none"
-              >
-                <option>İstanbul</option>
-                <option>Ankara</option>
-                <option>İzmir</option>
-                <option>Bursa</option>
-                <option>Antalya</option>
-                <option>Adana</option>
-                <option>Trabzon</option>
-                <option>Gaziantep</option>
-              </select>
+              />
             </div>
             <div>
               <label className="block text-xs font-bold uppercase text-white/50 mb-2">Takım İsmi</label>
@@ -127,7 +121,7 @@ export function FranchiseSetupPage() {
           <div className="pt-6">
             <button
               onClick={handleSetup}
-              disabled={!teamName || isSubmitting}
+              disabled={!teamName || !city || isSubmitting}
               className="w-full py-4 bg-accent text-[#001021] font-display font-black text-xl uppercase tracking-widest rounded hover:bg-white hover:text-[#001021] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? 'KAYDEDİLİYOR...' : '✅ KURULUMU TAMAMLA'}
