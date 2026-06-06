@@ -49,10 +49,10 @@ export function useScout() {
     return data
   }
 
-  const claimScout = async () => {
+  const claimScout = async (selectedIndex: number) => {
     if (!mission) throw new Error('Görev bulunamadı')
     const { data, error } = await supabase.functions.invoke('scout-claim', {
-      body: { mission_id: mission.id }
+      body: { mission_id: mission.id, selected_index: selectedIndex }
     })
     if (error) throw new Error(error.message)
     if (data?.error) throw new Error(data.error)

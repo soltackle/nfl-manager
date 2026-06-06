@@ -22,8 +22,8 @@ serve(async (req) => {
     const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(authHeader.replace('Bearer ', ''))
     if (userError || !user) throw new Error('Invalid token')
 
-    const { mission_id } = await req.json()
-    if (!mission_id) throw new Error('Missing mission_id')
+    const { mission_id, selected_index } = await req.json()
+    if (!mission_id || typeof selected_index !== 'number') throw new Error('Missing mission_id or selected_index')
 
     // Fetch the mission
     const { data: mission, error: mErr } = await supabaseAdmin
@@ -43,18 +43,46 @@ serve(async (req) => {
       throw new Error(`Süre henüz dolmadı. Lütfen bekleyin.`)
     }
 
-    if (!mission.player_data) {
-       throw new Error('Oyuncu verisi bulunamadı.')
+    if (!mission.player_data || !Array.isArray(mission.player_data) || mission.player_data.length !== 3) {
+       throw new Error('Geçersiz oyuncu verisi.')
+    }
+    
+    if (selected_index < 0 || selected_index > 2) {
+      throw new Error('Geçersiz seçim.')
     }
 
-    // Insert player into franchise roster
-    const newPlayer = {
-      ...mission.player_data,
-      franchise_id: mission.franchise_id
-    }
+    // Fetch franchise to get league_id
+    const { data: franchise, error: fErr } = await supabaseAdmin
+      .from('franchises')
+      .select('league_id')
+      .eq('id', mission.franchise_id)
+      .single()
 
-    const { error: pErr } = await supabaseAdmin.from('players').insert([newPlayer])
-    if (pErr) throw new Error('Oyuncu kadroya eklenirken hata oluştu: ' + pErr.message)
+    if (fErr || !franchise) throw new Error('Takım bulunamadı.')
+
+    // Prepare players for insertion
+    const playersToInsert = mission.player_data.map((player: any, index: number) => {
+      if (index === selected_index) {
+        // Chosen player: goes to franchise
+        return {
+          ...player,
+          franchise_id: mission.franchise_id,
+          league_id: franchise.league_id,
+          status: 'active'
+        }
+      } else {
+        // Unselected players: goes to Free Agent pool
+        return {
+          ...player,
+          franchise_id: null,
+          league_id: franchise.league_id,
+          status: 'free_agent'
+        }
+      }
+    })
+
+    const { error: pErr } = await supabaseAdmin.from('players').insert(playersToInsert)
+    if (pErr) throw new Error('Oyuncular eklenirken hata oluştu: ' + pErr.message)
 
     // Mark as claimed
     await supabaseAdmin

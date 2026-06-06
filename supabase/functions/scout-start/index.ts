@@ -58,37 +58,36 @@ serve(async (req) => {
       throw new Error('Günde sadece 1 kez scout gönderebilirsiniz. Lütfen yarın tekrar gelin.')
     }
 
-    // Generate Player Data (OVR 80-95)
+    // Generate 3 Players
     const firstNames = ['John', 'Michael', 'David', 'James', 'Robert', 'William', 'Joseph', 'Richard', 'Thomas', 'Charles', 'Daniel', 'Matthew', 'Anthony', 'Mark', 'Donald', 'Steven', 'Paul', 'Andrew', 'Joshua', 'Kenneth'];
     const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin'];
     
-    // Weighted Random for Overall (OVR)
-    const rand = Math.random() * 100;
-    let overall = 80;
+    const playerDataArray = [];
     
-    if (rand < 60) {
-      // 60% chance: 80-84 OVR (Good)
-      overall = 80 + Math.floor(Math.random() * 5);
-    } else if (rand < 90) {
-      // 30% chance: 85-89 OVR (Star)
-      overall = 85 + Math.floor(Math.random() * 5);
-    } else if (rand < 98) {
-      // 8% chance: 90-94 OVR (Elite)
-      overall = 90 + Math.floor(Math.random() * 5);
-    } else {
-      // 2% chance: 95-99 OVR (Legend)
-      overall = 95 + Math.floor(Math.random() * 5);
-    }
+    for (let i = 0; i < 3; i++) {
+      const rand = Math.random() * 100;
+      let overall = 80;
+      
+      if (rand < 60) {
+        overall = 80 + Math.floor(Math.random() * 5); // 80-84
+      } else if (rand < 90) {
+        overall = 85 + Math.floor(Math.random() * 5); // 85-89
+      } else if (rand < 98) {
+        overall = 90 + Math.floor(Math.random() * 5); // 90-94
+      } else {
+        overall = 95 + Math.floor(Math.random() * 5); // 95-99
+      }
 
-    const baseValue = calculateBaseValue(overall)
-    const traits = generateTraits(overall, position)
-    
-    const playerData = {
-      name: `${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastNames[Math.floor(Math.random() * lastNames.length)]} (Scout)`,
-      position: position,
-      overall: overall,
-      value: calculatePlayerValue(baseValue, traits.length),
-      traits: traits
+      const baseValue = calculateBaseValue(overall)
+      const traits = generateTraits(overall, position)
+      
+      playerDataArray.push({
+        name: `${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastNames[Math.floor(Math.random() * lastNames.length)]} (Scout)`,
+        position: position,
+        overall: overall,
+        value: calculatePlayerValue(baseValue, traits.length),
+        traits: traits
+      });
     }
 
     // Insert into scout_missions (10 minute wait time)
@@ -101,7 +100,7 @@ serve(async (req) => {
         position,
         status: 'searching',
         end_time,
-        player_data: playerData
+        player_data: playerDataArray
       })
       .select()
       .single()

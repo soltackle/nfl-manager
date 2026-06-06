@@ -10,6 +10,7 @@ export function ScoutModal({ isOpen, onClose }: { isOpen: boolean, onClose: () =
   const [selectedPos, setSelectedPos] = useState('QB')
   const [isProcessing, setIsProcessing] = useState(false)
   const [timeLeft, setTimeLeft] = useState<number | null>(null)
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
 
   const positions = ['QB', 'RB', 'WR', 'TE', 'OL', 'DE', 'LB', 'CB', 'S', 'K', 'P']
 
@@ -46,10 +47,11 @@ export function ScoutModal({ isOpen, onClose }: { isOpen: boolean, onClose: () =
   }
 
   const handleClaim = async () => {
+    if (selectedIndex === null) return alert('Lütfen bir oyuncu seçin!')
     setIsProcessing(true)
     try {
-      await claimScout()
-      alert('Yıldız oyuncu kadroya eklendi!')
+      await claimScout(selectedIndex)
+      alert('Yıldız oyuncu kadroya eklendi! Diğer oyuncular Serbest Oyuncu pazarına düştü.')
       onClose()
     } catch (e: any) {
       alert(e.message)
@@ -99,16 +101,48 @@ export function ScoutModal({ isOpen, onClose }: { isOpen: boolean, onClose: () =
                 </div>
               </div>
             ) : (
-              <div className="text-center py-8 space-y-4">
-                <CheckCircle2 className="w-16 h-16 text-accent mx-auto" />
-                <h3 className="text-xl font-bold text-white">Yıldız Oyuncu Bulundu!</h3>
-                <p className="text-white/60 text-sm">Gözlemcilerimiz {mission.position} mevkisinde 80-95 OVR arası potansiyelli bir oyuncu keşfetti.</p>
+              <div className="text-center py-4 space-y-4">
+                <CheckCircle2 className="w-12 h-12 text-accent mx-auto" />
+                <h3 className="text-xl font-bold text-white">Gözlemciler Döndü!</h3>
+                <p className="text-white/60 text-sm">Gözlemcilerimiz {mission.position} mevkisinde 3 yetenekli oyuncu keşfetti. Birini kadrona kat, diğerleri pazara düşsün.</p>
+                
+                <div className="grid gap-3 mt-4 text-left">
+                  {Array.isArray(mission.player_data) && mission.player_data.map((p: any, idx: number) => (
+                    <div 
+                      key={idx}
+                      onClick={() => setSelectedIndex(idx)}
+                      className={`p-3 rounded-xl border cursor-pointer transition-all ${
+                        selectedIndex === idx 
+                          ? 'bg-accent/20 border-accent shadow-[0_0_15px_rgba(255,156,0,0.3)]' 
+                          : 'bg-black/20 border-white/10 hover:border-white/30'
+                      }`}
+                    >
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <div className="font-bold text-white">{p.name}</div>
+                          <div className="text-xs text-white/50">{p.position} | OVR: {p.overall}</div>
+                        </div>
+                        <div className="text-accent font-bold text-sm">${(p.value / 1000000).toFixed(1)}M</div>
+                      </div>
+                      {p.traits && p.traits.length > 0 && (
+                        <div className="flex gap-1 mt-2 flex-wrap">
+                          {p.traits.map((t: string) => (
+                            <span key={t} className="text-[10px] bg-blue-500/20 text-blue-300 px-1.5 py-0.5 rounded border border-blue-500/30">
+                              {t}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
                 <button 
                   onClick={handleClaim}
-                  disabled={isProcessing}
+                  disabled={isProcessing || selectedIndex === null}
                   className="w-full py-4 mt-4 bg-accent text-[#001021] font-bold text-lg rounded-xl shadow-lg hover:bg-yellow-400 disabled:opacity-50 transition-all uppercase"
                 >
-                  {isProcessing ? 'Alınıyor...' : 'Sözleşme İmzala (Kadroya Kat)'}
+                  {isProcessing ? 'Alınıyor...' : 'Sözleşme İmzala'}
                 </button>
               </div>
             )
@@ -116,7 +150,7 @@ export function ScoutModal({ isOpen, onClose }: { isOpen: boolean, onClose: () =
             // No Mission Today - Start Menu
             <div className="space-y-6">
               <p className="text-white/70 text-sm text-center">
-                100 Amfutcoin karşılığında istediğin mevkide elit bir yıldız oyuncu (80-95 OVR) bulması için gözlemci gönderebilirsin. Günde 1 kez kullanılabilir!
+                100 Amfutcoin karşılığında gözlemciler sana 3 yetenekli oyuncu (80-99 OVR) sunar. Birini kadrona katarsın, diğer ikisi serbest oyuncu pazarına düşer. Günde 1 kez kullanılabilir!
               </p>
               
               <div>
