@@ -21,6 +21,8 @@ export function DashboardPage() {
   const [readyCount, setReadyCount] = useState(0)
   const [totalFranchises, setTotalFranchises] = useState(8)
   const [isReadying, setIsReadying] = useState(false)
+  const [isClaimingCoin, setIsClaimingCoin] = useState(false)
+  const [coinCountdown, setCoinCountdown] = useState<string | null>(null)
   const [showQuests, setShowQuests] = useState(false)
   const [questsData, setQuestsData] = useState<any>(null)
   const [countdown, setCountdown] = useState<number | null>(null)
@@ -38,6 +40,35 @@ export function DashboardPage() {
     const timer = setInterval(() => setCountdown(c => c ? c - 1 : 0), 1000)
     return () => clearInterval(timer)
   }, [countdown])
+
+  useEffect(() => {
+    const profile = useAuthStore.getState().profile
+    if (!profile) return
+
+    const updateCoinTimer = () => {
+      if (!profile.last_coin_claim_at) {
+        setCoinCountdown(null)
+        return
+      }
+      const lastClaim = new Date(profile.last_coin_claim_at)
+      const nextClaim = new Date(lastClaim.getTime() + 4 * 60 * 60 * 1000)
+      const now = new Date()
+      const diff = nextClaim.getTime() - now.getTime()
+
+      if (diff <= 0) {
+        setCoinCountdown(null)
+      } else {
+        const h = Math.floor(diff / (1000 * 60 * 60))
+        const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+        const s = Math.floor((diff % (1000 * 60)) / 1000)
+        setCoinCountdown(`${h}s ${m}d ${s}sn`)
+      }
+    }
+
+    updateCoinTimer()
+    const timer = setInterval(updateCoinTimer, 1000)
+    return () => clearInterval(timer)
+  }, [useAuthStore.getState().profile?.last_coin_claim_at])
 
   useEffect(() => {
     if (!franchise) return
@@ -121,6 +152,22 @@ export function DashboardPage() {
     } finally {
       setIsReadying(false)
       useUiStore.getState().setLoading(false)
+    }
+  }
+
+  const handleClaimCoins = async () => {
+    setIsClaimingCoin(true)
+    try {
+      const { data, error } = await supabase.functions.invoke('claim-free-coins')
+      if (error) throw error
+      if (data?.error) throw new Error(data.error)
+      
+      alert(data.message)
+      await useAuthStore.getState().initialize() // Refresh profile state
+    } catch (err: any) {
+      alert("Hata: " + err.message)
+    } finally {
+      setIsClaimingCoin(false)
     }
   }
 
@@ -245,6 +292,25 @@ export function DashboardPage() {
               </div>
             </div>
             <ChevronRight className="text-white/50 w-6 h-6" />
+          </div>
+
+          {/* Günlük Ücretsiz Amfutcoin */}
+          <div 
+            className={`rounded-xl p-4 flex items-center justify-between transition shadow-lg h-min ${coinCountdown ? 'bg-[#00152b] border border-[#003366] opacity-70 cursor-not-allowed' : 'bg-gradient-to-br from-yellow-600 to-yellow-900 border border-yellow-500 cursor-pointer hover:brightness-110'}`} 
+            onClick={!coinCountdown && !isClaimingCoin ? handleClaimCoins : undefined}
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-black/30 rounded flex items-center justify-center">
+                <Gift className={`w-6 h-6 ${coinCountdown ? 'text-white/50' : 'text-yellow-400'}`} />
+              </div>
+              <div>
+                <div className={`text-xs font-bold uppercase tracking-wider mb-1 ${coinCountdown ? 'text-white/50' : 'text-yellow-300'}`}>ÜCRETSİZ AMFUTCOİN</div>
+                <div className="text-white font-display font-bold text-lg uppercase">
+                  {isClaimingCoin ? 'ALINIYOR...' : coinCountdown ? coinCountdown : '50 🪙 TOPLA'}
+                </div>
+              </div>
+            </div>
+            {!coinCountdown && <ChevronRight className="text-white w-6 h-6 animate-pulse" />}
           </div>
 
           {/* Maç Hazırlığı */}

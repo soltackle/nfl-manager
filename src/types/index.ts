@@ -5,6 +5,7 @@ export interface User {
   role?: string
   amfutcoin: number
   manager_xp: number
+  last_coin_claim_at?: string
 }
 
 export interface League {
