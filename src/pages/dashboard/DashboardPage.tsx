@@ -68,7 +68,7 @@ export function DashboardPage() {
     fetchQuests()
   }, [franchise, navigate])
 
-  // Ready State Effect
+  // Ready State Effect — realtime + polling (filter on league_id breaks UPDATE events)
   useEffect(() => {
     if (!league) return
 
@@ -81,13 +81,17 @@ export function DashboardPage() {
     }
     fetchReadyState()
 
-    const channel = supabase.channel('public:franchises')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'franchises', filter: `league_id=eq.${league.id}` }, () => {
+    const channel = supabase
+      .channel(`ready-count-${league.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'franchises' }, () => {
         fetchReadyState()
       })
       .subscribe()
 
+    const poll = setInterval(fetchReadyState, 3000)
+
     return () => {
+      clearInterval(poll)
       supabase.removeChannel(channel)
     }
   }, [league])
@@ -102,6 +106,12 @@ export function DashboardPage() {
       })
       if (error) throw error
       if (data?.error) throw new Error(data.error)
+
+      if (!franchise.is_ready) {
+        setReadyCount(c => c + 1)
+        useFranchiseStore.getState().setFranchise({ ...franchise, is_ready: true })
+      }
+
       if (data?.matchPlayed) {
         alert(data.message)
         window.location.reload()

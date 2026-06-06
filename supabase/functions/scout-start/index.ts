@@ -59,13 +59,32 @@ serve(async (req) => {
     }
 
     // Generate Player Data (OVR 80-95)
-    const names = ['James', 'Williams', 'Johnson', 'Brown', 'Davis', 'Miller', 'Wilson', 'Moore', 'Taylor', 'Anderson', 'Thomas', 'Jackson', 'White', 'Harris', 'Martin', 'Thompson', 'Garcia', 'Martinez', 'Robinson', 'Clark', 'Rodriguez', 'Lewis']
-    const overall = 80 + Math.floor(Math.random() * 16) // 80 to 95
+    const firstNames = ['John', 'Michael', 'David', 'James', 'Robert', 'William', 'Joseph', 'Richard', 'Thomas', 'Charles', 'Daniel', 'Matthew', 'Anthony', 'Mark', 'Donald', 'Steven', 'Paul', 'Andrew', 'Joshua', 'Kenneth'];
+    const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin'];
+    
+    // Weighted Random for Overall (OVR)
+    const rand = Math.random() * 100;
+    let overall = 80;
+    
+    if (rand < 60) {
+      // 60% chance: 80-84 OVR (Good)
+      overall = 80 + Math.floor(Math.random() * 5);
+    } else if (rand < 90) {
+      // 30% chance: 85-89 OVR (Star)
+      overall = 85 + Math.floor(Math.random() * 5);
+    } else if (rand < 98) {
+      // 8% chance: 90-94 OVR (Elite)
+      overall = 90 + Math.floor(Math.random() * 5);
+    } else {
+      // 2% chance: 95-99 OVR (Legend)
+      overall = 95 + Math.floor(Math.random() * 5);
+    }
+
     const baseValue = calculateBaseValue(overall)
     const traits = generateTraits(overall, position)
     
     const playerData = {
-      name: `${names[Math.floor(Math.random() * names.length)]} ${position}${Math.floor(Math.random() * 99)} (Scout)`,
+      name: `${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastNames[Math.floor(Math.random() * lastNames.length)]} (Scout)`,
       position: position,
       overall: overall,
       value: calculatePlayerValue(baseValue, traits.length),

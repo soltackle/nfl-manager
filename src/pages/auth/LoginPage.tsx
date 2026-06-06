@@ -1,15 +1,21 @@
 import { useState } from 'react'
+import { Navigate, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/store/authStore'
+import { useMaintenanceMode } from '@/hooks/useMaintenanceMode'
 import { Button } from '@/components/ui/Button'
 import { Card, CardContent } from '@/components/ui/Card'
-import { useNavigate } from 'react-router-dom'
 
 export function LoginPage() {
+  const { maintenanceMode, isLoading: maintenanceLoading } = useMaintenanceMode()
   const [isLogin, setIsLogin] = useState(true)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const { signIn, signUp } = useAuthStore()
   const navigate = useNavigate()
+
+  if (!maintenanceLoading && maintenanceMode) {
+    return <Navigate to="/tadilat" replace />
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { Shield, Plus, Zap, AlertTriangle, CheckCircle2, Server, Play, FastForward, Activity, Trophy, Users, Globe } from 'lucide-react'
+import { Shield, Plus, Zap, AlertTriangle, CheckCircle2, Server, Play, FastForward, Activity, Trophy, Users, Globe, Wrench, Power } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useFranchiseStore } from '@/store/franchiseStore'
+import { useMaintenanceMode } from '@/hooks/useMaintenanceMode'
 
 export function AdminDashboard() {
   const { league } = useFranchiseStore()
+  const { maintenanceMode, setMaintenance } = useMaintenanceMode()
+  const [isTogglingMaintenance, setIsTogglingMaintenance] = useState(false)
   const [isSimulating, setIsSimulating] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
   const [leagueName, setLeagueName] = useState('')
@@ -265,6 +268,22 @@ export function AdminDashboard() {
     }
   }
 
+  const handleToggleMaintenance = async () => {
+    const action = maintenanceMode ? 'kapatıp siteyi kullanıcılara açmak' : 'aktif edip tüm kullanıcıları /tadilat sayfasına yönlendirmek'
+    if (!confirm(`Tadilat modunu ${action} istediğinize emin misiniz?`)) return
+
+    setIsTogglingMaintenance(true)
+    try {
+      await setMaintenance(!maintenanceMode)
+      alert(maintenanceMode ? 'Site kullanıcılara açıldı!' : 'Tadilat modu aktif edildi. Kullanıcılar /tadilat sayfasına yönlendirilecek.')
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Bilinmeyen hata'
+      alert('Hata: ' + message)
+    } finally {
+      setIsTogglingMaintenance(false)
+    }
+  }
+
   const handleEndSeason = async () => {
     if (!league) return alert("Aktif bir ligde değilsiniz!")
     if (!confirm('DİKKAT: Tüm maçlar silinecek, şampiyonlara ödül verilecek ve lig DRAFT (YENİ SEZON) aşamasına geçecektir. Onaylıyor musunuz?')) return
@@ -337,6 +356,47 @@ export function AdminDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Tadilat Modu Kontrolü */}
+      <Card className={`border-2 ${maintenanceMode ? 'bg-gradient-to-br from-amber-950/40 to-[#00152b] border-amber-500/50' : 'bg-gradient-to-br from-green-950/30 to-[#00152b] border-green-500/50'}`}>
+        <CardHeader>
+          <CardTitle className="text-white flex items-center gap-2 font-display uppercase">
+            <Wrench className={`h-5 w-5 ${maintenanceMode ? 'text-amber-400' : 'text-green-400'}`} />
+            Tadilat Modu
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className={`w-2.5 h-2.5 rounded-full ${maintenanceMode ? 'bg-amber-400 animate-pulse' : 'bg-green-400'}`} />
+              <span className={`font-black uppercase text-sm ${maintenanceMode ? 'text-amber-400' : 'text-green-400'}`}>
+                {maintenanceMode ? 'Aktif — Site Kapalı' : 'Kapalı — Site Açık'}
+              </span>
+            </div>
+            <p className="text-white/50 text-xs max-w-md">
+              {maintenanceMode
+                ? 'Tüm kullanıcılar /tadilat sayfasına yönlendiriliyor. Sadece adminler siteye erişebilir.'
+                : 'Site tüm kullanıcılara açık. Tadilat modunu tekrar aktif edebilirsiniz.'}
+            </p>
+          </div>
+          <Button
+            onClick={handleToggleMaintenance}
+            disabled={isTogglingMaintenance}
+            className={`shrink-0 font-bold uppercase text-xs px-6 py-3 ${
+              maintenanceMode
+                ? 'bg-green-600 hover:bg-green-500 text-white'
+                : 'bg-amber-600 hover:bg-amber-500 text-white'
+            }`}
+          >
+            <Power className="w-4 h-4 mr-2" />
+            {isTogglingMaintenance
+              ? 'Güncelleniyor...'
+              : maintenanceMode
+                ? 'Siteyi Kullanıcılara Aç'
+                : 'Tadilat Modunu Aktif Et'}
+          </Button>
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         

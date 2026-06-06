@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useAuthStore } from './store/authStore'
+import { useMaintenanceStore } from './store/maintenanceStore'
 import { AppRouter } from './router'
 import { ToastContainer } from './components/ui/ToastContainer'
 
@@ -8,6 +9,7 @@ export default function App() {
 
   useEffect(() => {
     initialize()
+    useMaintenanceStore.getState().initialize()
   }, [initialize])
 
   if (isLoading) {

@@ -1,5 +1,7 @@
 import { createBrowserRouter, RouterProvider, Navigate, Outlet } from 'react-router-dom'
 import { Layout } from './components/layout/Layout'
+import { MaintenanceGuard } from './components/auth/MaintenanceGuard'
+import { TadilatPage } from './pages/maintenance/TadilatPage'
 import { LoginPage } from './pages/auth/LoginPage'
 import { SlotsPage } from './pages/auth/SlotsPage'
 import { DashboardPage } from './pages/dashboard/DashboardPage'
@@ -23,11 +25,14 @@ import { ProfilePage } from './pages/profile/ProfilePage'
 import { FriendliesPage } from './pages/friendlies/FriendliesPage'
 import { ShopPage } from './pages/shop/ShopPage'
 import { LeaderboardPage } from './pages/leaderboard/LeaderboardPage'
+import { useMaintenanceMode } from './hooks/useMaintenanceMode'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, isLoading } = useAuthStore()
-  if (isLoading) return <div>Yükleniyor...</div>
+  const { user, profile, isLoading } = useAuthStore()
+  const { maintenanceMode, isLoading: maintenanceLoading } = useMaintenanceMode()
+  if (isLoading || maintenanceLoading) return <div>Yükleniyor...</div>
   if (!user) return <Navigate to="/login" />
+  if (maintenanceMode && profile?.role !== 'admin') return <Navigate to="/tadilat" replace />
   return <>{children}</>
 }
 
@@ -86,9 +91,14 @@ function GameRoute({ children }: { children: React.ReactNode }) {
 }
 
 const router = createBrowserRouter([
-  { path: '/login', element: <LoginPage /> },
+  { path: '/tadilat', element: <TadilatPage /> },
   {
     path: '/',
+    element: <MaintenanceGuard />,
+    children: [
+  { path: 'login', element: <LoginPage /> },
+  {
+    path: '',
     element: <ProtectedRoute><Outlet /></ProtectedRoute>,
     children: [
       { index: true, element: <Navigate to="/slots" replace /> },
@@ -137,6 +147,8 @@ const router = createBrowserRouter([
         ]
       },
       { path: '*', element: <Navigate to="/slots" replace /> }
+    ]
+  }
     ]
   }
 ])
