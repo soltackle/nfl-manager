@@ -35,7 +35,7 @@ serve(async (req) => {
     if (!franchise || fErr) throw new Error('Unauthorized franchise')
 
     // Get current stadium
-    const { data: stadium, error: sErr } = await supabaseAdmin
+    const { data: stadium, } = await supabaseAdmin
       .from('stadiums')
       .select('*')
       .eq('franchise_id', franchise_id)
@@ -77,7 +77,7 @@ serve(async (req) => {
       .update({ club_fund: newFund })
       .eq('id', franchise_id)
 
-    const updateData: any = {}
+    const updateData: unknown = {}
     if (upgrade_type === 'turf') updateData.turf_level = newLevel
     if (upgrade_type === 'capacity') updateData.capacity_level = newLevel
     if (upgrade_type === 'practice') updateData.practice_facility_level = newLevel
@@ -92,7 +92,7 @@ serve(async (req) => {
       status: 200,
     })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400,

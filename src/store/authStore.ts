@@ -2,11 +2,12 @@ import { create } from 'zustand'
 import { supabase } from '@/lib/supabase'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
 import type { User } from '@/types'
+import { useFranchiseStore } from './franchiseStore'
 
 interface AuthState {
   user: SupabaseUser | null
   profile: User | null
-  session: any | null
+  session: unknown | null
   isLoading: boolean
   signIn: (email: string, password: string) => Promise<void>
   signInWithGoogle: (redirectTo?: string) => Promise<void>
@@ -52,7 +53,6 @@ export const useAuthStore = create<AuthState>((set) => ({
     if (session?.user) {
       const { data } = await supabase.from('users').select('*').eq('id', session.user.id).maybeSingle()
       profile = data
-      const { useFranchiseStore } = await import('./franchiseStore')
       await useFranchiseStore.getState().initialize(session.user.id)
     }
     
@@ -63,10 +63,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       if (session?.user) {
         const { data } = await supabase.from('users').select('*').eq('id', session.user.id).maybeSingle()
         currentProfile = data
-        const { useFranchiseStore } = await import('./franchiseStore')
         await useFranchiseStore.getState().initialize(session.user.id)
       } else {
-        const { useFranchiseStore } = await import('./franchiseStore')
         useFranchiseStore.getState().clearFranchise()
       }
       set({ session, user: session?.user || null, profile: currentProfile })

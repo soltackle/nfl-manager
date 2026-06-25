@@ -165,7 +165,7 @@ serve(async (req) => {
 
     if (allHumansDoneTeamCreation) {
       await supabaseAdmin.from('leagues').update({ status: 'active' }).eq('id', league_id)
-      await supabaseAdmin.rpc('generate_fixtures', { p_league_id: league_id })
+      await supabaseAdmin.rpc('generate_fixtures', { p: league_id })
     }
 
     return new Response(JSON.stringify({ success: true }), {
@@ -173,7 +173,7 @@ serve(async (req) => {
       status: 200,
     })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,

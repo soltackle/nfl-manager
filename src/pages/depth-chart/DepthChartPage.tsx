@@ -125,7 +125,7 @@ export function DepthChartPage() {
             franchise_id: franchise.id,
             player_id: playerId,
             unit: unit,
-            position: player?.position as any
+            position: player?.position as unknown
           }
         })
       
@@ -136,14 +136,14 @@ export function DepthChartPage() {
       
       await mutateDc()
       alert('Kadro başarıyla kaydedildi!')
-    } catch (err: any) {
-      alert('Hata: ' + err.message)
+    } catch (err: unknown) {
+      alert('Hata: ' + (err instanceof Error ? err.message : String(err)))
     } finally {
       setIsSaving(false)
     }
   }
 
-  const handleRename = async (player: any) => {
+  const handleRename = async (player: unknown) => {
     const newName = window.prompt("Oyuncunun yeni ismini girin (3-30 karakter):", player.name)
     if (!newName) return
     const trimmed = newName.trim()
@@ -159,7 +159,7 @@ export function DepthChartPage() {
       if (data?.error) throw new Error(data.error)
       
       await mutateRoster()
-    } catch (e: any) {
+    } catch (e: unknown) {
       alert("Hata: " + e.message)
     }
   }
@@ -361,7 +361,7 @@ export function DepthChartPage() {
             ].map(tab => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={() => setActiveTab(tab.id as unknown)}
                 className={`flex-1 min-w-[80px] text-xs font-bold uppercase py-2.5 px-2 rounded transition-all ${
                   activeTab === tab.id ? 'bg-accent text-[#00152b] shadow-[0_0_10px_rgba(255,156,0,0.5)]' : 'text-white/50 hover:text-white hover:bg-white/5'
                 }`}

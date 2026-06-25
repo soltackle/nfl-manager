@@ -24,8 +24,8 @@ export function SlotsPage() {
   }
 
   const handleNewCareer = () => {
-    // Check if user has any franchise in waiting/draft status
-    const hasPendingDraft = franchises.some((f: any) => 
+    // Check if user has unknown franchise in waiting/draft status
+    const hasPendingDraft = franchises.some((f: unknown) => 
       f.leagues?.status === 'waiting' || f.leagues?.status === 'draft'
     )
     

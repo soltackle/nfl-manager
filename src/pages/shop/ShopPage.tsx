@@ -7,7 +7,7 @@ export function ShopPage() {
   const { franchise, league } = useFranchiseStore()
   const [balance, setBalance] = useState(0)
   const [loading, setLoading] = useState(true)
-  const [players, setPlayers] = useState<any[]>([])
+  const [players, setPlayers] = useState<unknown[]>([])
   const [selectedPlayer, setSelectedPlayer] = useState<string>('')
   
   const [purchasing, setPurchasing] = useState(false)
@@ -64,8 +64,8 @@ export function ShopPage() {
       if (type === 'develop') {
         setPlayers(players.map(p => p.id === selectedPlayer ? { ...p, overall: p.overall + 1 } : p))
       }
-    } catch (err: any) {
-      setMsg({ type: 'error', text: err.message })
+    } catch (err: unknown) {
+      setMsg({ type: 'error', text: (err instanceof Error ? err.message : String(err)) })
     } finally {
       setPurchasing(false)
     }

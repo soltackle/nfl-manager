@@ -15,7 +15,7 @@ export function BottomNav() {
   )
 }
 
-function NavItem({ to, icon: Icon, label }: { to: string; icon: any; label: string }) {
+function NavItem({ to, icon: Icon, label }: { to: string; icon: unknown; label: string }) {
   return (
     <NavLink
       to={to}

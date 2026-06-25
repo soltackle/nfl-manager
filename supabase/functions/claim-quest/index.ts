@@ -34,7 +34,7 @@ serve(async (req) => {
     if (!quests) throw new Error("Quests not found")
 
     let reward = 0
-    let updateData: any = {}
+    const updateData: unknown = {}
 
     if (questType === 'login') {
       if (quests.login_claimed) throw new Error("Already claimed")
@@ -64,7 +64,7 @@ serve(async (req) => {
       status: 200,
     })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400,

@@ -58,8 +58,8 @@ export function MarketPage() {
       useToastStore.getState().addToast('Transfer başarılı!', 'success')
       fetchMarketData()
       window.location.reload()
-    } catch (err: any) {
-      useToastStore.getState().addToast(err.message, 'error')
+    } catch (err: unknown) {
+      useToastStore.getState().addToast((err instanceof Error ? err.message : String(err)), 'error')
     }
   }
 
@@ -79,8 +79,8 @@ export function MarketPage() {
       useToastStore.getState().addToast('Transfer başarılı!', 'success')
       fetchMarketData()
       window.location.reload()
-    } catch (err: any) {
-      useToastStore.getState().addToast(err.message, 'error')
+    } catch (err: unknown) {
+      useToastStore.getState().addToast((err instanceof Error ? err.message : String(err)), 'error')
     }
   }
 
@@ -93,8 +93,8 @@ export function MarketPage() {
       if (data?.error) throw new Error(data.error)
       useToastStore.getState().addToast('İşlem başarılı!', 'success')
       fetchMarketData()
-    } catch (err: any) {
-      useToastStore.getState().addToast(err.message, 'error')
+    } catch (err: unknown) {
+      useToastStore.getState().addToast((err instanceof Error ? err.message : String(err)), 'error')
     }
   }
 
@@ -212,7 +212,7 @@ export function MarketPage() {
                       </div>
                       <div>
                         <div className="font-bold text-white text-lg">{player.name}</div>
-                        <div className="text-xs text-white/50 font-bold uppercase mb-1">{(player as any).franchises?.team_name}</div>
+                        <div className="text-xs text-white/50 font-bold uppercase mb-1">{(player as unknown).franchises?.team_name}</div>
                         <div className="flex items-center gap-2 mt-1">
                           <div className="text-xs text-accent font-bold uppercase inline-block bg-accent/10 px-2 py-0.5 rounded">{player.position}</div>
                           {player.traits && player.traits.length > 0 && (
@@ -265,7 +265,7 @@ export function MarketPage() {
 
                       <div className="flex items-center justify-between gap-8">
                         <div className="flex-1 text-center">
-                          <div className="text-xs text-white/50 font-bold uppercase mb-2">{(offer as any).sender?.team_name} (Verilenler)</div>
+                          <div className="text-xs text-white/50 font-bold uppercase mb-2">{(offer as unknown).sender?.team_name} (Verilenler)</div>
                           <div className="bg-white/5 rounded-lg p-3 space-y-2">
                             {offer.offered_coins > 0 && <div className="text-emerald-400 font-bold font-mono">+ ${(offer.offered_coins / 1000000).toFixed(1)}M</div>}
                             {offer.offered_player_ids.length > 0 ? (
@@ -279,7 +279,7 @@ export function MarketPage() {
                         <ArrowLeftRight className="w-8 h-8 text-white/20" />
 
                         <div className="flex-1 text-center">
-                          <div className="text-xs text-white/50 font-bold uppercase mb-2">{(offer as any).receiver?.team_name} (İstenenler)</div>
+                          <div className="text-xs text-white/50 font-bold uppercase mb-2">{(offer as unknown).receiver?.team_name} (İstenenler)</div>
                           <div className="bg-white/5 rounded-lg p-3 space-y-2">
                             {offer.requested_player_ids.length > 0 ? (
                               <div className="text-white text-sm">{offer.requested_player_ids.length} Oyuncu</div>

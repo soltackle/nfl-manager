@@ -32,7 +32,7 @@ async function runMatchEngine() {
     
     let homeScore = 0
     let awayScore = 0
-    let logs = []
+    const logs = []
     
     // Very simplified simulation: ~48 drives
     for (let i=0; i<48; i++) {

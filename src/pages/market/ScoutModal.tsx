@@ -39,7 +39,7 @@ export function ScoutModal({ isOpen, onClose }: { isOpen: boolean, onClose: () =
     setIsProcessing(true)
     try {
       await startScout(selectedPos)
-    } catch (e: any) {
+    } catch (e: unknown) {
       alert(e.message)
     } finally {
       setIsProcessing(false)
@@ -53,7 +53,7 @@ export function ScoutModal({ isOpen, onClose }: { isOpen: boolean, onClose: () =
       await claimScout(selectedIndex)
       alert('Yıldız oyuncu kadroya eklendi! Diğer oyuncular Serbest Oyuncu pazarına düştü.')
       onClose()
-    } catch (e: any) {
+    } catch (e: unknown) {
       alert(e.message)
     } finally {
       setIsProcessing(false)
@@ -107,7 +107,7 @@ export function ScoutModal({ isOpen, onClose }: { isOpen: boolean, onClose: () =
                 <p className="text-white/60 text-sm">Gözlemcilerimiz {mission.position} mevkisinde 3 yetenekli oyuncu keşfetti. Birini kadrona kat, diğerleri pazara düşsün.</p>
                 
                 <div className="grid gap-3 mt-4 text-left">
-                  {Array.isArray(mission.player_data) && mission.player_data.map((p: any, idx: number) => (
+                  {Array.isArray(mission.player_data) && mission.player_data.map((p: unknown, idx: number) => (
                     <div 
                       key={idx}
                       onClick={() => setSelectedIndex(idx)}

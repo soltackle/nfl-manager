@@ -45,7 +45,7 @@ serve(async (req) => {
     const { data: homePlayers } = await supabaseAdmin.from('players').select('id, overall, progression').eq('franchise_id', homeFranchise.id)
     const { data: awayPlayers } = await supabaseAdmin.from('players').select('overall').eq('franchise_id', awayFranchise.id)
 
-    const getPower = (players: any[]) => {
+    const getPower = (players: unknown[]) => {
       if (!players || players.length === 0) return 50
       const sorted = [...players].sort((a, b) => b.overall - a.overall).slice(0, 11)
       return sorted.reduce((sum, p) => sum + p.overall, 0) / sorted.length
@@ -112,7 +112,7 @@ serve(async (req) => {
       status: 200,
     })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200, // Important: return 200 so our frontend fetch doesn't throw generic 500

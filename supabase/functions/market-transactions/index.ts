@@ -30,7 +30,7 @@ serve(async (req) => {
     if (!franchise_id || !player_id) throw new Error('Missing required fields')
 
     // Verify franchise belongs to user
-    const { data: franchise } = await supabaseAdmin.from('franchises').select('id, budget, name, league_id').eq('id', franchise_id).eq('user_id', user.id).single()
+    const { data: franchise } = await supabaseAdmin.from('franchises').select('id, budget, team_name, league_id').eq('id', franchise_id).eq('user_id', user.id).single()
     if (!franchise) throw new Error('Unauthorized franchise')
 
     const { data: player } = await supabaseAdmin.from('players').select('*').eq('id', player_id).single()
@@ -48,7 +48,7 @@ serve(async (req) => {
 
       await supabaseAdmin.from('league_chat').insert({
         league_id: franchise.league_id,
-        message: `TRANSFER LİSTESİ: ${franchise.name}, ${player.name} isimli oyuncuyu $${list_price} fiyatla satışa çıkardı!`,
+        message: `TRANSFER LİSTESİ: ${franchise.team_name}, ${player.name} isimli oyuncuyu $${list_price} fiyatla satışa çıkardı!`,
         is_system: true
       })
 
@@ -92,7 +92,7 @@ serve(async (req) => {
 
       await supabaseAdmin.from('league_chat').insert({
         league_id: franchise.league_id,
-        message: `FLAŞ HABER: ${franchise.name}, ${player.name}'i $${player.listed_price} ödeyerek transfer etti!`,
+        message: `FLAŞ HABER: ${franchise.team_name}, ${player.name}'i $${player.listed_price} ödeyerek transfer etti!`,
         is_system: true
       })
 
@@ -101,7 +101,7 @@ serve(async (req) => {
 
     throw new Error('Invalid action')
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400,

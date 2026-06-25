@@ -48,7 +48,7 @@ export function TadilatPage() {
       }
       navigate('/admin', { replace: true })
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Giriş başarısız'
+      const message = err instanceof Error ? (err instanceof Error ? err.message : String(err)) : 'Giriş başarısız'
       setLoginError(message)
     } finally {
       setIsSubmitting(false)

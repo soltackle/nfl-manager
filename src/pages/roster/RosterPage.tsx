@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useRoster } from '@/hooks/useRoster'
-import { Card, CardContent } from '@/components/ui/Card'
+import {  } from '@/components/ui/Card'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { Shield, ChevronRight } from 'lucide-react'
 import { useFranchiseStore } from '@/store/franchiseStore'
@@ -48,7 +48,7 @@ export function RosterPage() {
   const mainRoster = sortedFiltered.slice(0, 22)
   const practiceSquad = sortedFiltered.slice(22)
 
-  const handleListForSale = async (player: any) => {
+  const handleListForSale = async (player: unknown) => {
     if (!franchise) return
     const priceStr = prompt(`${player.name} için satış bedeli giriniz (Mevcut değer: $${(player.value / 1000000).toFixed(1)}M):`, player.value.toString())
     if (!priceStr) return
@@ -65,15 +65,15 @@ export function RosterPage() {
         if (data?.error) throw new Error(data.error)
         useToastStore.getState().addToast('Oyuncu transfer listesine eklendi!', 'success')
         window.location.reload()
-      } catch (err: any) {
-        useToastStore.getState().addToast('Hata: ' + err.message, 'error')
+      } catch (err: unknown) {
+        useToastStore.getState().addToast('Hata: ' + (err instanceof Error ? err.message : String(err)), 'error')
       } finally {
         setIsSelling(null)
       }
     }
   }
 
-  const handleSell = async (player: any) => {
+  const handleSell = async (player: unknown) => {
     if (!franchise) return
     const sellValue = Math.floor(player.value * 0.8) // 80% of value
     if (confirm(`${player.name} isimli oyuncuyu $${(sellValue / 1000000).toFixed(1)}M karşılığında sisteme satmak (serbest bırakmak) istediğinize emin misiniz?`)) {
@@ -96,15 +96,15 @@ export function RosterPage() {
         setFranchise({ ...franchise, budget: franchise.budget + sellValue })
         useToastStore.getState().addToast('Oyuncu başarıyla satıldı!', 'success')
         window.location.reload()
-      } catch (err: any) {
-        useToastStore.getState().addToast('Hata: ' + err.message, 'error')
+      } catch (err: unknown) {
+        useToastStore.getState().addToast('Hata: ' + (err instanceof Error ? err.message : String(err)), 'error')
       } finally {
         setIsSelling(null)
       }
     }
   }
 
-  const renderPlayerCard = (player: any) => {
+  const renderPlayerCard = (player: unknown) => {
     const { age, form } = getPlayerDetails(player.id)
     const traits: string[] = player.traits || []
     return (
@@ -182,7 +182,7 @@ export function RosterPage() {
         {['ALL', 'OFF', 'DEF', 'ST'].map(tab => (
           <button
             key={tab}
-            onClick={() => setActiveTab(tab as any)}
+            onClick={() => setActiveTab(tab as unknown)}
             className={`flex-1 min-w-[80px] text-xs font-bold uppercase py-2 px-4 rounded transition-all ${
               activeTab === tab 
                 ? 'bg-accent text-[#00152b] shadow-[0_0_10px_rgba(255,156,0,0.5)]' 

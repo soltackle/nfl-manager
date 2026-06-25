@@ -131,7 +131,7 @@ serve(async (req) => {
           botUser = { id: botId }
         }
 
-        const { data: botFranchise, error: botFErr } = await supabaseAdmin.from('franchises').insert({
+        const { data: botFranchise, } = await supabaseAdmin.from('franchises').insert({
           league_id: league.id,
           user_id: botUser.id,
           team_name: `${botName} Team`,
@@ -149,7 +149,7 @@ serve(async (req) => {
       await supabaseAdmin.from('leagues').update({ status: 'active' }).eq('id', league.id)
       
       // Generate fixtures for the league!
-      await supabaseAdmin.rpc('generate_fixtures', { p_league_id: league.id })
+      await supabaseAdmin.rpc('generate_fixtures', { p: league.id })
     }
 
     return new Response(JSON.stringify({ success: true, league }), {
@@ -157,7 +157,7 @@ serve(async (req) => {
       status: 200,
     })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400,

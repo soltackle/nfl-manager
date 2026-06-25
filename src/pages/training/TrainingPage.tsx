@@ -4,6 +4,27 @@ import { Shield, Zap, Activity, Clock, Plus, X } from 'lucide-react'
 import { useToastStore } from '@/store/toastStore'
 import { useUiStore } from '@/store/uiStore'
 
+const TimeLeft = ({ endTime }: { endTime: string }) => {
+  const [timeLeft, setTimeLeft] = useState('')
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const diff = new Date(endTime).getTime() - Date.now()
+      if (diff <= 0) {
+        setTimeLeft('Tamamlandı')
+        clearInterval(interval)
+      } else {
+        const hours = Math.floor(diff / (1000 * 60 * 60))
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+        setTimeLeft(`${hours}s ${mins}d`)
+      }
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [endTime])
+
+  return <span className="font-bold font-display">{timeLeft}</span>
+}
+
 export function TrainingPage() {
   const { roster, sessions, startTraining } = useTraining()
   
@@ -11,18 +32,13 @@ export function TrainingPage() {
   const [selectedPlayers, setSelectedPlayers] = useState<string[]>([])
   const [isStarting, setIsStarting] = useState(false)
 
-  // Reset selections when switching slots
-  useEffect(() => {
-    setSelectedPlayers([])
-  }, [selectedSlot])
-
   // Get active session for the current slot
   // We identify slot by the positions of the players in the session
   const getSlotSession = (slot: string) => {
     if (sessions.length === 0) return null
     
     // Group sessions by completion time
-    const groups = sessions.reduce((acc: any, s: any) => {
+    const groups = sessions.reduce((acc: Record<string, unknown[]>, s: unknown) => {
       if (!acc[s.completed_at]) acc[s.completed_at] = []
       acc[s.completed_at].push(s)
       return acc
@@ -30,7 +46,7 @@ export function TrainingPage() {
 
     // Find the group that matches this slot's position criteria
     for (const [time, sessGrp] of Object.entries(groups)) {
-      const playersInSession = roster.filter(p => (sessGrp as any).some((s:any) => s.player_id === p.id))
+      const playersInSession = roster.filter(p => (sessGrp as unknown).some((s:unknown) => s.player_id === p.id))
       if (playersInSession.length === 0) continue
       
       const pos = playersInSession[0].position
@@ -95,34 +111,15 @@ export function TrainingPage() {
       await startTraining(selectedPlayers, selectedSlot)
       setSelectedPlayers([])
       useToastStore.getState().addToast('Antrenman başarıyla başladı! 4 saat sonra tamamlanacak.', 'success')
-    } catch (err: any) {
-      useToastStore.getState().addToast('Hata: ' + err.message, 'error')
+    } catch (err: unknown) {
+      useToastStore.getState().addToast('Hata: ' + (err instanceof Error ? err.message : String(err)), 'error')
     } finally {
       setIsStarting(false)
       useUiStore.getState().setLoading(false)
     }
   }
 
-  const TimeLeft = ({ endTime }: { endTime: string }) => {
-    const [timeLeft, setTimeLeft] = useState('')
-    
-    useEffect(() => {
-      const interval = setInterval(() => {
-        const diff = new Date(endTime).getTime() - Date.now()
-        if (diff <= 0) {
-          setTimeLeft('Tamamlandı')
-          clearInterval(interval)
-        } else {
-          const hours = Math.floor(diff / (1000 * 60 * 60))
-          const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
-          setTimeLeft(`${hours}s ${mins}d`)
-        }
-      }, 1000)
-      return () => clearInterval(interval)
-    }, [endTime])
 
-    return <span className="font-bold font-display">{timeLeft}</span>
-  }
 
   return (
     <div className="space-y-6 pt-4">
@@ -144,7 +141,12 @@ export function TrainingPage() {
         {(['HC', 'OC', 'DC', 'ST'] as const).map(slot => (
           <button
             key={slot}
-            onClick={() => setSelectedSlot(slot)}
+            onClick={() => {
+              if (selectedSlot !== slot) {
+                setSelectedSlot(slot)
+                setSelectedPlayers([])
+              }
+            }}
             className={`flex-1 py-3 rounded-t-xl font-display font-bold uppercase tracking-wider transition-colors border-b-4 ${
               selectedSlot === slot 
                 ? 'bg-[#00254c] text-accent border-accent' 
@@ -191,7 +193,7 @@ export function TrainingPage() {
               <div className="space-y-4">
                 <p className="text-white/50 text-sm font-bold uppercase mb-4">Şu An Antrenmanda Olanlar:</p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {currentSession.players.map((p: any) => (
+                  {currentSession.players.map((p: unknown) => (
                     <div key={p.id} className="bg-gradient-to-r from-[#00152b] to-[#001021] border border-accent/50 p-4 rounded-xl flex items-center gap-4">
                       <div className="bg-[#00254c] rounded w-12 h-12 flex items-center justify-center font-display font-black text-xl text-white">
                         {p.position}

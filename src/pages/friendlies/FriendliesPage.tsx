@@ -5,14 +5,14 @@ import { Shield, Coins, AlertCircle, CheckCircle, Activity, Star, Users, ArrowRi
 
 export function FriendliesPage() {
   const { franchise, league } = useFranchiseStore()
-  const [opponents, setOpponents] = useState<any[]>([])
+  const [opponents, setOpponents] = useState<unknown[]>([])
   const [loading, setLoading] = useState(true)
   const [simulatingId, setSimulatingId] = useState<string | null>(null)
   const [balance, setBalance] = useState(0)
 
   // Modal State
   const [showModal, setShowModal] = useState(false)
-  const [matchResult, setMatchResult] = useState<any>(null)
+  const [matchResult, setMatchResult] = useState<unknown>(null)
   const [errorMsg, setErrorMsg] = useState('')
 
   useEffect(() => {
@@ -58,8 +58,8 @@ export function FriendliesPage() {
       setBalance(prev => prev - 4)
       setMatchResult(data)
       setShowModal(true)
-    } catch (err: any) {
-      setErrorMsg(err.message)
+    } catch (err: unknown) {
+      setErrorMsg((err instanceof Error ? err.message : String(err)))
     } finally {
       setSimulatingId(null)
     }

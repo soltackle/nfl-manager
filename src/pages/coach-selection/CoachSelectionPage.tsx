@@ -90,8 +90,8 @@ export function CoachSelectionPage() {
       if (error) throw error;
       
       navigate('/dashboard');
-    } catch (err: any) {
-      alert("Hata: " + err.message);
+    } catch (err: unknown) {
+      alert("Hata: " + (err instanceof Error ? err.message : String(err)));
       setIsSubmitting(false);
     }
   }

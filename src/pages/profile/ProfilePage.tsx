@@ -22,12 +22,6 @@ export function ProfilePage() {
     const their = isHome ? m.away_score : m.home_score
     return my > their
   }).length
-  const losses = playedMatches.filter(m => {
-    const isHome = m.home_franchise_id === franchise?.id
-    const my = isHome ? m.home_score : m.away_score
-    const their = isHome ? m.away_score : m.home_score
-    return my < their
-  }).length
 
   const totalPF = playedMatches.reduce((acc, m) => {
     const isHome = m.home_franchise_id === franchise?.id
@@ -185,7 +179,7 @@ export function ProfilePage() {
   )
 }
 
-function StatCard({ icon: Icon, label, value, color }: { icon: any; label: string; value: string; color: string }) {
+function StatCard({ icon: Icon, label, value, color }: { icon: unknown; label: string; value: string; color: string }) {
   return (
     <div className="bg-[#001021] border border-white/5 rounded-xl p-4 text-center">
       <Icon className={`w-5 h-5 mx-auto mb-2 ${color}`} />
@@ -195,7 +189,7 @@ function StatCard({ icon: Icon, label, value, color }: { icon: any; label: strin
   )
 }
 
-function AchievementBadge({ icon: Icon, label, unlocked }: { icon: any; label: string; unlocked: boolean }) {
+function AchievementBadge({ icon: Icon, label, unlocked }: { icon: unknown; label: string; unlocked: boolean }) {
   return (
     <div className={`rounded-xl p-4 text-center border transition-all ${
       unlocked 

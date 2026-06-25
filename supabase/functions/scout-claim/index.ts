@@ -61,7 +61,7 @@ serve(async (req) => {
     if (fErr || !franchise) throw new Error('Takım bulunamadı.')
 
     // Prepare players for insertion
-    const playersToInsert = mission.player_data.map((player: any, index: number) => {
+    const playersToInsert = mission.player_data.map((player: unknown, index: number) => {
       if (index === selected_index) {
         // Chosen player: goes to franchise
         return {
@@ -95,7 +95,7 @@ serve(async (req) => {
       status: 200,
     })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400,

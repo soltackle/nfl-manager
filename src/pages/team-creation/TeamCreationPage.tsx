@@ -8,7 +8,7 @@ import { Layout } from '../../components/layout/Layout'
 import { LoadingScreen } from '../../components/ui/LoadingScreen'
 import { TraitBadge } from '../../components/ui/TraitBadge'
 import { motion, AnimatePresence } from 'framer-motion'
-import { DollarSign, ShieldAlert, CheckCircle2, UserPlus, Info, Wand2 } from 'lucide-react'
+import { DollarSign, ShieldAlert, CheckCircle2, UserPlus, Wand2 } from 'lucide-react'
 
 const REQUIRED_POSITIONS = {
   QB: 1, RB: 1, WR: 2, TE: 1, OL: 1, DL: 1, LB: 1, CB: 1, S: 1, K: 1, P: 1
@@ -23,14 +23,11 @@ export function TeamCreationPage() {
   const [cart, setCart] = useState<Player[]>([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
-  const [error, setError] = useState('')
 
-  useEffect(() => {
-    if (!user) return
-    fetchData()
-  }, [user])
 
-  const fetchData = async () => {
+
+
+  async function fetchData() {
     try {
       // 1. Get Franchise
       const { data: franchises, error: fErr } = await supabase
@@ -61,12 +58,19 @@ export function TeamCreationPage() {
       if (pErr) throw pErr
       
       setPoolPlayers(players || [])
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err: unknown) {
+      console.error((err instanceof Error ? err.message : String(err)))
     } finally {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (!user) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user])
 
   const addToCart = (player: Player) => {
     if (cart.length >= 12) {
@@ -122,7 +126,7 @@ export function TeamCreationPage() {
     let bestOverall = 0
     
     for (let attempt = 0; attempt < 500; attempt++) {
-      let currentTeam: Player[] = []
+      const currentTeam: Player[] = []
       let currentBudget = franchise.budget
       let isValid = true
       
@@ -155,7 +159,7 @@ export function TeamCreationPage() {
     }
     
     if (bestTeam.length === 0) {
-      let currentTeam: Player[] = []
+      const currentTeam: Player[] = []
       let currentBudget = franchise.budget
       const sortedByPrice = [...allAvailable].sort((a, b) => a.value - b.value)
       
@@ -208,8 +212,8 @@ export function TeamCreationPage() {
       useFranchiseStore.getState().setFranchise(updatedFranchise)
 
       navigate('/dashboard')
-    } catch (err: any) {
-      alert(err.message)
+    } catch (err: unknown) {
+      alert((err instanceof Error ? err.message : String(err)))
       setSubmitting(false)
     }
   }

@@ -273,9 +273,7 @@ serve(async (req) => {
     let reqBody = {}
     try {
       reqBody = await req.json()
-    } catch (e) {
-      // Ignored, empty body
-    }
+    } catch { /* ignore */ }
 
     const { league_id, week } = reqBody as any
 
@@ -668,40 +666,40 @@ serve(async (req) => {
           currentPlayType = 'deep_bomb'
           if (defFocus === 'dime_prevent') {
             // Hard counter to deep bomb
-            if (roll < 0.90) yardsGained = 0, eventOccurred = 'incomplete', outcomeText += getRandomLog("INCOMPLETE_PASS", teamName)
-            else if (roll < 0.95) isTurnover = true, eventOccurred = 'interception', outcomeText += getRandomLog("INTERCEPTION", teamName)
-            else yardsGained = 15 + Math.floor(Math.random() * 10), outcomeText += getRandomLog("DERIN_BOMBA_BASARILI", teamName, yardsGained)
+            if (roll < 0.90) { yardsGained = 0; eventOccurred = 'incomplete'; outcomeText += getRandomLog("INCOMPLETE_PASS", teamName); }
+            else if (roll < 0.95) { isTurnover = true; eventOccurred = 'interception'; outcomeText += getRandomLog("INTERCEPTION", teamName); }
+            else { yardsGained = 15 + Math.floor(Math.random() * 10); outcomeText += getRandomLog("DERIN_BOMBA_BASARILI", teamName, yardsGained); }
           } else if (isPassDef) {
             const intChance = hasBallHawk ? 0.82 : 0.85
-            if (roll < 0.70) yardsGained = 0, eventOccurred = 'incomplete', outcomeText += getRandomLog("INCOMPLETE_PASS", teamName)
-            else if (roll < intChance) isTurnover = true, eventOccurred = 'interception', outcomeText += getRandomLog("INTERCEPTION", teamName) + (hasBallHawk ? " (BALL HAWK!)" : "")
-            else yardsGained = 20 + Math.floor(Math.random() * 20), outcomeText += getRandomLog("DERIN_BOMBA_BASARILI", teamName, yardsGained)
+            if (roll < 0.70) { yardsGained = 0; eventOccurred = 'incomplete'; outcomeText += getRandomLog("INCOMPLETE_PASS", teamName); }
+            else if (roll < intChance) { isTurnover = true; eventOccurred = 'interception'; outcomeText += getRandomLog("INTERCEPTION", teamName) + (hasBallHawk ? " (BALL HAWK!)" : ""); }
+            else { yardsGained = 20 + Math.floor(Math.random() * 20); outcomeText += getRandomLog("DERIN_BOMBA_BASARILI", teamName, yardsGained); }
           } else if (isBlitz) {
             const sackChance = hasPassProtector ? 0.40 : 0.50
-            if (roll < sackChance) yardsGained = -(5 + Math.floor(Math.random() * 5)), eventOccurred = 'sack', outcomeText += getRandomLog("SACK", teamName, yardsGained)
-            else yardsGained = 30 + Math.floor(Math.random() * 30), outcomeText += getRandomLog("DERIN_BOMBA_BASARILI", teamName, yardsGained)
+            if (roll < sackChance) { yardsGained = -(5 + Math.floor(Math.random() * 5)); eventOccurred = 'sack'; outcomeText += getRandomLog("SACK", teamName, yardsGained); }
+            else { yardsGained = 30 + Math.floor(Math.random() * 30); outcomeText += getRandomLog("DERIN_BOMBA_BASARILI", teamName, yardsGained); }
           } else {
             const intChance = hasBallHawk ? 0.72 : 0.75
-            if (roll < 0.60) yardsGained = 0, eventOccurred = 'incomplete', outcomeText += getRandomLog("INCOMPLETE_PASS", teamName)
-            else if (roll < intChance) isTurnover = true, eventOccurred = 'interception', outcomeText += getRandomLog("INTERCEPTION", teamName) + (hasBallHawk ? " (BALL HAWK!)" : "")
-            else yardsGained = 20 + Math.floor(Math.random() * 25), outcomeText += getRandomLog("DERIN_BOMBA_BASARILI", teamName, yardsGained)
+            if (roll < 0.60) { yardsGained = 0; eventOccurred = 'incomplete'; outcomeText += getRandomLog("INCOMPLETE_PASS", teamName); }
+            else if (roll < intChance) { isTurnover = true; eventOccurred = 'interception'; outcomeText += getRandomLog("INTERCEPTION", teamName) + (hasBallHawk ? " (BALL HAWK!)" : ""); }
+            else { yardsGained = 20 + Math.floor(Math.random() * 25); outcomeText += getRandomLog("DERIN_BOMBA_BASARILI", teamName, yardsGained); }
           }
         } 
         else if (isRun) {
           currentPlayType = 'run'
           if (defFocus === 'dime_prevent') {
             // Dime prevent gets crushed by runs
-            yardsGained = 10 + Math.floor(Math.random() * 10), outcomeText += getRandomLog("ICERIDEN_SERT_KOSU", teamName, yardsGained) + " (Dime Savunması ezildi!)"
+            { yardsGained = 10 + Math.floor(Math.random() * 10); outcomeText += getRandomLog("ICERIDEN_SERT_KOSU", teamName, yardsGained) + " (Dime Savunması ezildi!)"; }
           } else if (isRunDef) {
-            if (roll < 0.65) yardsGained = Math.floor(Math.random() * 2), outcomeText += yardsGained === 0 ? getRandomLog("NO_GAIN", teamName) : getRandomLog("ICERIDEN_SERT_KOSU", teamName, yardsGained)
-            else yardsGained = 2 + Math.floor(Math.random() * 4), outcomeText += isPower ? getRandomLog("ICERIDEN_SERT_KOSU", teamName, yardsGained) : getRandomLog("DISARIDAN_KOSU_BASARILI", teamName, yardsGained)
+            if (roll < 0.65) { yardsGained = Math.floor(Math.random() * 2); outcomeText += yardsGained === 0 ? getRandomLog("NO_GAIN", teamName) : getRandomLog("ICERIDEN_SERT_KOSU", teamName, yardsGained); }
+            else { yardsGained = 2 + Math.floor(Math.random() * 4); outcomeText += isPower ? getRandomLog("ICERIDEN_SERT_KOSU", teamName, yardsGained) : getRandomLog("DISARIDAN_KOSU_BASARILI", teamName, yardsGained); }
           } else if (isPassDef) {
-            yardsGained = 4 + Math.floor(Math.random() * 6), outcomeText += isPower ? getRandomLog("ICERIDEN_SERT_KOSU", teamName, yardsGained) : getRandomLog("DISARIDAN_KOSU_BASARILI", teamName, yardsGained)
+            { yardsGained = 4 + Math.floor(Math.random() * 6); outcomeText += isPower ? getRandomLog("ICERIDEN_SERT_KOSU", teamName, yardsGained) : getRandomLog("DISARIDAN_KOSU_BASARILI", teamName, yardsGained); }
           } else {
             const fumbleChance = hasHitPower ? 0.28 : 0.25
-            if (roll < 0.20) yardsGained = 0, outcomeText += getRandomLog("NO_GAIN", teamName)
-            else if (roll < fumbleChance) isTurnover = true, eventOccurred = 'fumble', outcomeText += getRandomLog("FUMBLE", teamName) + (hasHitPower ? " (HIT POWER!)" : "")
-            else yardsGained = 3 + Math.floor(Math.random() * 5) + (isPower && hasRoadGrader ? 2 : 0), outcomeText += (isPower ? getRandomLog("ICERIDEN_SERT_KOSU", teamName, yardsGained) : getRandomLog("DISARIDAN_KOSU_BASARILI", teamName, yardsGained)) + (isPower && hasRoadGrader ? " (ROAD GRADER Block!)" : "")
+            if (roll < 0.20) { yardsGained = 0; outcomeText += getRandomLog("NO_GAIN", teamName); }
+            else if (roll < fumbleChance) { isTurnover = true; eventOccurred = 'fumble'; outcomeText += getRandomLog("FUMBLE", teamName) + (hasHitPower ? " (HIT POWER!)" : ""); }
+            else { yardsGained = 3 + Math.floor(Math.random() * 5) + (isPower && hasRoadGrader ? 2 : 0); outcomeText += (isPower ? getRandomLog("ICERIDEN_SERT_KOSU", teamName, yardsGained) : getRandomLog("DISARIDAN_KOSU_BASARILI", teamName, yardsGained)) + (isPower && hasRoadGrader ? " (ROAD GRADER Block!)" : ""); }
           }
         } 
         else {
@@ -710,22 +708,22 @@ serve(async (req) => {
           
           if (isScreen && isBlitz) {
             // Screen perfectly counters blitz
-            yardsGained = 15 + Math.floor(Math.random() * 15), outcomeText += getRandomLog("KISA_PAS_BASARILI", teamName, yardsGained) + " (Screen pası Blitz'i cezalandırdı!)"
+            { yardsGained = 15 + Math.floor(Math.random() * 15); outcomeText += getRandomLog("KISA_PAS_BASARILI", teamName, yardsGained) + " (Screen pası Blitz'i cezalandırdı!)"; }
           }
           else if (isPlayAction && isRunDef) {
             // Play action perfectly counters run stop
-            yardsGained = 15 + Math.floor(Math.random() * 10), outcomeText += getRandomLog("DERIN_BOMBA_BASARILI", teamName, yardsGained) + " (Play-Action savunmayı kandırdı!)"
+            { yardsGained = 15 + Math.floor(Math.random() * 10); outcomeText += getRandomLog("DERIN_BOMBA_BASARILI", teamName, yardsGained) + " (Play-Action savunmayı kandırdı!)"; }
           }
           else if (isBlitz) {
-            if (roll < 0.3) yardsGained = 0, eventOccurred = 'incomplete', outcomeText += getRandomLog("INCOMPLETE_PASS", teamName)
-            else yardsGained = 8 + Math.floor(Math.random() * 10), outcomeText += getRandomLog("KISA_PAS_BASARILI", teamName, yardsGained)
+            if (roll < 0.3) { yardsGained = 0; eventOccurred = 'incomplete'; outcomeText += getRandomLog("INCOMPLETE_PASS", teamName); }
+            else { yardsGained = 8 + Math.floor(Math.random() * 10); outcomeText += getRandomLog("KISA_PAS_BASARILI", teamName, yardsGained); }
           } else if (isPassDef) {
-            if (roll < 0.65) yardsGained = 0, eventOccurred = 'incomplete', outcomeText += getRandomLog("INCOMPLETE_PASS", teamName)
-            else if (roll < 0.75) isTurnover = true, eventOccurred = 'interception', outcomeText += getRandomLog("INTERCEPTION", teamName)
-            else yardsGained = 2 + Math.floor(Math.random() * 4), outcomeText += getRandomLog("KISA_PAS_BASARILI", teamName, yardsGained)
+            if (roll < 0.65) { yardsGained = 0; eventOccurred = 'incomplete'; outcomeText += getRandomLog("INCOMPLETE_PASS", teamName); }
+            else if (roll < 0.75) { isTurnover = true; eventOccurred = 'interception'; outcomeText += getRandomLog("INTERCEPTION", teamName); }
+            else { yardsGained = 2 + Math.floor(Math.random() * 4); outcomeText += getRandomLog("KISA_PAS_BASARILI", teamName, yardsGained); }
           } else {
-            if (roll < 0.40) yardsGained = 0, eventOccurred = 'incomplete', outcomeText += getRandomLog("INCOMPLETE_PASS", teamName)
-            else yardsGained = 4 + Math.floor(Math.random() * 6) + (hasYacMachine ? 3 : 0), outcomeText += getRandomLog("KISA_PAS_BASARILI", teamName, yardsGained) + (hasYacMachine ? " (YAC MACHINE!)" : "")
+            if (roll < 0.40) { yardsGained = 0; eventOccurred = 'incomplete'; outcomeText += getRandomLog("INCOMPLETE_PASS", teamName); }
+            else { yardsGained = 4 + Math.floor(Math.random() * 6) + (hasYacMachine ? 3 : 0); outcomeText += getRandomLog("KISA_PAS_BASARILI", teamName, yardsGained) + (hasYacMachine ? " (YAC MACHINE!)" : ""); }
           }
           
           if (eventOccurred === 'sack' && hasPocketPresence && Math.random() < 0.5) {
@@ -954,7 +952,7 @@ serve(async (req) => {
       status: 200,
     })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,

@@ -79,8 +79,8 @@ serve(async (req) => {
         })
 
         const text = await res.text()
-        let data: any = {}
-        try { data = JSON.parse(text) } catch (e) {}
+        let data: unknown = {}
+        try { data = JSON.parse(text) } catch {}
 
         if (!res.ok) {
           throw new Error(`Simulate edge error (${res.status}): ` + (data.error || text || 'Unknown'))
@@ -107,7 +107,7 @@ serve(async (req) => {
       status: 200,
     })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,

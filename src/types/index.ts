@@ -48,8 +48,8 @@ export interface Player {
   status: 'personal_pool' | 'free_agent' | 'roster' | 'listed_for_sale'
   listed_price?: number | null
   target_user_id?: string | null
-  hidden_traits?: any
-  traits?: any
+  hidden_traits?: unknown
+  traits?: unknown
 }
 
 export interface DepthChart {
@@ -63,7 +63,7 @@ export interface DepthChart {
 export interface Tactics {
   id: string
   franchise_id: string
-  paketler: any[]
+  paketler: unknown[]
   slider_ayarlari: {
     pass_ratio: number
     aggression: number
@@ -77,7 +77,7 @@ export interface Match {
   week: number
   home_score: number
   away_score: number
-  final_stats: any
+  final_stats: unknown
   league_id: string
   home_franchise_id: string
   away_franchise_id: string
@@ -86,7 +86,7 @@ export interface Match {
 export interface MatchDriveLog {
   id: string
   match_id: string
-  plays: any[]
+  plays: unknown[]
   expires_at: string
 }
 

@@ -91,7 +91,7 @@ serve(async (req) => {
 
     throw new Error('Invalid action')
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400,
@@ -99,7 +99,7 @@ serve(async (req) => {
   }
 })
 
-async function executeTrade(supabaseAdmin: any, offer_id: string, user_id?: string) {
+async function executeTrade(supabaseAdmin: unknown, offer_id: string, user_id?: string) {
   const { data: offer } = await supabaseAdmin.from('trade_offers').select('*').eq('id', offer_id).single()
   if (!offer || offer.status !== 'pending' && offer.status !== 'accepted') throw new Error('Geçersiz teklif')
 

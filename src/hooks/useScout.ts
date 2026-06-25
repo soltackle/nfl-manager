@@ -10,7 +10,7 @@ export interface ScoutMission {
   status: 'searching' | 'ready' | 'claimed'
   end_time: string
   created_date: string
-  player_data: any
+  player_data: unknown
 }
 
 export function useScout() {

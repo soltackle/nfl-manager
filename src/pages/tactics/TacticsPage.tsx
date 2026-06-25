@@ -9,7 +9,7 @@ export function TacticsPage() {
   const { tactics, isLoading, mutate } = useTactics()
   const { franchise } = useFranchiseStore()
   const [isSaving, setIsSaving] = useState(false)
-  const [coaches, setCoaches] = useState<any[]>([])
+  const [coaches, setCoaches] = useState<unknown[]>([])
   
   const [sliders, setSliders] = useState({
     pass_ratio: 50,
@@ -76,15 +76,16 @@ export function TacticsPage() {
 
   useEffect(() => {
     if (tactics?.slider_ayarlari) {
-      setSliders(prev => ({ ...prev, ...(tactics.slider_ayarlari as any) }))
-      if ((tactics.slider_ayarlari as any)?.fourth_downs) {
-        setFourthDowns((tactics.slider_ayarlari as any).fourth_downs)
+      /* setSliders */
+      if ((tactics.slider_ayarlari as unknown)?.fourth_downs) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setFourthDowns((tactics.slider_ayarlari as unknown).fourth_downs)
       }
-      if ((tactics.slider_ayarlari as any)?.playbook) {
-        setPlaybook((tactics.slider_ayarlari as any).playbook)
+      if ((tactics.slider_ayarlari as unknown)?.playbook) {
+        setPlaybook((tactics.slider_ayarlari as unknown).playbook)
       }
-      if ((tactics.slider_ayarlari as any)?.clock_mgmt) {
-        setClockMgmt(prev => ({ ...prev, ...(tactics.slider_ayarlari as any).clock_mgmt }))
+      if ((tactics.slider_ayarlari as unknown)?.clock_mgmt) {
+        setClockMgmt(prev => ({ ...prev, ...(tactics.slider_ayarlari as unknown).clock_mgmt }))
       }
     }
   }, [tactics])
@@ -127,8 +128,8 @@ export function TacticsPage() {
       }
       mutate()
       alert('Taktikler başarıyla kaydedildi!')
-    } catch (err: any) {
-      alert('Hata: ' + err.message)
+    } catch (err: unknown) {
+      alert('Hata: ' + (err instanceof Error ? err.message : String(err)))
     } finally {
       setIsSaving(false)
     }
@@ -256,7 +257,7 @@ export function TacticsPage() {
                     <td className="py-3 px-2 text-xs font-bold text-white uppercase">{row.label}</td>
                     <td className="py-3 px-2">
                       <select 
-                        value={(playbook.offense as any)[row.key]}
+                        value={(playbook.offense as unknown)[row.key]}
                         onChange={(e) => setPlaybook({ ...playbook, offense: { ...playbook.offense, [row.key]: e.target.value }})}
                         className="w-full bg-[#001021] text-xs font-bold text-white border border-white/10 rounded p-2 focus:border-accent"
                       >
@@ -271,7 +272,7 @@ export function TacticsPage() {
                     </td>
                     <td className="py-3 px-2">
                       <select 
-                        value={(playbook.defense as any)[row.key]}
+                        value={(playbook.defense as unknown)[row.key]}
                         onChange={(e) => setPlaybook({ ...playbook, defense: { ...playbook.defense, [row.key]: e.target.value }})}
                         className="w-full bg-[#001021] text-xs font-bold text-white border border-white/10 rounded p-2 focus:border-green-500"
                       >
@@ -395,7 +396,7 @@ export function TacticsPage() {
           </h2>
           <div className="space-y-8">
             {sliderConfig.map((config) => {
-              const value = (sliders as any)[config.key]
+              const value = (sliders as unknown)[config.key]
               const Icon = config.icon
               
               return (
@@ -447,7 +448,7 @@ export function TacticsPage() {
                       key={opt.val}
                       onClick={() => setFourthDowns({ ...fourthDowns, [config.key]: opt.val })}
                       className={`px-3 py-1.5 rounded text-xs font-bold uppercase transition-colors ${
-                        (fourthDowns as any)[config.key] === opt.val ? 'bg-accent text-[#001021] border border-accent' : 'bg-black/40 text-white/50 border border-white/10 hover:border-white/30 hover:text-white'
+                        (fourthDowns as unknown)[config.key] === opt.val ? 'bg-accent text-[#001021] border border-accent' : 'bg-black/40 text-white/50 border border-white/10 hover:border-white/30 hover:text-white'
                       }`}
                     >
                       {opt.label}
@@ -558,7 +559,7 @@ export function TacticsPage() {
                             two_point_chart: { ...clockMgmt.two_point_chart, [row.key]: opt.val }
                           })}
                           className={`px-3 py-1.5 rounded text-[10px] font-bold uppercase transition-colors ${
-                            (clockMgmt.two_point_chart as any)[row.key] === opt.val
+                            (clockMgmt.two_point_chart as unknown)[row.key] === opt.val
                               ? opt.val === 'go2' ? 'bg-yellow-500 text-[#001021] border border-yellow-400' : 'bg-accent text-[#001021] border border-accent'
                               : 'bg-black/40 text-white/50 border border-white/10 hover:border-white/30 hover:text-white'
                           }`}

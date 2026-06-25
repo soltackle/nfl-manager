@@ -11,6 +11,96 @@ export const SPONSORS = [
   { id: 'risk', name: 'Apex Yatırım', desc: 'Ya hep ya hiç! Garanti gelir yok, muazzam galibiyet primi.', basePay: 0, winBonus: 300000, color: 'from-purple-600 to-indigo-800' },
 ]
 
+const costs = [1000000, 2500000, 4000000]
+
+const formatMoney = (val: number) => `$${(val / 1000).toLocaleString()}k`
+
+interface UpgradeCardProps {
+  title: string;
+  desc: string;
+  level: number;
+  type: 'turf' | 'capacity' | 'practice';
+  icon: unknown;
+  bonuses: string[];
+  franchiseFund: number;
+  isUpgrading: boolean;
+  onUpgrade: (type: 'turf' | 'capacity' | 'practice') => void;
+}
+
+const UpgradeCard = ({ 
+  title, 
+  desc, 
+  level, 
+  type, 
+  icon: Icon,
+  bonuses,
+  franchiseFund,
+  isUpgrading,
+  onUpgrade
+}: UpgradeCardProps) => {
+  const isMax = level >= 3
+  const nextCost = isMax ? null : costs[level]
+  const canAfford = nextCost ? franchiseFund >= nextCost : false
+
+  return (
+    <div className="bg-gradient-to-br from-[#00254c] to-[#00152b] border border-[#005c99] rounded-xl p-6 relative overflow-hidden">
+      {/* Level Indicator */}
+      <div className="absolute top-0 right-0 bg-[#001021] border-b border-l border-[#005c99] px-4 py-1 rounded-bl-xl font-display font-black text-accent text-lg">
+        LVL {level}
+      </div>
+
+      <div className="flex items-start gap-4 mb-6">
+        <div className="bg-white/5 p-4 rounded-xl border border-white/10">
+          <Icon className="w-8 h-8 text-white" />
+        </div>
+        <div>
+          <h3 className="font-display font-bold text-xl uppercase tracking-wider text-white">{title}</h3>
+          <p className="text-white/50 text-sm">{desc}</p>
+        </div>
+      </div>
+
+      {/* Bonus List */}
+      <div className="space-y-2 mb-6">
+        <p className="text-xs font-bold uppercase text-white/50">Mevcut Bonuslar</p>
+        {level === 0 ? (
+          <div className="text-sm text-red-400 font-bold bg-red-500/10 p-2 rounded border border-red-500/20">Bonus Yok</div>
+        ) : (
+          <div className="text-sm text-green-400 font-bold bg-green-500/10 p-2 rounded border border-green-500/20">
+            {bonuses[level - 1]}
+          </div>
+        )}
+      </div>
+
+      {/* Upgrade Action */}
+      {!isMax ? (
+        <div className="border-t border-white/10 pt-4 flex items-center justify-between">
+          <div>
+            <p className="text-[10px] font-bold uppercase text-white/50 mb-1">Sonraki Seviye ({level + 1})</p>
+            <p className="font-display font-black text-lg text-white">{formatMoney(nextCost!)}</p>
+          </div>
+          <button 
+            onClick={() => onUpgrade(type)}
+            disabled={!canAfford || isUpgrading}
+            className={`px-6 py-3 rounded font-display font-bold uppercase tracking-wider transition-colors ${
+              canAfford 
+                ? 'bg-accent text-[#001021] hover:bg-white hover:text-[#001021]' 
+                : 'bg-white/5 text-white/30 cursor-not-allowed border border-white/10'
+            }`}
+          >
+            {isUpgrading ? 'Yükseltiliyor...' : 'YÜKSELT'}
+          </button>
+        </div>
+      ) : (
+        <div className="border-t border-white/10 pt-4 text-center">
+          <div className="inline-flex items-center gap-2 text-accent font-bold uppercase bg-accent/10 px-4 py-2 rounded-full">
+            <Lock className="w-4 h-4" /> Maksimum Seviye
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function ClubPage() {
   const { stadium, upgradeStadium } = useClub()
   const { franchise, initialize } = useFranchiseStore()
@@ -22,8 +112,12 @@ export function ClubPage() {
     try {
       await upgradeStadium(type)
       useToastStore.getState().addToast('Yükseltme tamamlandı!', 'success')
-    } catch (err: any) {
-      useToastStore.getState().addToast('Hata: ' + err.message, 'error')
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        useToastStore.getState().addToast('Hata: ' + (err instanceof Error ? err.message : String(err)), 'error')
+      } else {
+        useToastStore.getState().addToast('Bilinmeyen Hata', 'error')
+      }
     } finally {
       setIsUpgrading(false)
     }
@@ -37,88 +131,15 @@ export function ClubPage() {
       if (error) throw error
       await initialize(franchise.user_id)
       useToastStore.getState().addToast('Sponsor başarıyla seçildi! Anlaşma sezon sonuna kadar geçerli.', 'success')
-    } catch (err: any) {
-      useToastStore.getState().addToast('Hata: ' + err.message, 'error')
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        useToastStore.getState().addToast('Hata: ' + (err instanceof Error ? err.message : String(err)), 'error')
+      } else {
+        useToastStore.getState().addToast('Bilinmeyen Hata', 'error')
+      }
     } finally {
       setIsSelectingSponsor(false)
     }
-  }
-
-  const costs = [1000000, 2500000, 4000000]
-
-  const formatMoney = (val: number) => `$${(val / 1000).toLocaleString()}k`
-
-  const UpgradeCard = ({ 
-    title, 
-    desc, 
-    level, 
-    type, 
-    icon: Icon,
-    bonuses
-  }: { 
-    title: string, desc: string, level: number, type: 'turf' | 'capacity' | 'practice', icon: any, bonuses: string[] 
-  }) => {
-    const isMax = level >= 3
-    const nextCost = isMax ? null : costs[level]
-    const canAfford = nextCost ? (franchise?.club_fund || 0) >= nextCost : false
-
-    return (
-      <div className="bg-gradient-to-br from-[#00254c] to-[#00152b] border border-[#005c99] rounded-xl p-6 relative overflow-hidden">
-        {/* Level Indicator */}
-        <div className="absolute top-0 right-0 bg-[#001021] border-b border-l border-[#005c99] px-4 py-1 rounded-bl-xl font-display font-black text-accent text-lg">
-          LVL {level}
-        </div>
-
-        <div className="flex items-start gap-4 mb-6">
-          <div className="bg-white/5 p-4 rounded-xl border border-white/10">
-            <Icon className="w-8 h-8 text-white" />
-          </div>
-          <div>
-            <h3 className="font-display font-bold text-xl uppercase tracking-wider text-white">{title}</h3>
-            <p className="text-white/50 text-sm">{desc}</p>
-          </div>
-        </div>
-
-        {/* Bonus List */}
-        <div className="space-y-2 mb-6">
-          <p className="text-xs font-bold uppercase text-white/50">Mevcut Bonuslar</p>
-          {level === 0 ? (
-            <div className="text-sm text-red-400 font-bold bg-red-500/10 p-2 rounded border border-red-500/20">Bonus Yok</div>
-          ) : (
-            <div className="text-sm text-green-400 font-bold bg-green-500/10 p-2 rounded border border-green-500/20">
-              {bonuses[level - 1]}
-            </div>
-          )}
-        </div>
-
-        {/* Upgrade Action */}
-        {!isMax ? (
-          <div className="border-t border-white/10 pt-4 flex items-center justify-between">
-            <div>
-              <p className="text-[10px] font-bold uppercase text-white/50 mb-1">Sonraki Seviye ({level + 1})</p>
-              <p className="font-display font-black text-lg text-white">{formatMoney(nextCost!)}</p>
-            </div>
-            <button 
-              onClick={() => handleUpgrade(type)}
-              disabled={!canAfford || isUpgrading}
-              className={`px-6 py-3 rounded font-display font-bold uppercase tracking-wider transition-colors ${
-                canAfford 
-                  ? 'bg-accent text-[#001021] hover:bg-white hover:text-[#001021]' 
-                  : 'bg-white/5 text-white/30 cursor-not-allowed border border-white/10'
-              }`}
-            >
-              {isUpgrading ? 'Yükseltiliyor...' : 'YÜKSELT'}
-            </button>
-          </div>
-        ) : (
-          <div className="border-t border-white/10 pt-4 text-center">
-            <div className="inline-flex items-center gap-2 text-accent font-bold uppercase bg-accent/10 px-4 py-2 rounded-full">
-              <Lock className="w-4 h-4" /> Maksimum Seviye
-            </div>
-          </div>
-        )}
-      </div>
-    )
   }
 
   return (
@@ -150,6 +171,9 @@ export function ClubPage() {
           type="turf"
           icon={TrendingUp}
           bonuses={['Ev Sahibi Avantajı: +%2', 'Ev Sahibi Avantajı: +%4', 'Ev Sahibi Avantajı: +%6']}
+          franchiseFund={franchise?.club_fund || 0}
+          isUpgrading={isUpgrading}
+          onUpgrade={handleUpgrade}
         />
 
         <UpgradeCard 
@@ -159,6 +183,9 @@ export function ClubPage() {
           type="capacity"
           icon={Users}
           bonuses={['Maç Günü Geliri: +%20', 'Maç Günü Geliri: +%40', 'Maç Günü Geliri: +%60']}
+          franchiseFund={franchise?.club_fund || 0}
+          isUpgrading={isUpgrading}
+          onUpgrade={handleUpgrade}
         />
 
         <UpgradeCard 
@@ -168,6 +195,9 @@ export function ClubPage() {
           type="practice"
           icon={Activity}
           bonuses={['Antrenman Verimi: +%10', 'Antrenman Verimi: +%25', 'Antrenman Verimi: +%50']}
+          franchiseFund={franchise?.club_fund || 0}
+          isUpgrading={isUpgrading}
+          onUpgrade={handleUpgrade}
         />
       </div>
 

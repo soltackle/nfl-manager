@@ -9,7 +9,7 @@ interface QuestsModalProps {
 
 export function QuestsModal({ onClose }: QuestsModalProps) {
   const { user } = useAuthStore()
-  const [quests, setQuests] = useState<any>(null)
+  const [quests, setQuests] = useState<unknown>(null)
   const [loading, setLoading] = useState(true)
   const [claiming, setClaiming] = useState<string | null>(null)
 
@@ -47,8 +47,8 @@ export function QuestsModal({ onClose }: QuestsModalProps) {
       
       // Refetch quests
       await fetchQuests()
-    } catch (err: any) {
-      alert(err.message)
+    } catch (err: unknown) {
+      alert((err instanceof Error ? err.message : String(err)))
     } finally {
       setClaiming(null)
     }

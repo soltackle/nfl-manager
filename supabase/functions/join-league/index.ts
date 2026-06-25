@@ -60,7 +60,7 @@ serve(async (req) => {
     if (memberCount >= 8) throw new Error('Bu lig dolu (8/8)')
 
     // Check if already a member
-    const alreadyJoined = league.franchises?.some((f: any) => f.user_id === user.id)
+    const alreadyJoined = league.franchises?.some((f: unknown) => f.user_id === user.id)
     if (alreadyJoined) throw new Error('Bu lige zaten katıldınız')
 
     // Create franchise
@@ -97,7 +97,7 @@ serve(async (req) => {
       status: 200,
     })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400,

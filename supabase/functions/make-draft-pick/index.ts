@@ -143,7 +143,7 @@ serve(async (req) => {
         const positions = ['QB', 'RB', 'WR', 'TE', 'OL', 'DE', 'LB', 'CB', 'S', 'K']
         
         positions.forEach(p => { rosterCount[p] = 0; maxOverall[p] = 0; })
-        roster.forEach((p: any) => {
+        roster.forEach((p: unknown) => {
           rosterCount[p.position] = (rosterCount[p.position] || 0) + 1
           if (p.overall > maxOverall[p.position]) maxOverall[p.position] = p.overall
         })
@@ -248,7 +248,7 @@ serve(async (req) => {
         }
         await supabaseAdmin.from('players').insert(allRolePlayers)
 
-        await supabaseAdmin.rpc('generate_fixtures', { p_league_id: franchise.league_id })
+        await supabaseAdmin.rpc('generate_fixtures', { p: franchise.league_id })
         await supabaseAdmin.from('leagues').update({ status: 'active' }).eq('id', franchise.league_id)
         break
       } else {
@@ -282,7 +282,7 @@ serve(async (req) => {
       status: 200,
     })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     try {
       const supabaseAdmin = createClient(
         Deno.env.get('SUPABASE_URL') ?? '',
@@ -295,7 +295,7 @@ serve(async (req) => {
         value: 1000,
         traits: []
       })
-    } catch (e) {}
+    } catch {}
 
     return new Response(JSON.stringify({ error: error.message, stack: error.stack }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

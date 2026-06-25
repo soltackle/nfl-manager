@@ -47,7 +47,7 @@ export function LeagueChat() {
         let newMsg = payload.new as ChatType
         if (!newMsg.is_system && newMsg.franchise_id) {
            const { data } = await supabase.from('franchises').select('team_name').eq('id', newMsg.franchise_id).single()
-           newMsg = { ...newMsg, franchises: data } as any
+           newMsg = { ...newMsg, franchises: data } as unknown
         }
         setMessages(prev => [...prev, newMsg])
         scrollToBottom()
@@ -59,14 +59,14 @@ export function LeagueChat() {
     }
   }, [league])
 
-  const scrollToBottom = () => {
+  function scrollToBottom() {
     setTimeout(() => {
       chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     }, 100)
   }
 
   useEffect(() => {
-    let timer: any;
+    let timer: unknown;
     if (cooldown > 0) {
       timer = setInterval(() => {
         setCooldown(prev => prev - 1)
@@ -130,7 +130,7 @@ export function LeagueChat() {
             <div key={msg.id || idx} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
               <div className={`text-[10px] text-white/40 mb-1 flex items-center gap-1 font-bold tracking-wider ${isMe ? 'flex-row-reverse' : ''}`}>
                 <Shield className="w-3 h-3 text-accent" />
-                {(msg as any).franchises?.team_name || 'Bilinmeyen'} 
+                {(msg as unknown).franchises?.team_name || 'Bilinmeyen'} 
                 <span className="text-white/20 mx-1">•</span>
                 {format(new Date(msg.created_at), 'HH:mm', { locale: tr })}
               </div>

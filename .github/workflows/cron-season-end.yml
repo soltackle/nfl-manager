@@ -1,18 +1,11 @@
-name: Season End
+# MOVED TO SUPABASE pg_cron (migration: crons_via_pg_cron) on 2026-06-25.
+# Schedule disabled to avoid double-execution with the Supabase scheduler.
+# The job now runs as public.cron_* inside Postgres. Manual trigger kept for reference.
+name: Season End (moved to Supabase pg_cron)
 on:
-  schedule:
-    - cron: '0 21 * * 0'
   workflow_dispatch:
-
 jobs:
-  run:
+  noop:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: '20' }
-      - run: npm ci
-      - run: npx tsx scripts/season-end.ts
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      - run: echo "This cron moved to Supabase pg_cron (public.cron_*). Nothing to do here."

@@ -25,7 +25,7 @@ serve(async (req) => {
     if (userError || !userData?.user) throw new Error('Invalid token')
     const user = userData.user
 
-    const { team_name, city, target_league_id } = await req.json()
+    const { team_name, city, target } = await req.json()
     if (!team_name || !city) throw new Error('Takım Adı ve Şehir zorunludur')
 
     // 1. Check if user already has an active or waiting franchise
@@ -45,20 +45,20 @@ serve(async (req) => {
       .order('created_at', { ascending: true })
 
     let matchedLeagueId = null
-    let isNewLeague = false
+    let _isNewLeague = false
 
-    if (target_league_id) {
+    if (target) {
       // Direct join
-      const { data: targetLeague } = await supabaseAdmin.from('leagues').select('*').eq('id', target_league_id).eq('status', 'waiting').single()
+      const { data: targetLeague } = await supabaseAdmin.from('leagues').select('*').eq('id', target).eq('status', 'waiting').single()
       if (!targetLeague) throw new Error('Bu lig artık katılıma açık değil veya bulunamadı.')
       
-      const { data: userInLeague } = await supabaseAdmin.from('franchises').select('id').eq('league_id', target_league_id).eq('user_id', user.id).single()
+      const { data: userInLeague } = await supabaseAdmin.from('franchises').select('id').eq('league_id', target).eq('user_id', user.id).single()
       if (userInLeague) throw new Error('Bu lige zaten katıldınız.')
       
-      const { count } = await supabaseAdmin.from('franchises').select('*', { count: 'exact', head: true }).eq('league_id', target_league_id)
+      const { count } = await supabaseAdmin.from('franchises').select('*', { count: 'exact', head: true }).eq('league_id', target)
       if (count !== null && count >= 8) throw new Error('Bu ligin kapasitesi dolu.')
 
-      matchedLeagueId = target_league_id
+      matchedLeagueId = target
     } else {
       if (waitingLeagues && waitingLeagues.length > 0) {
         for (const league of waitingLeagues) {
@@ -101,7 +101,7 @@ serve(async (req) => {
 
       if (lErr) throw lErr
       matchedLeagueId = newLeague.id
-      isNewLeague = true
+      _isNewLeague = true
     }
 
     // 4. Join the league
@@ -132,7 +132,7 @@ serve(async (req) => {
       status: 200,
     })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,

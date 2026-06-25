@@ -1,22 +1,33 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { corsHeaders, handleCors } from "../_shared/cors.ts";
-import { verifyJWT } from "../_shared/auth.ts";
-import { adminClient } from "../_shared/supabase.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+// Self-contained (no ../_shared imports) so it deploys cleanly as a single file.
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+const adminClient = createClient(
+  Deno.env.get("SUPABASE_URL")!,
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+);
 
 serve(async (req) => {
-  const corsResponse = handleCors(req);
-  if (corsResponse) return corsResponse;
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const user = await verifyJWT(req);
+    const token = req.headers.get("Authorization")?.replace("Bearer ", "");
+    if (!token) throw new Error("unauthorized");
+    const { data: { user }, error: authErr } = await adminClient.auth.getUser(token);
+    if (authErr || !user) throw new Error("unauthorized");
+
     let resultData = null;
-    
-    if (req.method === 'GET') {
+    if (req.method === "GET") {
+      // FIX: table is "achievements" (per-user rows), not the non-existent "user_achievements".
       const { data, error } = await adminClient
-        .from('user_achievements')
-        .select(`*, achievements(*)`)
-        .eq('user_id', user.id);
-        
+        .from("achievements")
+        .select("*")
+        .eq("user_id", user.id);
       if (error) throw error;
       resultData = data;
     }
@@ -24,10 +35,10 @@ serve(async (req) => {
     return new Response(JSON.stringify({ success: true, data: resultData || [] }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
-  } catch (err: any) {
-    const status = err.message === "unauthorized" ? 401 : 400;
-    return new Response(JSON.stringify({ error: err.message }), {
-      status,
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return new Response(JSON.stringify({ error: msg }), {
+      status: msg === "unauthorized" ? 401 : 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }

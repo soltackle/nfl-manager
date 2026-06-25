@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 const TOUCHDOWN_SOUND = new Audio('/sounds/Touchdown.mp3')
 
-const AnimatedPitch = ({ log }: { log: any }) => {
+const AnimatedPitch = ({ log }: { log: unknown }) => {
   if (!log) return null
 
   // 120 yards total: 10 EZ + 100 Field + 10 EZ
@@ -123,10 +123,10 @@ export function MatchResultPage() {
   const { id } = useParams()
   
   const [playbackState, setPlaybackState] = useState<'idle' | 'playing' | 'finished'>('idle')
-  const [visibleLogs, setVisibleLogs] = useState<any[]>([])
+  const [visibleLogs, setVisibleLogs] = useState<unknown[]>([])
   const [currentHomeScore, setCurrentHomeScore] = useState(0)
   const [currentAwayScore, setCurrentAwayScore] = useState(0)
-  const [currentLog, setCurrentLog] = useState<any>(null)
+  const [currentLog, setCurrentLog] = useState<unknown>(null)
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(1)
   
   const currentIndexRef = useRef(0)
@@ -168,6 +168,7 @@ export function MatchResultPage() {
     if (playbackState === 'playing' && data?.logs) {
       const totalLogs = data.logs.length
       if (totalLogs === 0) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setPlaybackState('finished')
         setCurrentHomeScore(data.match.home_score)
         setCurrentAwayScore(data.match.away_score)
@@ -245,13 +246,13 @@ export function MatchResultPage() {
            
            <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12 mb-12">
              <div className="text-2xl font-display font-bold text-white text-center md:text-right md:w-1/3">
-               {(match as any).home_franchise?.team_name || 'Ev Sahibi'}
+               {(match as unknown).home_franchise?.team_name || 'Ev Sahibi'}
              </div>
              <div className="bg-black/50 border border-white/10 rounded-full px-4 py-2">
                <span className="text-accent font-black text-xl tracking-widest">VS</span>
              </div>
              <div className="text-2xl font-display font-bold text-white text-center md:text-left md:w-1/3">
-               {(match as any).away_franchise?.team_name || 'Deplasman'}
+               {(match as unknown).away_franchise?.team_name || 'Deplasman'}
              </div>
            </div>
 
@@ -309,7 +310,7 @@ export function MatchResultPage() {
           {/* Home */}
           <div className="flex flex-col items-center w-1/3">
             <div className="text-white font-display font-black text-lg md:text-xl uppercase tracking-wide text-center">
-              {(match as any).home_franchise?.team_name || 'Ev Sahibi'}
+              {(match as unknown).home_franchise?.team_name || 'Ev Sahibi'}
             </div>
           </div>
 
@@ -327,7 +328,7 @@ export function MatchResultPage() {
           {/* Away */}
           <div className="flex flex-col items-center w-1/3">
             <div className="text-white font-display font-black text-lg md:text-xl uppercase tracking-wide text-center">
-              {(match as any).away_franchise?.team_name || 'Deplasman'}
+              {(match as unknown).away_franchise?.team_name || 'Deplasman'}
             </div>
           </div>
         </div>
@@ -347,7 +348,7 @@ export function MatchResultPage() {
         
         <div className="space-y-3">
           {visibleLogs.length > 0 ? (
-            visibleLogs.slice().reverse().map((log: any, i: number) => {
+            visibleLogs.slice().reverse().map((log: unknown, i: number) => {
               const time = log.time || Object.keys(log)[0]
               const text = log.text || log[time]
               
@@ -395,18 +396,18 @@ export function MatchResultPage() {
             </h2>
             {(() => {
               const allLogs = data?.logs || []
-              const homeTDs = allLogs.filter((l: any) => l.possession === 'home' && l.event === 'touchdown').length
-              const awayTDs = allLogs.filter((l: any) => l.possession === 'away' && l.event === 'touchdown').length
-              const homeINTs = allLogs.filter((l: any) => l.possession === 'home' && l.event === 'interception').length
-              const awayINTs = allLogs.filter((l: any) => l.possession === 'away' && l.event === 'interception').length
-              const homeFumbles = allLogs.filter((l: any) => l.possession === 'home' && l.event === 'fumble').length
-              const awayFumbles = allLogs.filter((l: any) => l.possession === 'away' && l.event === 'fumble').length
-              const homeSacks = allLogs.filter((l: any) => l.possession === 'home' && l.event === 'sack').length
-              const awaySacks = allLogs.filter((l: any) => l.possession === 'away' && l.event === 'sack').length
-              const homeFG = allLogs.filter((l: any) => l.possession === 'home' && l.event === 'fg_good').length
-              const awayFG = allLogs.filter((l: any) => l.possession === 'away' && l.event === 'fg_good').length
-              const twoPointPlays = allLogs.filter((l: any) => l.text?.includes('2-POINT')).length
-              const coachPredictions = allLogs.filter((l: any) => l.text?.includes('TAHMİN') || l.text?.includes('Okuma')).length
+              const homeTDs = allLogs.filter((l: unknown) => l.possession === 'home' && l.event === 'touchdown').length
+              const awayTDs = allLogs.filter((l: unknown) => l.possession === 'away' && l.event === 'touchdown').length
+              const homeINTs = allLogs.filter((l: unknown) => l.possession === 'home' && l.event === 'interception').length
+              const awayINTs = allLogs.filter((l: unknown) => l.possession === 'away' && l.event === 'interception').length
+              const homeFumbles = allLogs.filter((l: unknown) => l.possession === 'home' && l.event === 'fumble').length
+              const awayFumbles = allLogs.filter((l: unknown) => l.possession === 'away' && l.event === 'fumble').length
+              const homeSacks = allLogs.filter((l: unknown) => l.possession === 'home' && l.event === 'sack').length
+              const awaySacks = allLogs.filter((l: unknown) => l.possession === 'away' && l.event === 'sack').length
+              const homeFG = allLogs.filter((l: unknown) => l.possession === 'home' && l.event === 'fg_good').length
+              const awayFG = allLogs.filter((l: unknown) => l.possession === 'away' && l.event === 'fg_good').length
+              const twoPointPlays = allLogs.filter((l: unknown) => l.text?.includes('2-POINT')).length
+              const coachPredictions = allLogs.filter((l: unknown) => l.text?.includes('TAHMİN') || l.text?.includes('Okuma')).length
 
               const statRows = [
                 { label: 'Touchdown', home: homeTDs, away: awayTDs, color: 'text-yellow-400' },
@@ -419,9 +420,9 @@ export function MatchResultPage() {
               return (
                 <>
                   <div className="grid grid-cols-3 gap-2 text-center mb-2">
-                    <div className="text-xs font-bold text-white/50 uppercase">{(match as any).home_franchise?.team_name}</div>
+                    <div className="text-xs font-bold text-white/50 uppercase">{(match as unknown).home_franchise?.team_name}</div>
                     <div className="text-[10px] font-bold text-white/30 uppercase">İSTATİSTİK</div>
-                    <div className="text-xs font-bold text-white/50 uppercase">{(match as any).away_franchise?.team_name}</div>
+                    <div className="text-xs font-bold text-white/50 uppercase">{(match as unknown).away_franchise?.team_name}</div>
                   </div>
                   {statRows.map(row => (
                     <div key={row.label} className="grid grid-cols-3 gap-2 items-center py-2 border-b border-white/5">

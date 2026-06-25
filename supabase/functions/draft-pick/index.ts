@@ -24,7 +24,7 @@ serve(async (req) => {
       
       const { data, error } = await adminClient.rpc('make_draft_pick', { 
         p_franchise_id: franchise.id, 
-        p_league_id: franchise.league_id,
+        p: franchise.league_id,
         p_player_id: player_id 
       });
       
@@ -35,9 +35,9 @@ serve(async (req) => {
     return new Response(JSON.stringify({ success: true, data: resultData }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
-  } catch (err: any) {
-    const status = err.message === "unauthorized" ? 401 : 400;
-    return new Response(JSON.stringify({ error: err.message }), {
+  } catch (err: unknown) {
+    const status = (err instanceof Error ? err.message : String(err)) === "unauthorized" ? 401 : 400;
+    return new Response(JSON.stringify({ error: (err instanceof Error ? err.message : String(err)) }), {
       status,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

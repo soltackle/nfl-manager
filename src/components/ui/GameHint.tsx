@@ -6,14 +6,20 @@ export function GameHint() {
   const location = useLocation()
   const [isOpen, setIsOpen] = useState(false)
   const [showPing, setShowPing] = useState(false)
+  const [prevPath, setPrevPath] = useState(location.pathname)
 
-  // Sayfa değiştiğinde ipucunu otomatik kapa ve "yeni ipucu var" animasyonu oynat
-  useEffect(() => {
+  if (location.pathname !== prevPath) {
+    setPrevPath(location.pathname)
     setIsOpen(false)
     setShowPing(true)
-    const timer = setTimeout(() => setShowPing(false), 3000)
-    return () => clearTimeout(timer)
-  }, [location.pathname])
+  }
+
+  useEffect(() => {
+    if (showPing) {
+      const timer = setTimeout(() => setShowPing(false), 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [showPing])
 
   const getHint = () => {
     const path = location.pathname

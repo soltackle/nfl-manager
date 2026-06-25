@@ -11,7 +11,7 @@ export function LeagueLobbyPage() {
   const { activeFranchiseId, franchise, league, setLeague } = useFranchiseStore()
   const navigate = useNavigate()
 
-  const [members, setMembers] = useState<any[]>([])
+  const [members, setMembers] = useState<unknown[]>([])
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
   const [actionLoading, setActionLoading] = useState(false)
@@ -48,7 +48,7 @@ export function LeagueLobbyPage() {
         { event: 'UPDATE', schema: 'public', table: 'leagues', filter: `id=eq.${league.id}` },
         (payload) => {
           // If status changes to draft, redirect
-          setLeague(payload.new as any)
+          setLeague(payload.new as unknown)
           if (payload.new.status === 'draft') {
             navigate('/team-creation')
           }
@@ -81,7 +81,7 @@ export function LeagueLobbyPage() {
     // Also re-fetch league status just in case realtime missed it
     const { data: lg } = await supabase.from('leagues').select('*').eq('id', league.id).single()
     if (lg) {
-      setLeague(lg as any)
+      setLeague(lg as unknown)
       if (lg.status === 'draft') {
         navigate('/team-creation')
       }
@@ -102,7 +102,7 @@ export function LeagueLobbyPage() {
         
         if (diff <= 0) {
           setTimeLeft(0)
-          // If time is up, any user in the lobby can trigger the bot fill (the edge function allows this now)
+          // If time is up, unknown user in the lobby can trigger the bot fill (the edge function allows this now)
           // We can auto trigger it, but let's be careful not to spam the function if 8 people hit it at once.
           // Let's just rely on the 'handleFillBots' button showing up for everyone when time is 0.
         } else {
@@ -135,8 +135,8 @@ export function LeagueLobbyPage() {
       setTimeout(() => {
         fetchMembers()
       }, 3000)
-    } catch (err: any) {
-      alert('Hata: ' + err.message)
+    } catch (err: unknown) {
+      alert('Hata: ' + (err instanceof Error ? err.message : String(err)))
     } finally {
       setActionLoading(false)
     }
@@ -152,8 +152,8 @@ export function LeagueLobbyPage() {
       if (error) throw error
       if (data?.error) throw new Error(data.error)
       setLeague({ ...league, draft_start_time: data.draft_start_time })
-    } catch (err: any) {
-      alert('Hata: ' + err.message)
+    } catch (err: unknown) {
+      alert('Hata: ' + (err instanceof Error ? err.message : String(err)))
     } finally {
       setActionLoading(false)
     }
@@ -170,8 +170,8 @@ export function LeagueLobbyPage() {
       if (data?.error) throw new Error(data.error)
       setLeague({ ...league, status: 'draft' })
       navigate('/team-creation')
-    } catch (err: any) {
-      alert('Hata: ' + err.message)
+    } catch (err: unknown) {
+      alert('Hata: ' + (err instanceof Error ? err.message : String(err)))
     } finally {
       setActionLoading(false)
     }

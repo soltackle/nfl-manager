@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import useSWR from 'swr'
 import { supabase } from '@/lib/supabase'
 import { useFranchiseStore } from '@/store/franchiseStore'
@@ -23,9 +24,6 @@ export function useTraining() {
   const fetchSessions = async () => {
     if (!franchise) return []
 
-    // Process any completed training sessions before fetching
-    await supabase.functions.invoke('process-training')
-
     // Assuming RLS allows select via migration 002.
     const { data, error } = await supabase
       .from('training_sessions')
@@ -47,6 +45,14 @@ export function useTraining() {
     fetchSessions,
     { refreshInterval: 60000 } // Refresh every minute to update timers
   )
+
+  useEffect(() => {
+    if (franchise) {
+      supabase.functions.invoke('process-training').then(() => {
+        mutateSessions()
+      }).catch(console.error)
+    }
+  }, [franchise, mutateSessions])
 
   const startTraining = async (playerIds: string[], slot: string) => {
     if (!franchise) return

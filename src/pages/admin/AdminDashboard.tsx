@@ -16,7 +16,7 @@ export function AdminDashboard() {
 
   // System Stats State
   const [stats, setStats] = useState({ users: 0, googleUsers: 0, leagues: 0, matches: 0, loading: true })
-  const [leaguesList, setLeaguesList] = useState<any[]>([])
+  const [leaguesList, setLeaguesList] = useState<unknown[]>([])
 
   const fetchStats = async () => {
     try {
@@ -51,8 +51,8 @@ export function AdminDashboard() {
       })
       if (error) throw error
       alert('Lig başarıyla kuruldu ve botlar eklendi!')
-    } catch (err: any) {
-      alert('Hata: ' + err.message)
+    } catch (err: unknown) {
+      alert('Hata: ' + (err instanceof Error ? err.message : String(err)))
     } finally {
       setIsCreating(false)
     }
@@ -66,8 +66,8 @@ export function AdminDashboard() {
       })
       if (error) throw error
       alert('Boş slotlar botlarla dolduruldu! Lig tamamen doldu.')
-    } catch (err: any) {
-      alert('Hata: ' + err.message)
+    } catch (err: unknown) {
+      alert('Hata: ' + (err instanceof Error ? err.message : String(err)))
     }
   }
   const handleResetDraftPool = async () => {
@@ -76,8 +76,8 @@ export function AdminDashboard() {
       const { error } = await supabase.from('players').delete().is('franchise_id', null)
       if (error) throw error
       alert('Draft havuzu başarıyla sıfırlandı! Şimdi Draftı başlatırsanız yeni dengeli havuz üretilecek.')
-    } catch (err: any) {
-      alert('Hata: ' + err.message)
+    } catch (err: unknown) {
+      alert('Hata: ' + (err instanceof Error ? err.message : String(err)))
     }
   }
 
@@ -183,8 +183,8 @@ export function AdminDashboard() {
       }
 
       alert('Draft başlatıldı! Şimdi /draft sayfasına gidin.')
-    } catch (err: any) {
-      alert('Hata: ' + err.message)
+    } catch (err: unknown) {
+      alert('Hata: ' + (err instanceof Error ? err.message : String(err)))
     }
   }
 
@@ -196,8 +196,8 @@ export function AdminDashboard() {
       })
       if (error) throw error
       alert('Draft simüle edildi ve sezon başladı!')
-    } catch (err: any) {
-      alert('Hata: ' + err.message)
+    } catch (err: unknown) {
+      alert('Hata: ' + (err instanceof Error ? err.message : String(err)))
     }
   }
 
@@ -216,8 +216,8 @@ export function AdminDashboard() {
       } else {
         alert('Hata: ' + (data?.error || 'Bilinmeyen hata'))
       }
-    } catch (err: any) {
-      alert('Silme Hatası: ' + err.message)
+    } catch (err: unknown) {
+      alert('Silme Hatası: ' + (err instanceof Error ? err.message : String(err)))
     }
   }
 
@@ -244,8 +244,8 @@ export function AdminDashboard() {
       
       alert(`${successCount} adet kariyer slotunuz başarıyla temizlendi! Yönlendiriliyorsunuz...`)
       window.location.href = '/slots'
-    } catch (err: any) {
-      alert('Hata: ' + err.message)
+    } catch (err: unknown) {
+      alert('Hata: ' + (err instanceof Error ? err.message : String(err)))
     }
   }
 
@@ -261,8 +261,8 @@ export function AdminDashboard() {
       })
       if (error) throw error
       alert(`Hafta ${week} başarıyla simüle edildi!`)
-    } catch (err: any) {
-      alert('Simülasyon Hatası: ' + err.message)
+    } catch (err: unknown) {
+      alert('Simülasyon Hatası: ' + (err instanceof Error ? err.message : String(err)))
     } finally {
       setIsSimulating(false)
     }
@@ -277,7 +277,7 @@ export function AdminDashboard() {
       await setMaintenance(!maintenanceMode)
       alert(maintenanceMode ? 'Site kullanıcılara açıldı!' : 'Tadilat modu aktif edildi. Kullanıcılar /tadilat sayfasına yönlendirilecek.')
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Bilinmeyen hata'
+      const message = err instanceof Error ? (err instanceof Error ? err.message : String(err)) : 'Bilinmeyen hata'
       alert('Hata: ' + message)
     } finally {
       setIsTogglingMaintenance(false)
@@ -295,8 +295,8 @@ export function AdminDashboard() {
       if (error) throw error
       alert('Sezon başarıyla bitirildi! Yeni sezon için Draft aşamasına geçildi.')
       window.location.reload()
-    } catch (err: any) {
-      alert('Sezon Bitirme Hatası: ' + err.message)
+    } catch (err: unknown) {
+      alert('Sezon Bitirme Hatası: ' + (err instanceof Error ? err.message : String(err)))
     }
   }
 
@@ -318,7 +318,7 @@ export function AdminDashboard() {
             <div className="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-1">Şu An Oyunda</div>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-              <div className="text-2xl font-black text-white">{stats.loading ? '...' : (stats as any).online}</div>
+              <div className="text-2xl font-black text-white">{stats.loading ? '...' : (stats as unknown).online}</div>
             </div>
           </div>
           <div className="bg-green-500/20 p-3 rounded-full">
@@ -339,7 +339,7 @@ export function AdminDashboard() {
         <div className="bg-[#001f40] border border-[#004b93] rounded-xl p-5 shadow-lg flex items-center justify-between">
           <div>
             <div className="text-white/60 text-[10px] font-bold uppercase tracking-widest mb-1">Google İle Üye</div>
-            <div className="text-2xl font-black text-white">{stats.loading ? '...' : (stats as any).googleUsers}</div>
+            <div className="text-2xl font-black text-white">{stats.loading ? '...' : (stats as unknown).googleUsers}</div>
           </div>
           <div className="bg-red-500/20 p-3 rounded-full">
             <Shield className="w-6 h-6 text-red-500" />

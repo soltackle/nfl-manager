@@ -165,7 +165,7 @@ export function MatchesPage() {
         <div className="space-y-4">
           {matches.map((match) => {
             const isHome = match.home_franchise_id === franchise?.id
-            const opponentName = isHome ? (match as any).away_franchise?.team_name : (match as any).home_franchise?.team_name
+            const opponentName = isHome ? (match as unknown).away_franchise?.team_name : (match as unknown).home_franchise?.team_name
             const isPlayed = !!match.final_stats?.played
             
             let resultClass = 'border-white/10 bg-[#00152b]'

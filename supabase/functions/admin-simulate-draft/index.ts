@@ -40,7 +40,7 @@ serve(async (req) => {
     await supabaseAdmin.from('leagues').update({ status: 'draft' }).eq('id', league_id)
 
     // 3. Create a draft session
-    const { data: draftSession, error: dsErr } = await supabaseAdmin.from('draft_sessions').insert({
+    const { data: _draftSession, error: dsErr } = await supabaseAdmin.from('draft_sessions').insert({
       league_id,
       current_round: 1,
       current_pick_franchise_id: franchises[0].id
@@ -110,7 +110,7 @@ serve(async (req) => {
     }
 
     // 5. Generate fixtures for the season
-    const { error: fixErr } = await supabaseAdmin.rpc('generate_fixtures', { p_league_id: league_id })
+    const { error: fixErr } = await supabaseAdmin.rpc('generate_fixtures', { p: league_id })
     if (fixErr) console.error("Fixture generation error:", fixErr)
 
     // 6. Set league to active to start the season!
@@ -121,7 +121,7 @@ serve(async (req) => {
       status: 200,
     })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400,

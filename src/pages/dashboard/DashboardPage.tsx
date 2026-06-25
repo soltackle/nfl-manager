@@ -24,7 +24,7 @@ export function DashboardPage() {
   const [isClaimingCoin, setIsClaimingCoin] = useState(false)
   const [coinCountdown, setCoinCountdown] = useState<string | null>(null)
   const [showQuests, setShowQuests] = useState(false)
-  const [questsData, setQuestsData] = useState<any>(null)
+  const [questsData, setQuestsData] = useState<unknown>(null)
   const [countdown, setCountdown] = useState<number | null>(null)
 
   useEffect(() => {
@@ -147,8 +147,8 @@ export function DashboardPage() {
         alert(data.message)
         window.location.reload()
       }
-    } catch (err: any) {
-      alert("Hata: " + err.message)
+    } catch (err: unknown) {
+      alert("Hata: " + (err instanceof Error ? err.message : String(err)))
     } finally {
       setIsReadying(false)
       useUiStore.getState().setLoading(false)
@@ -164,8 +164,8 @@ export function DashboardPage() {
       
       alert(data.message)
       await useAuthStore.getState().initialize() // Refresh profile state
-    } catch (err: any) {
-      alert("Hata: " + err.message)
+    } catch (err: unknown) {
+      alert("Hata: " + (err instanceof Error ? err.message : String(err)))
     } finally {
       setIsClaimingCoin(false)
     }
@@ -197,7 +197,7 @@ export function DashboardPage() {
                   <Shield className={`h-28 w-28 drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] ${match.home_franchise_id === franchise?.id ? 'text-accent' : 'text-purple-600'}`} fill="currentColor" />
                 </div>
                 <div className="text-white font-display font-bold text-lg mt-4 uppercase tracking-wide">
-                  {(match as any).home_franchise?.team_name || 'Ev Sahibi'}
+                  {(match as unknown).home_franchise?.team_name || 'Ev Sahibi'}
                 </div>
                 {match.home_franchise_id === franchise?.id && <div className="text-[#00a2ff] text-xs font-bold mt-1">Sizin Takımınız</div>}
               </div>
@@ -217,7 +217,7 @@ export function DashboardPage() {
                   <Shield className={`h-28 w-28 drop-shadow-[0_0_15px_rgba(255,255,255,0.2)] ${match.away_franchise_id === franchise?.id ? 'text-accent' : 'text-purple-600'}`} fill="currentColor" />
                 </div>
                 <div className="text-white font-display font-bold text-lg mt-4 uppercase tracking-wide">
-                  {(match as any).away_franchise?.team_name || 'Deplasman'}
+                  {(match as unknown).away_franchise?.team_name || 'Deplasman'}
                 </div>
                 {match.away_franchise_id === franchise?.id && <div className="text-[#00a2ff] text-xs font-bold mt-1">Sizin Takımınız</div>}
               </div>

@@ -38,7 +38,7 @@ serve(async (req) => {
 
     const { data: matches } = await supabaseAdmin.from('matches').select('home_franchise_id, away_franchise_id, home_score, away_score').eq('league_id', league_id).not('final_stats', 'is', null)
     
-    let standings = franchises.map(f => ({ ...f, wins: 0, pointDiff: 0 }))
+    const standings = franchises.map(f => ({ ...f, wins: 0, pointDiff: 0 }))
     
     if (matches) {
       for (const m of matches) {
@@ -111,7 +111,7 @@ serve(async (req) => {
       status: 200,
     })
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400,

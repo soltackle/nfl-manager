@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import type { Franchise, League } from '@/types'
+import { supabase } from '@/lib/supabase'
 
 interface FranchiseState {
   franchises: Franchise[]
@@ -31,9 +32,7 @@ export const useFranchiseStore = create<FranchiseState>((set, get) => ({
     const f = get().franchises.find(x => x.id === id)
     if (f) {
       set({ activeFranchiseId: id, franchise: f })
-      const { data: lData } = await import('@/lib/supabase').then(m => m.supabase).then(supabase => 
-        supabase.from('leagues').select('*').eq('id', f.league_id).maybeSingle()
-      )
+      const { data: lData } = await supabase.from('leagues').select('*').eq('id', f.league_id).maybeSingle()
       if (lData) {
         set({ league: lData })
       }
@@ -51,9 +50,7 @@ export const useFranchiseStore = create<FranchiseState>((set, get) => ({
   
   initialize: async (userId: string) => {
     // Fetch ALL franchises for user
-    const { data: fData } = await import('@/lib/supabase').then(m => m.supabase).then(supabase => 
-      supabase.from('franchises').select('*, leagues(status)').eq('user_id', userId)
-    )
+    const { data: fData } = await supabase.from('franchises').select('*, leagues(status)').eq('user_id', userId)
     
     if (fData) {
       set({ franchises: fData })
@@ -63,9 +60,7 @@ export const useFranchiseStore = create<FranchiseState>((set, get) => ({
         const f = fData.find(x => x.id === activeId)
         if (f) {
           set({ franchise: f })
-          const { data: lData } = await import('@/lib/supabase').then(m => m.supabase).then(supabase => 
-            supabase.from('leagues').select('*').eq('id', f.league_id).maybeSingle()
-          )
+          const { data: lData } = await supabase.from('leagues').select('*').eq('id', f.league_id).maybeSingle()
           if (lData) {
             set({ league: lData })
           }

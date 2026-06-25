@@ -7,7 +7,7 @@ import { useAuthStore } from '@/store/authStore'
 export function LeaderboardPage() {
   const { user: currentUser } = useAuthStore()
   const [tab, setTab] = useState<'xp' | 'winrate'>('xp')
-  const [users, setUsers] = useState<any[]>([])
+  const [users, setUsers] = useState<unknown[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {

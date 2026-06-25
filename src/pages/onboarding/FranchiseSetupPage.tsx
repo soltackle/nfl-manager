@@ -41,8 +41,8 @@ export function FranchiseSetupPage() {
       await setActiveFranchise(data.franchise.id)
       
       navigate('/lobby')
-    } catch (err: any) {
-      alert('Kurulum hatası: ' + err.message)
+    } catch (err: unknown) {
+      alert('Kurulum hatası: ' + (err instanceof Error ? err.message : String(err)))
     } finally {
       setIsSubmitting(false)
     }
