@@ -265,7 +265,7 @@ export function TrainingPage() {
                           <div className="w-10 text-center font-display font-black text-white/80">{p.position}</div>
                           <div>
                             <div className="font-bold text-white">{p.name}</div>
-                            <div className="text-xs text-white/50">{p.age} Yaş</div>
+                            <div className="text-xs text-white/50">{p.overall} OVR</div>
                           </div>
                         </div>
                         <div className="flex items-center gap-4">
@@ -287,5 +287,4 @@ export function TrainingPage() {
         )}
       </div>
     </div>
-  )
-}
+  )}
