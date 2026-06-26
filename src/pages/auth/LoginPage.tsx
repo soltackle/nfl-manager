@@ -39,7 +39,7 @@ export function LoginPage() {
       <Card className="w-full max-w-sm">
         <CardContent className="space-y-6 p-6">
           <div className="text-center pb-4">
-            <h1 className="text-2xl font-bold">NFL Manager</h1>
+            <h1 className="text-2xl font-bold">amfutmanager</h1>
             <p className="text-sm text-gray-400 mt-2">Devam etmek için giriş yapın</p>
           </div>
 

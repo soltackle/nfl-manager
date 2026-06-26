@@ -36,7 +36,7 @@ export function GameHint() {
     if (path.includes('/match')) return "Maç Motoru: Amerikan Futbolunda maçlar Down-by-Down mekaniğiyle oynanır. Güçlü olan her zaman kazanmaz, taktik uyum çok önemlidir."
     if (path.includes('/draft')) return "Draft: Takımının iskeletini burada kuruyorsun! Seçim yapmak için 15 saniyen var. Kısıtlı sürede takımının en çok ihtiyacı olan mevkilere (Özellikle QB ve OL gibi kilit pozisyonlara) öncelik ver!"
     
-    return "NFL Manager'a hoş geldin! Sol ve üst menüleri kullanarak takımını şampiyonluğa taşı."
+    return "amfutmanager'a hoş geldin! Sol ve üst menüleri kullanarak takımını şampiyonluğa taşı."
   }
 
   return (

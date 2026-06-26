@@ -62,7 +62,7 @@ export function SlotsPage() {
               <img src="/logo.svg" alt="Logo" className="w-full h-full object-contain" onError={(e) => { e.currentTarget.src = 'https://api.dicebear.com/7.x/shapes/svg?seed=nfl' }} />
             </div>
             <div>
-              <h1 className="text-2xl font-display font-black tracking-widest text-white uppercase">NFL MANAGER</h1>
+              <h1 className="text-2xl font-display font-black tracking-widest text-white uppercase">amfutmanager</h1>
               <p className="text-accent text-xs font-bold uppercase">Hoş Geldin, {user?.user_metadata?.username || 'Menajer'}</p>
             </div>
           </div>
