@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+<path d="M22 70 Q22 46 46 46 Q57 46 57 60 L57 70 Q40 74 22 70 Z" fill="#00254c" stroke="#ff9c00" stroke-width="2"/>
+<path d="M40 71 Q55 71 56 60" fill="none" stroke="#cdd9e8" stroke-width="3"/>
+<circle cx="44" cy="58" r="3" fill="#0b3b73"/>
+<path d="M98 70 Q98 46 74 46 Q63 46 63 60 L63 70 Q80 74 98 70 Z" fill="#013a78" stroke="#ff9c00" stroke-width="2"/>
+<path d="M80 71 Q65 71 64 60" fill="none" stroke="#cdd9e8" stroke-width="3"/>
+<circle cx="76" cy="58" r="3" fill="#0b3b73"/>
+<text x="60" y="92" font-size="15" font-weight="800" fill="#ff9c00" text-anchor="middle" font-family="Arial, sans-serif">VS</text>
+</svg>
