@@ -5,7 +5,20 @@ import { useFranchiseStore } from '@/store/franchiseStore'
 import { supabase } from '@/lib/supabase'
 import { LoadingScreen } from '@/components/ui/LoadingScreen'
 
-const LOGOS = ['🐻 Ayı', '🐺 Kurt', '🦅 Kartal', '🦁 Aslan', '🦅 Şahin', '🐂 Boğa', '🐍 Yılan', '🦈 Köpekbalığı']
+const LOGOS = [
+  { key: 'bear', name: 'Ayı' },
+  { key: 'wolf', name: 'Kurt' },
+  { key: 'eagle', name: 'Kartal' },
+  { key: 'lion', name: 'Aslan' },
+  { key: 'hawk', name: 'Şahin' },
+  { key: 'bull', name: 'Boğa' },
+  { key: 'cobra', name: 'Yılan' },
+  { key: 'shark', name: 'Köpekbalığı' },
+  { key: 'panther', name: 'Panter' },
+  { key: 'ram', name: 'Koç' },
+  { key: 'stallion', name: 'Aygır' },
+  { key: 'rhino', name: 'Gergedan' },
+]
 const COLORS = ['🔴⚪', '🔵🟡', '🟢⚫', '🟣🟡', '🔵⚪', '🟠⚫', '🟡🔵', '🟢🟡', '🔴⚫', '⚪🔵', '🟤🟡', '⚫🟡']
 
 export function FranchiseSetupPage() {
@@ -18,7 +31,7 @@ export function FranchiseSetupPage() {
   const [city, setCity] = useState('')
   const [teamName, setTeamName] = useState('')
   const [selectedColor, setSelectedColor] = useState(COLORS[0])
-  const [selectedLogo, setSelectedLogo] = useState(LOGOS[0])
+  const [selectedLogo, setSelectedLogo] = useState(LOGOS[0].key)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSetup = async () => {
@@ -108,11 +121,12 @@ export function FranchiseSetupPage() {
             <div className="grid grid-cols-4 gap-2">
               {LOGOS.map(logo => (
                 <button
-                  key={logo}
-                  onClick={() => setSelectedLogo(logo)}
-                  className={`py-3 rounded border text-sm font-bold transition-all ${selectedLogo === logo ? 'border-accent bg-accent/10 text-accent' : 'border-[#004b93] text-white/70 hover:border-white/30 hover:text-white'}`}
+                  key={logo.key}
+                  onClick={() => setSelectedLogo(logo.key)}
+                  className={`flex flex-col items-center gap-1 py-2 px-1 rounded border text-sm font-bold transition-all ${selectedLogo === logo.key ? 'border-accent bg-accent/10 text-accent' : 'border-[#004b93] text-white/70 hover:border-white/30 hover:text-white'}`}
                 >
-                  {logo}
+                  <img src={`/teams/${logo.key}.svg`} alt={logo.name} className="w-12 h-12 object-contain" />
+                  <span className="text-xs">{logo.name}</span>
                 </button>
               ))}
             </div>

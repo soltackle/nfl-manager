@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { X, Search, Clock, CheckCircle2, Coins } from 'lucide-react'
+import { X, Clock, CheckCircle2, Coins } from 'lucide-react'
 import { useScout } from '@/hooks/useScout'
 import { useAuthStore } from '@/store/authStore'
 
@@ -72,7 +72,7 @@ export function ScoutModal({ isOpen, onClose }: { isOpen: boolean, onClose: () =
         
         <div className="flex items-center justify-between p-4 bg-black/20 border-b border-accent/20">
           <div className="flex items-center gap-2 text-accent font-display font-bold text-lg">
-            <Search className="w-5 h-5" />
+            <img src="/icon-scout.svg" alt="" className="w-6 h-6 object-contain" />
             ÖZEL YETENEK AVCISI
           </div>
           <button onClick={onClose} className="text-white/50 hover:text-white transition-colors">

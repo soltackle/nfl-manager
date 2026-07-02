@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useClub } from '@/hooks/useClub'
 import { useFranchiseStore } from '@/store/franchiseStore'
 import { supabase } from '@/lib/supabase'
-import { Building2, TrendingUp, Users, Activity, Lock, Briefcase, CheckCircle2 } from 'lucide-react'
+import { Building2, Lock, Briefcase, CheckCircle2 } from 'lucide-react'
 import { useToastStore } from '@/store/toastStore'
 
 export const SPONSORS = [
@@ -20,38 +20,26 @@ interface UpgradeCardProps {
   desc: string;
   level: number;
   type: 'turf' | 'capacity' | 'practice';
-  icon: unknown;
   bonuses: string[];
   franchiseFund: number;
   isUpgrading: boolean;
   onUpgrade: (type: 'turf' | 'capacity' | 'practice') => void;
 }
 
-const UpgradeCard = ({ 
-  title, 
-  desc, 
-  level, 
-  type, 
-  icon: Icon,
-  bonuses,
-  franchiseFund,
-  isUpgrading,
-  onUpgrade
-}: UpgradeCardProps) => {
+const UpgradeCard = ({ title, desc, level, type, bonuses, franchiseFund, isUpgrading, onUpgrade }: UpgradeCardProps) => {
   const isMax = level >= 3
   const nextCost = isMax ? null : costs[level]
   const canAfford = nextCost ? franchiseFund >= nextCost : false
 
   return (
     <div className="bg-gradient-to-br from-[#00254c] to-[#00152b] border border-[#005c99] rounded-xl p-6 relative overflow-hidden">
-      {/* Level Indicator */}
       <div className="absolute top-0 right-0 bg-[#001021] border-b border-l border-[#005c99] px-4 py-1 rounded-bl-xl font-display font-black text-accent text-lg">
         LVL {level}
       </div>
 
       <div className="flex items-start gap-4 mb-6">
-        <div className="bg-white/5 p-4 rounded-xl border border-white/10">
-          <Icon className="w-8 h-8 text-white" />
+        <div className="bg-white/5 p-2 rounded-xl border border-white/10">
+          <img src={`/icon-stadium-${type}.svg`} alt={title} className="w-12 h-12 object-contain" />
         </div>
         <div>
           <h3 className="font-display font-bold text-xl uppercase tracking-wider text-white">{title}</h3>
@@ -59,7 +47,6 @@ const UpgradeCard = ({
         </div>
       </div>
 
-      {/* Bonus List */}
       <div className="space-y-2 mb-6">
         <p className="text-xs font-bold uppercase text-white/50">Mevcut Bonuslar</p>
         {level === 0 ? (
@@ -71,7 +58,6 @@ const UpgradeCard = ({
         )}
       </div>
 
-      {/* Upgrade Action */}
       {!isMax ? (
         <div className="border-t border-white/10 pt-4 flex items-center justify-between">
           <div>
@@ -81,11 +67,7 @@ const UpgradeCard = ({
           <button 
             onClick={() => onUpgrade(type)}
             disabled={!canAfford || isUpgrading}
-            className={`px-6 py-3 rounded font-display font-bold uppercase tracking-wider transition-colors ${
-              canAfford 
-                ? 'bg-accent text-[#001021] hover:bg-white hover:text-[#001021]' 
-                : 'bg-white/5 text-white/30 cursor-not-allowed border border-white/10'
-            }`}
+            className={`px-6 py-3 rounded font-display font-bold uppercase tracking-wider transition-colors ${canAfford ? 'bg-accent text-[#001021] hover:bg-white hover:text-[#001021]' : 'bg-white/5 text-white/30 cursor-not-allowed border border-white/10'}`}
           >
             {isUpgrading ? 'Yükseltiliyor...' : 'YÜKSELT'}
           </button>
@@ -144,7 +126,6 @@ export function ClubPage() {
 
   return (
     <div className="space-y-6 pt-4">
-      {/* Header */}
       <div className="bg-[#001021] rounded-xl p-8 border border-[#005c99] shadow-xl text-center relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-[#003366]/30 to-transparent"></div>
         <Building2 className="w-16 h-16 text-white/20 mx-auto mb-4 relative z-10" />
@@ -153,7 +134,7 @@ export function ClubPage() {
         
         <div className="mt-8 flex justify-center gap-8 relative z-10">
           <div className="bg-[#00152b] border border-[#005c99] px-6 py-3 rounded-xl flex items-center gap-4">
-            <div className="bg-[#00a2ff] w-8 h-8 rounded-full flex items-center justify-center font-bold text-white shadow-inner">$</div>
+            <img src="/icon-clubfund.svg" alt="Kulüp Fonu" className="w-9 h-9 object-contain" />
             <div className="text-left">
               <div className="text-[10px] font-bold uppercase text-white/50">Kulüp Fonu</div>
               <div className="font-display font-black text-xl text-white">{franchise?.club_fund ? formatMoney(franchise.club_fund) : '$0.0M'}</div>
@@ -162,46 +143,12 @@ export function ClubPage() {
         </div>
       </div>
 
-      {/* Upgrades Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <UpgradeCard 
-          title="Stadyum Zemin Kalitesi" 
-          desc="İyi bir saha zemini takımınızın ev sahibi avantajını artırır ve rakipleri zorlar."
-          level={stadium.turf_level}
-          type="turf"
-          icon={TrendingUp}
-          bonuses={['Ev Sahibi Avantajı: +%2', 'Ev Sahibi Avantajı: +%4', 'Ev Sahibi Avantajı: +%6']}
-          franchiseFund={franchise?.club_fund || 0}
-          isUpgrading={isUpgrading}
-          onUpgrade={handleUpgrade}
-        />
-
-        <UpgradeCard 
-          title="Stadyum Kapasitesi" 
-          desc="Daha fazla koltuk, bilet gelirlerini ve maç günü kazançlarını katlar."
-          level={stadium.capacity_level}
-          type="capacity"
-          icon={Users}
-          bonuses={['Maç Günü Geliri: +%20', 'Maç Günü Geliri: +%40', 'Maç Günü Geliri: +%60']}
-          franchiseFund={franchise?.club_fund || 0}
-          isUpgrading={isUpgrading}
-          onUpgrade={handleUpgrade}
-        />
-
-        <UpgradeCard 
-          title="Antrenman Tesisleri" 
-          desc="Modern tesisler koçların oyuncuları çok daha hızlı geliştirmesini sağlar."
-          level={stadium.practice_facility_level}
-          type="practice"
-          icon={Activity}
-          bonuses={['Antrenman Verimi: +%10', 'Antrenman Verimi: +%25', 'Antrenman Verimi: +%50']}
-          franchiseFund={franchise?.club_fund || 0}
-          isUpgrading={isUpgrading}
-          onUpgrade={handleUpgrade}
-        />
+        <UpgradeCard title="Stadyum Zemin Kalitesi" desc="İyi bir saha zemini takımınızın ev sahibi avantajını artırır ve rakipleri zorlar." level={stadium.turf_level} type="turf" bonuses={['Ev Sahibi Avantajı: +%2', 'Ev Sahibi Avantajı: +%4', 'Ev Sahibi Avantajı: +%6']} franchiseFund={franchise?.club_fund || 0} isUpgrading={isUpgrading} onUpgrade={handleUpgrade} />
+        <UpgradeCard title="Stadyum Kapasitesi" desc="Daha fazla koltuk, bilet gelirlerini ve maç günü kazançlarını katlar." level={stadium.capacity_level} type="capacity" bonuses={['Maç Günü Geliri: +%20', 'Maç Günü Geliri: +%40', 'Maç Günü Geliri: +%60']} franchiseFund={franchise?.club_fund || 0} isUpgrading={isUpgrading} onUpgrade={handleUpgrade} />
+        <UpgradeCard title="Antrenman Tesisleri" desc="Modern tesisler koçların oyuncuları çok daha hızlı geliştirmesini sağlar." level={stadium.practice_facility_level} type="practice" bonuses={['Antrenman Verimi: +%10', 'Antrenman Verimi: +%25', 'Antrenman Verimi: +%50']} franchiseFund={franchise?.club_fund || 0} isUpgrading={isUpgrading} onUpgrade={handleUpgrade} />
       </div>
 
-      {/* Sponsors Section */}
       <div className="mt-12">
         <div className="flex items-center gap-3 mb-6">
           <Briefcase className="w-8 h-8 text-accent" />
@@ -219,6 +166,7 @@ export function ClubPage() {
                   </div>
                 )}
                 
+                <img src={`/icon-sponsor-${sponsor.id}.svg`} alt={sponsor.name} className="w-14 h-14 object-contain mb-2 drop-shadow-lg" />
                 <h3 className="font-display font-black text-2xl text-white uppercase tracking-widest mb-2 mt-2">{sponsor.name}</h3>
                 <p className="text-white/80 text-sm font-bold h-12">{sponsor.desc}</p>
                 
@@ -234,11 +182,7 @@ export function ClubPage() {
                 </div>
 
                 {!isActive && (
-                  <button 
-                    onClick={() => handleSelectSponsor(sponsor.id)}
-                    disabled={isSelectingSponsor}
-                    className="w-full mt-6 bg-white hover:bg-gray-100 text-[#001021] font-display font-black uppercase py-3 rounded shadow-lg transition-colors"
-                  >
+                  <button onClick={() => handleSelectSponsor(sponsor.id)} disabled={isSelectingSponsor} className="w-full mt-6 bg-white hover:bg-gray-100 text-[#001021] font-display font-black uppercase py-3 rounded shadow-lg transition-colors">
                     {isSelectingSponsor ? 'Anlaşılıyor...' : 'Sponsorluk Anlaşması İmzala'}
                   </button>
                 )}

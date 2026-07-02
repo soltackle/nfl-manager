@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useFranchiseStore } from '@/store/franchiseStore'
-import { Brain, Shield, Crosshair, ArrowRight } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 
 const OFFENSIVE_TRAITS = [
   "Air Raid Master", "Run Heavy Guru", "West Coast Expert", "Play-Action Specialist", "Red Zone Strategist",
@@ -114,7 +114,7 @@ export function CoachSelectionPage() {
           {/* OFFENSIVE */}
           <div className="bg-[#00152b] p-6 rounded-xl border border-[#005c99]/30">
             <div className="flex items-center gap-3 mb-6">
-              <Crosshair className="text-accent w-8 h-8" />
+              <img src="/coach-offensive.svg" alt="OC" className="w-12 h-12 rounded-full object-cover border-2 border-accent" />
               <h2 className="text-2xl font-display font-bold uppercase">Hücum Koçu (OC)</h2>
             </div>
             <div className="space-y-4">
@@ -149,7 +149,7 @@ export function CoachSelectionPage() {
           {/* DEFENSIVE */}
           <div className="bg-[#00152b] p-6 rounded-xl border border-[#005c99]/30">
             <div className="flex items-center gap-3 mb-6">
-              <Shield className="text-green-500 w-8 h-8" />
+              <img src="/coach-defensive.svg" alt="DC" className="w-12 h-12 rounded-full object-cover border-2 border-green-500" />
               <h2 className="text-2xl font-display font-bold uppercase">Savunma Koçu (DC)</h2>
             </div>
             <div className="space-y-4">

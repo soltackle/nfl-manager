@@ -40,7 +40,6 @@ export function ProfilePage() {
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20"></div>
         
         <div className="relative z-10 p-8 flex flex-col md:flex-row items-center gap-6">
-          {/* Avatar */}
           <div className="relative">
             <div className="w-24 h-24 rounded-full bg-gradient-to-br from-accent to-yellow-600 flex items-center justify-center shadow-[0_0_30px_rgba(255,156,0,0.4)]">
               <span className="text-4xl font-display font-black text-[#001021]">
@@ -52,14 +51,12 @@ export function ProfilePage() {
             </div>
           </div>
 
-          {/* Info */}
           <div className="flex-1 text-center md:text-left">
             <h1 className="text-3xl font-display font-black text-white uppercase tracking-wider">
               {profile?.username || user?.user_metadata?.username || 'Menajer'}
             </h1>
             <p className="text-accent text-sm font-bold uppercase mt-1">Baş Menajer</p>
             
-            {/* XP Bar */}
             <div className="mt-4 max-w-xs mx-auto md:mx-0">
               <div className="flex justify-between text-[10px] font-bold text-white/50 mb-1">
                 <span>XP İlerlemesi</span>
@@ -74,7 +71,6 @@ export function ProfilePage() {
             </div>
           </div>
 
-          {/* Quick Stats */}
           <div className="flex gap-3">
             <div className="bg-[#001021] border border-[#005c99] rounded-xl p-3 text-center min-w-[70px]">
               <div className="text-[10px] font-bold text-white/50 uppercase">Sıra</div>
@@ -88,7 +84,6 @@ export function ProfilePage() {
         </div>
       </div>
 
-      {/* Team Info Card */}
       {franchise && (
         <div className="bg-gradient-to-r from-[#00152b] to-[#00254c] rounded-xl border border-[#005c99]/50 p-6">
           <div className="flex items-center gap-4 mb-6">
@@ -108,36 +103,18 @@ export function ProfilePage() {
         </div>
       )}
 
-      {/* Achievements / Badges */}
       <div className="bg-gradient-to-r from-[#00254c] to-[#00152b] rounded-xl border border-[#004b93]/50 p-6">
         <h2 className="text-sm font-display font-bold text-accent uppercase mb-4 flex items-center gap-2">
           <Award className="w-4 h-4" /> Başarımlar
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <AchievementBadge 
-            icon={Star} 
-            label="İlk Galibiyet" 
-            unlocked={wins >= 1} 
-          />
-          <AchievementBadge 
-            icon={Zap} 
-            label="5 Galibiyet" 
-            unlocked={wins >= 5} 
-          />
-          <AchievementBadge 
-            icon={Trophy} 
-            label="Lider" 
-            unlocked={userRank === 1} 
-          />
-          <AchievementBadge 
-            icon={Target} 
-            label="100+ Sayı" 
-            unlocked={totalPF >= 100} 
-          />
+          <AchievementBadge icon={Star} img="/badge-bronze.svg" label="İlk Galibiyet" unlocked={wins >= 1} />
+          <AchievementBadge icon={Zap} img="/badge-silver.svg" label="5 Galibiyet" unlocked={wins >= 5} />
+          <AchievementBadge icon={Trophy} img="/icon-trophy.svg" label="Lider" unlocked={userRank === 1} />
+          <AchievementBadge icon={Target} img="/badge-gold.svg" label="100+ Sayı" unlocked={totalPF >= 100} />
         </div>
       </div>
 
-      {/* Season Record */}
       {userStanding && (
         <div className="bg-gradient-to-r from-[#00254c] to-[#00152b] rounded-xl border border-[#004b93]/50 p-6">
           <h2 className="text-sm font-display font-bold text-accent uppercase mb-4 flex items-center gap-2">
@@ -160,18 +137,11 @@ export function ProfilePage() {
         </div>
       )}
 
-      {/* Actions */}
       <div className="flex gap-4">
-        <button 
-          onClick={() => navigate('/slots')} 
-          className="flex-1 bg-[#00254c] hover:bg-[#003366] text-white font-display font-bold uppercase py-4 rounded-xl border border-[#005c99] transition-colors"
-        >
+        <button onClick={() => navigate('/slots')} className="flex-1 bg-[#00254c] hover:bg-[#003366] text-white font-display font-bold uppercase py-4 rounded-xl border border-[#005c99] transition-colors">
           🔄 Kariyer Değiştir
         </button>
-        <button 
-          onClick={() => signOut()} 
-          className="bg-red-500/20 hover:bg-red-500/30 text-red-400 font-display font-bold uppercase px-6 py-4 rounded-xl border border-red-500/30 transition-colors flex items-center gap-2"
-        >
+        <button onClick={() => signOut()} className="bg-red-500/20 hover:bg-red-500/30 text-red-400 font-display font-bold uppercase px-6 py-4 rounded-xl border border-red-500/30 transition-colors flex items-center gap-2">
           <LogOut className="w-4 h-4" /> Çıkış
         </button>
       </div>
@@ -189,14 +159,14 @@ function StatCard({ icon: Icon, label, value, color }: { icon: unknown; label: s
   )
 }
 
-function AchievementBadge({ icon: Icon, label, unlocked }: { icon: unknown; label: string; unlocked: boolean }) {
+function AchievementBadge({ icon: Icon, img, label, unlocked }: { icon: unknown; img?: string; label: string; unlocked: boolean }) {
   return (
-    <div className={`rounded-xl p-4 text-center border transition-all ${
-      unlocked 
-        ? 'bg-accent/10 border-accent/30 shadow-[0_0_15px_rgba(255,156,0,0.15)]' 
-        : 'bg-[#001021] border-white/5 opacity-40'
-    }`}>
-      <Icon className={`w-8 h-8 mx-auto mb-2 ${unlocked ? 'text-accent' : 'text-white/20'}`} />
+    <div className={`rounded-xl p-4 text-center border transition-all ${unlocked ? 'bg-accent/10 border-accent/30 shadow-[0_0_15px_rgba(255,156,0,0.15)]' : 'bg-[#001021] border-white/5 opacity-40'}`}>
+      {img ? (
+        <img src={img} alt={label} className={`w-12 h-12 mx-auto mb-2 object-contain ${unlocked ? '' : 'grayscale'}`} />
+      ) : (
+        <Icon className={`w-8 h-8 mx-auto mb-2 ${unlocked ? 'text-accent' : 'text-white/20'}`} />
+      )}
       <div className={`text-[10px] font-bold uppercase ${unlocked ? 'text-accent' : 'text-white/30'}`}>{label}</div>
       {unlocked && <div className="text-[8px] text-green-400 font-bold mt-1">✓ AÇILDI</div>}
     </div>

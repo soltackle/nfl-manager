@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useFranchiseStore } from '@/store/franchiseStore'
 import { supabase } from '@/lib/supabase'
-import { Coins, Zap, TrendingUp, AlertCircle, CheckCircle, Shield } from 'lucide-react'
+import { Coins, AlertCircle, CheckCircle } from 'lucide-react'
 
 export function ShopPage() {
   const { franchise, league } = useFranchiseStore()
@@ -83,7 +83,7 @@ export function ShopPage() {
           <p className="text-white/60 mt-1 text-sm">AmFutCoin kullanarak takımınızı güçlendirin.</p>
         </div>
         <div className="bg-[#00254c] border border-accent rounded-xl p-4 flex flex-col items-center min-w-[120px] shadow-[0_0_15px_rgba(255,156,0,0.2)]">
-          <Coins className="w-8 h-8 text-accent mb-1" />
+          <img src="/icon-amfutcoin.svg" alt="AmFutCoin" className="w-9 h-9 mb-1 object-contain" />
           <span className="text-2xl font-black text-white">{balance}</span>
           <span className="text-[10px] text-accent font-bold uppercase tracking-widest">AMFUTCOIN</span>
         </div>
@@ -103,7 +103,7 @@ export function ShopPage() {
           <div>
             <div className="flex items-center gap-3 mb-4">
               <div className="bg-accent/20 p-3 rounded-full">
-                <Zap className="w-8 h-8 text-accent" />
+                <img src="/icon-boost-power.svg" alt="Takviye" className="w-10 h-10 object-contain" />
               </div>
               <div>
                 <h3 className="text-white font-display font-black text-xl uppercase tracking-wider">Maç Öncesi Takviye</h3>
@@ -130,7 +130,7 @@ export function ShopPage() {
           <div>
             <div className="flex items-center gap-3 mb-4">
               <div className="bg-green-500/20 p-3 rounded-full">
-                <TrendingUp className="w-8 h-8 text-green-400" />
+                <img src="/icon-boost-training.svg" alt="Antrenor" className="w-10 h-10 object-contain" />
               </div>
               <div>
                 <h3 className="text-white font-display font-black text-xl uppercase tracking-wider">Özel Antrenör</h3>

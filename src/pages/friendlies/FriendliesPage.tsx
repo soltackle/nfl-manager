@@ -75,7 +75,7 @@ export function FriendliesPage() {
       {/* Header */}
       <div className="bg-[#00152b] border border-[#005c99] rounded-xl p-6 shadow-xl relative overflow-hidden">
         <div className="absolute top-0 right-0 p-4 opacity-10">
-          <Activity className="w-32 h-32" />
+          <img src="/icon-friendly.svg" alt="" className="w-32 h-32 object-contain" />
         </div>
         <div className="flex justify-between items-start relative z-10">
           <div>
@@ -85,7 +85,7 @@ export function FriendliesPage() {
             </p>
           </div>
           <div className="bg-[#00254c] border border-accent rounded-xl p-4 flex flex-col items-center min-w-[120px] shadow-[0_0_15px_rgba(255,156,0,0.2)]">
-            <Coins className="w-8 h-8 text-accent mb-1" />
+            <img src="/icon-amfutcoin.svg" alt="AmFutCoin" className="w-9 h-9 mb-1 object-contain" />
             <span className="text-2xl font-black text-white">{balance}</span>
             <span className="text-[10px] text-accent font-bold uppercase tracking-widest">AMFUTCOIN</span>
           </div>

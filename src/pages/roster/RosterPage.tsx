@@ -113,6 +113,7 @@ export function RosterPage() {
         className="flex items-center justify-between bg-gradient-to-r from-[#00254c] to-[#00152b] p-3 rounded-lg border border-[#004b93]/50 hover:border-accent/50 transition-colors"
       >
         <div className="flex items-center gap-4">
+          <img src="/player-placeholder.svg" alt="" className="w-10 h-10 object-contain shrink-0 hidden sm:block" />
           <div className={`w-10 h-10 rounded flex items-center justify-center font-display font-bold text-sm shadow-inner ${
             OFFENSE_POS.includes(player.position) ? 'bg-blue-900/50 text-blue-300 border border-blue-500/30' :
             DEFENSE_POS.includes(player.position) ? 'bg-red-900/50 text-red-300 border border-red-500/30' :
